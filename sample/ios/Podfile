@@ -6,7 +6,11 @@ target 'MParticleSample' do
   # use_frameworks!
 
   # Pods for MParticleSample
-  pod 'mParticle-Apple-SDK', '~> 6.12.3'
+
+  //
+  // See https://github.com/mparticle/mparticle/apple-sdk for the latest version
+  //
+  pod 'mParticle-Apple-SDK', 'REPLACEME'
 
   target 'MParticleSampleTests' do
     inherit! :search_paths
