@@ -11,6 +11,7 @@ import {
   Text,
   View
 } from 'react-native';
+import MParticle from 'react-native-mparticle'
 
 export default class MParticleSample extends Component {
   render() {
@@ -18,6 +19,9 @@ export default class MParticleSample extends Component {
       <View style={styles.container}>
         <Text style={styles.welcome}>
           Welcome to React Native!
+        </Text>
+        <Text style={styles.welcome}>
+          Logging an event. { MParticle.logEvent('test android') }
         </Text>
         <Text style={styles.instructions}>
           To get started, edit index.android.js
