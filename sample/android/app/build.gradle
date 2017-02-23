@@ -131,8 +131,19 @@ dependencies {
     compile "com.android.support:appcompat-v7:23.0.1"
     compile "com.facebook.react:react-native:+"  // From node_modules
 
-    // See https://github.com/mparticle/mparticle-android-sdk for the latest version
+    //
+    // In your app, you should include mParticle core like this:
+    //
     compile "com.mparticle.android-core:REPLACEME"
+    //
+    // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
+    //
+
+    //
+    // And, if you want to include kits, you can do so as follows:
+    //
+    //   compile 'com.mparticle:android-example-kit:REPLACEME'
+    //
 }
 
 // Run this once to be able to run the application with BUCK

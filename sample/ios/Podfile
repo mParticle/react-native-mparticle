@@ -7,10 +7,18 @@ target 'MParticleSample' do
 
   # Pods for MParticleSample
 
-  //
-  // See https://github.com/mparticle/mparticle/apple-sdk for the latest version
-  //
+  # In your app, you should include mParticle core like this:
+  #
   pod 'mParticle-Apple-SDK', 'REPLACEME'
+  #
+  # (See https://github.com/mparticle/mparticle/apple-sdk for the latest version)
+  #
+
+  #
+  # And, if you want to include kits, you can do so as follows:
+  #
+  #   pod 'mParticle-Example', 'REPLACEME'
+  #
 
   target 'MParticleSampleTests' do
     inherit! :search_paths

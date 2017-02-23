@@ -25,7 +25,17 @@ dependencies {
     provided 'com.facebook.react:react-native:+'
 
     //
-    // See https://github.com/mparticle/mparticle-android-sdk for the latest version
+    // In your app, you should include mParticle core like this:
+    //
+    //   compile 'com.mparticle:android-core:REPLACEME'
+    //
+    // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
     provided 'com.mparticle:android-core:REPLACEME'
+
+    //
+    // And, if you want to include kits, you can do so as follows:
+    //
+    //   compile 'com.mparticle:android-example-kit:REPLACEME'
+    //
 }
