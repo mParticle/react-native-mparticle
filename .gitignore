@@ -67,4 +67,12 @@ fastlane/test_output
 Cartfile.resolved
 **/node_modules
 npm-debug.log
+# Intellij
+.idea/
 *.iml
+*.iws
+
+# Gradle
+build
+.gradle
+local.properties
