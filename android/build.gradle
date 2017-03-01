@@ -21,6 +21,20 @@ android {
    }
 }
 
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.3'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
 dependencies {
     provided 'com.facebook.react:react-native:+'
 
@@ -31,7 +45,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    provided 'com.mparticle:android-core:REPLACEME'
+    provided 'com.mparticle:android-core:4+'
 
     //
     // And, if you want to include kits, you can do so as follows:

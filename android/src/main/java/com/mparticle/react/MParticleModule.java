@@ -1,26 +1,27 @@
 package com.mparticle.react;
 
-import com.facebook.react.bridge.LifecycleEventListener;
-import com.mparticle.*;
-import com.facebook.react.bridge.NativeModule;
+import android.util.Log;
+
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.*;
-import com.mparticle.commerce.CommerceApi;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.mparticle.MParticle;
 import com.mparticle.commerce.CommerceEvent;
 import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
 import com.mparticle.commerce.Promotion;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MParticleModule extends ReactContextBaseJavaModule {
+
+
+    private final static String LOG_TAG = "MParticleModule";
 
     ReactApplicationContext reactContext;
 
@@ -43,8 +44,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void logCommerceEvent(final ReadableMap map) {
-        CommerceEvent commerceEvent = ConvertCommerceEvent(map);
-        MParticle.getInstance().logEvent(commerceEvent);
+        if (map != null) {
+            CommerceEvent commerceEvent = ConvertCommerceEvent(map);
+            MParticle.getInstance().logEvent(commerceEvent);
+        }
     }
 
     @ReactMethod
@@ -91,7 +94,8 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         Boolean isImpression = map.hasKey("promotionActionType");
 
         if (!isProductAction && !isPromotion && !isImpression) {
-            throw new AssertionError("Invalid commerce event");
+            Log.e(LOG_TAG, "Invalid commerce event:" + map.toString());
+            return null;
         }
 
         CommerceEvent.Builder builder = null;
