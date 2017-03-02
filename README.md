@@ -3,8 +3,6 @@
 [![npm version](https://badge.fury.io/js/react-native-mparticle.svg)](https://badge.fury.io/js/react-native-mparticle)
 [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](http://standardjs.com/)
 
-React Native module for [mParticle](https://www.mparticle.com)
-
 # Installation
 
 **First, download the library** from npm:
