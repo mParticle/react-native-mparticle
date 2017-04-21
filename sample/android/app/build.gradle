@@ -134,10 +134,11 @@ dependencies {
     //
     // In your app, you should include mParticle core like this:
     //
-    compile "com.mparticle.android-core:REPLACEME"
+    // compile "com.mparticle.android-core:REPLACEME"
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
+    compile "com.mparticle:android-core:+"
 
     //
     // And, if you want to include kits, you can do so as follows:

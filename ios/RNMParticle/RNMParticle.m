@@ -34,7 +34,7 @@ RCT_EXPORT_METHOD(setUserAttribute:(NSString *)key value:(NSString *)value)
     [[MParticle sharedInstance] setUserAttribute:key value:value];
 }
 
-RCT_EXPORT_METHOD(setUserAttributeList:(NSString *)key values:(NSArray *)values)
+RCT_EXPORT_METHOD(setUserAttributeArray:(NSString *)key values:(NSArray *)values)
 {
     [[MParticle sharedInstance] setUserAttribute:key values:values];
 }
@@ -91,7 +91,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     commerceEvent.checkoutOptions = json[@"checkoutOptions"];
     commerceEvent.currency = json[@"currency"];
     commerceEvent.productListName = json[@"productActionListName"];
-    commerceEvent.productListSource = json[@"productActionListName"];
+    commerceEvent.productListSource = json[@"productActionListSource"];
     commerceEvent.screenName = json[@"screenName"];
     commerceEvent.transactionAttributes = [RCTConvert MPTransactionAttributes:json[@"transactionAttributes"]];
     commerceEvent.action = [json[@"productActionType"] intValue];

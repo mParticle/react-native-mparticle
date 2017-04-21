@@ -115,8 +115,39 @@ class Promotion {
   }
 }
 
+class TransactionAttributes {
+  constructor (transactionId) {
+    this.transactionId = transactionId
+  }
+
+  setAffiliation (affiliation) {
+    this.affiliation = affiliation
+    return this
+  }
+
+  setRevenue (revenue) {
+    this.revenue = revenue
+    return this
+  }
+
+  setShipping (shipping) {
+    this.shipping = shipping
+    return this
+  }
+
+  setTax (tax) {
+    this.tax = tax
+    return this
+  }
+
+  setCouponCode (couponCode) {
+    this.couponCode = couponCode
+    return this
+  }
+}
+
 class Product {
-  constructor (name, sku, price, quantity) {
+  constructor (name, sku, price, quantity = 1) {
     this.name = name
     this.sku = sku
     this.price = price
@@ -259,6 +290,7 @@ const MParticle = {
   Impression,
   Promotion,
   CommerceEvent,
+  TransactionAttributes,
 
   logEvent,             // Methods
   logCommerceEvent,

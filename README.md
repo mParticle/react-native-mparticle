@@ -76,9 +76,9 @@ MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test 
 **Logging** commerce events:
 
 ```js
-const product = new MParticle.Product('Test product for cart', 1234, 19.99)
+const product = new MParticle.Product('Test product for cart', '1234', 19.99)
 const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
-const event = MParticle.CommerceEvent.createProductActionEvent(ProductActionType.AddToCart, [product], transactionAttributes)
+const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
 
 MParticle.logCommerceEvent(event)
 ```
@@ -91,7 +91,7 @@ MParticle.logCommerceEvent(event)
 ```
 
 ```js
-const product = new MParticle.Product('Test product that was viewed', 5678, 29.99)
+const product = new MParticle.Product('Test product that was viewed', '5678', 29.99)
 const impression = new MParticle.Impression('Test impression list name', [product])
 const event = MParticle.CommerceEvent.createImpressionEvent([impression])
 

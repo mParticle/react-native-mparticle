@@ -9,10 +9,11 @@ target 'MParticleSample' do
 
   # In your app, you should include mParticle core like this:
   #
-  pod 'mParticle-Apple-SDK', 'REPLACEME'
+  # pod 'mParticle-Apple-SDK', 'REPLACEME'
   #
   # (See https://github.com/mparticle/mparticle/apple-sdk for the latest version)
   #
+  pod 'mParticle-Apple-SDK'
 
   #
   # And, if you want to include kits, you can do so as follows:

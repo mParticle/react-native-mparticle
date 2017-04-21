@@ -7,10 +7,12 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.mparticle.MParticle;
 import com.mparticle.commerce.CommerceEvent;
 import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
+import com.mparticle.commerce.TransactionAttributes;
 import com.mparticle.commerce.Promotion;
 
 import java.util.ArrayList;
@@ -62,7 +64,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setUserAttributeList(final String key, final ReadableArray values) {
+    public void setUserAttributeArray(final String key, final ReadableArray values) {
      if (values != null) {
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < values.size(); ++i) {
@@ -91,7 +93,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     private static CommerceEvent ConvertCommerceEvent(ReadableMap map) {
         Boolean isProductAction = map.hasKey("productActionType");
         Boolean isPromotion = map.hasKey("promotionActionType");
-        Boolean isImpression = map.hasKey("promotionActionType");
+        Boolean isImpression = map.hasKey("impressions");
 
         if (!isProductAction && !isPromotion && !isImpression) {
             Log.e(LOG_TAG, "Invalid commerce event:" + map.toString());
@@ -106,7 +108,9 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             ReadableArray productsArray = map.getArray("products");
             ReadableMap productMap = productsArray.getMap(0);
             Product product = ConvertProduct(productMap);
-            builder = new CommerceEvent.Builder(productAction, product);
+            ReadableMap transactionAttributesMap = map.getMap("transactionAttributes");
+            TransactionAttributes transactionAttributes = ConvertTransactionAttributes(transactionAttributesMap);
+            builder = new CommerceEvent.Builder(productAction, product).transactionAttributes(transactionAttributes);
 
             for (int i = 1; i < productsArray.size(); ++i) {
                 productMap = productsArray.getMap(i);
@@ -184,6 +188,36 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         return builder.build();
     }
 
+    private static TransactionAttributes ConvertTransactionAttributes(ReadableMap map) {
+        if (!map.hasKey("transactionId")) {
+            return null;
+        }
+
+        TransactionAttributes transactionAttributes = new TransactionAttributes(map.getString("transactionId"));
+
+        if (map.hasKey("affiliation")) {
+            transactionAttributes.setAffiliation(map.getString("affiliation"));
+        }
+
+        if (map.hasKey("revenue")) {
+            transactionAttributes.setRevenue(map.getDouble("revenue"));
+        }
+
+        if (map.hasKey("shipping")) {
+            transactionAttributes.setShipping(map.getDouble("shipping"));
+        }
+
+        if (map.hasKey("tax")) {
+            transactionAttributes.setTax(map.getDouble("tax"));
+        }
+
+        if (map.hasKey("couponCode")) {
+            transactionAttributes.setCouponCode(map.getString("couponCode"));
+        }
+
+        return transactionAttributes;
+    }
+
     private static Promotion ConvertPromotion(ReadableMap map) {
         Promotion promotion = new Promotion();
 
@@ -228,8 +262,9 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
         if (readableMap != null) {
             map = new HashMap<String, String>();
-            while (readableMap.keySetIterator().hasNextKey()) {
-                String key = readableMap.keySetIterator().nextKey();
+            ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+            while (iterator.hasNextKey()) {
+                String key = iterator.nextKey();
                 map.put(key, readableMap.getString(key));
             }
         }
