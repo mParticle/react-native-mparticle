@@ -226,11 +226,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../sample/node_modules/react-native/React/**",
-					"$(SRCROOT)/../sample/ios/Pods/mParticle-Apple-SDK/**",
+					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../sample/node_modules/react-native/ReactCommon/**",
+					"$(SRCROOT)/../../react-native/ReactCommon/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../ios/Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/** $(SRCROOT)/../../../Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/** $(SRCROOT)/../sample/ios/Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/**";
 			};
 			name = Debug;
 		};
@@ -240,11 +243,14 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../sample/node_modules/react-native/React/**",
-					"$(SRCROOT)/../sample/ios/Pods/mParticle-Apple-SDK/**",
+					"$(SRCROOT)/../../react-native/React/**",
+					"$(SRCROOT)/../sample/node_modules/react-native/ReactCommon/**",
+					"$(SRCROOT)/../../react-native/ReactCommon/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../ios/Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/** $(SRCROOT)/../../../Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/** $(SRCROOT)/../sample/ios/Pods/mParticle-Apple-SDK/mParticle-Apple-SDK/**";
 			};
 			name = Release;
 		};

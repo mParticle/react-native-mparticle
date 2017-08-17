@@ -1,6 +1,6 @@
 #import "RNMParticle.h"
 #import "mParticle.h"
-#import "RCTConvert.h"
+#import <React/RCTConvert.h>
 
 @implementation RNMParticle
 
@@ -77,7 +77,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
 
     MPCommerceEvent *commerceEvent = nil;
     if (isProductAction) {
-        MPCommerceEventAction *action = [json[@"productActionType"] intValue];
+        MPCommerceEventAction action = [json[@"productActionType"] intValue];
         commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
     }
     else if (isPromotion) {
@@ -160,7 +160,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     product.price = json[@"price"];
     product.sku = json[@"sku"];
     product.variant = json[@"variant"];
-    product.position = json[@"position"];
+    product.position = [json[@"position"] intValue];
     product.quantity = json[@"quantity"];
     NSDictionary *jsonAttributes = json[@"customAttributes"];
     for (NSString *key in jsonAttributes) {
