@@ -2,6 +2,11 @@
 #import "mParticle.h"
 #import <React/RCTConvert.h>
 
+@interface MParticleUser ()
+
+- (void)setUserId:(NSNumber *)userId;
+@end
+
 @implementation RNMParticle
 
 RCT_EXTERN void RCTRegisterModule(Class);
@@ -31,27 +36,83 @@ RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary
 
 RCT_EXPORT_METHOD(setUserAttribute:(NSString *)key value:(NSString *)value)
 {
-    [[MParticle sharedInstance] setUserAttribute:key value:value];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setUserAttribute:key
+                            value:value];
 }
 
 RCT_EXPORT_METHOD(setUserAttributeArray:(NSString *)key values:(NSArray *)values)
 {
-    [[MParticle sharedInstance] setUserAttribute:key values:values];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setUserAttribute:key
+                            value:values];
 }
 
 RCT_EXPORT_METHOD(setUserTag:(NSString *)tag)
 {
-    [[MParticle sharedInstance] setUserTag:tag];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setUserTag:tag];
 }
 
 RCT_EXPORT_METHOD(removeUserAttribute:(NSString *)key)
 {
-    [[MParticle sharedInstance] removeUserAttribute:key];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser removeUserAttribute:key];
 }
 
-RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
+RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(RCTResponseSenderBlock)completion)
 {
-    [[MParticle sharedInstance] setUserIdentity:identity identityType:type];
+    [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+        NSDictionary *reactError = nil;
+        if (error) {
+            reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
+        }
+        completion(@[reactError, apiResult.user.userID]);
+    }];
+}
+
+RCT_EXPORT_METHOD(login:(MPIdentityApiRequest *)identityRequest completion:(RCTResponseSenderBlock)completion)
+{
+    [[[MParticle sharedInstance] identity] login:identityRequest
+                                      completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                                          NSDictionary *reactError = nil;
+                                          if (error) {
+                                              reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
+                                          }
+                                          completion(@[reactError, apiResult.user.userID]);
+                                      }];
+}
+
+RCT_EXPORT_METHOD(logout:(MPIdentityApiRequest *)identityRequest completion:(RCTResponseSenderBlock)completion)
+{
+    [[[MParticle sharedInstance] identity] logout:identityRequest
+                                       completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                                           NSDictionary *reactError = nil;
+                                           if (error) {
+                                               reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
+                                           }                                           completion(@[reactError, apiResult.user.userID]);
+                                       }];
+}
+
+RCT_EXPORT_METHOD(modify:(MPIdentityApiRequest *)identityRequest completion:(RCTResponseSenderBlock)completion)
+{
+    [[[MParticle sharedInstance] identity] modify:identityRequest
+                                       completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                                           NSDictionary *reactError = nil;
+                                           if (error) {
+                                               reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
+                                           }                                           completion(@[reactError, apiResult.user.userID]);
+                                       }];
+}
+
+RCT_EXPORT_METHOD(getCurrentUserWithCompletion:(RCTResponseSenderBlock)completion)
+{
+    completion(@[[NSNull null], [[[MParticle sharedInstance] identity] currentUser].userId]);
+}
+
+RCT_EXPORT_METHOD(getUserIdentities:(RCTResponseSenderBlock)completion)
+{
+    completion(@[[NSNull null], [[[[MParticle sharedInstance] identity] currentUser] userIdentities]]);
 }
 
 @end
@@ -63,6 +124,9 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
 + (MPPromotion *)MPPromotion:(id)json;
 + (MPTransactionAttributes *)MPTransactionAttributes:(id)json;
 + (MPProduct *)MPProduct:(id)json;
++ (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json;
++ (MPIdentityApiResult *)MPIdentityApiResult:(id)json;
++ (MParticleUser *)MParticleUser:(id)json;
 
 @end
 
@@ -72,9 +136,9 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     BOOL isProductAction = json[@"productActionType"] != nil;
     BOOL isPromotion = json[@"promotionActionType"] != nil;
     BOOL isImpression = json[@"impressions"] != nil;
-
+    
     NSAssert(isProductAction || isPromotion || isImpression, @"Invalid commerce event");
-
+    
     MPCommerceEvent *commerceEvent = nil;
     if (isProductAction) {
         MPCommerceEventAction action = [json[@"productActionType"] intValue];
@@ -87,7 +151,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     else {
         commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
     }
-
+    
     commerceEvent.checkoutOptions = json[@"checkoutOptions"];
     commerceEvent.currency = json[@"currency"];
     commerceEvent.productListName = json[@"productActionListName"];
@@ -97,7 +161,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     commerceEvent.action = [json[@"productActionType"] intValue];
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
-
+    
     NSMutableArray *products = [NSMutableArray array];
     NSArray *jsonProducts = json[@"products"];
     [jsonProducts enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -105,7 +169,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
         [products addObject:product];
     }];
     [commerceEvent addProducts:products];
-
+    
     NSArray *jsonImpressions = json[@"impressions"];
     [jsonImpressions enumerateObjectsUsingBlock:^(NSDictionary *jsonImpression, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *listName = jsonImpression[@"impressionListName"];
@@ -115,7 +179,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
             [commerceEvent addImpression:product listName:listName];
         }];
     }];
-
+    
     return commerceEvent;
 }
 
@@ -127,7 +191,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
         MPPromotion *promotion = [RCTConvert MPPromotion:obj];
         [promotionContainer addPromotion:promotion];
     }];
-
+    
     return promotionContainer;
 }
 
@@ -170,4 +234,32 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     return product;
 }
 
++ (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json {
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
+    request.email = json[@"email"];
+    NSDictionary *jsonAttributes = json[@"userIdentities"];
+    for (NSString *key in jsonAttributes) {
+        NSString *value = jsonAttributes[key];
+        [request.userIdentities setObject:value forKeyedSubscript:key];
+    }
+    
+    return request;
+}
+
++ (MPIdentityApiResult *)MPIdentityApiResult:(id)json {
+    MPIdentityApiResult *result = [[MPIdentityApiResult alloc] init];
+    id obj = json[@"user"];
+    result.user = [RCTConvert MParticleUser:obj];
+    
+    return result;
+}
+
++ (MParticleUser *)MParticleUser:(id)json {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.userId = json[@"userId"];
+    
+    return user;
+}
+
 @end
+

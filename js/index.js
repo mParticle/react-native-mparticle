@@ -38,7 +38,10 @@ const UserIdentityType = {
   Yahoo: 6,
   Email: 7,
   Alias: 8,
-  FacebookCustomAudienceId: 9
+  FacebookCustomAudienceId: 9,
+  Other2: 10,
+  Other3: 11,
+  Other4: 12
 }
 
 const ProductActionType = {
@@ -73,29 +76,173 @@ const logScreenEvent = (screenName, attributes = null) => {
   NativeModules.MParticle.logScreenEvent(screenName, attributes)
 }
 
-const setUserAttribute = (key, value) => {
+// ******** Identity ********
+class User {
+  constructor (userID) {
+    this.userID = userID
+  }
+
+  setUserAttribute (key, value) {
   if (value && value.constructor === Array) {
-    setUserAttributeArray(key, value)
-  } else {
-    NativeModules.MParticle.setUserAttribute(key, value)
+      setUserAttributeArray(key, value)
+    } else {
+      NativeModules.MParticle.setUserAttribute(key, value)
+    }
+  }
+
+  setUserAttributeArray (key, value) {
+    NativeModules.MParticle.setUserAttributeArray(key, value)
+  }
+
+  setUserTag (value) {
+    NativeModules.MParticle.setUserTag(value)
+  }
+
+  incrementUserAtrribute (key, value) {
+    NativeModules.MParticle.incrementUserAtrribute(key, value)
+  }
+
+  removeUserAttribute (key) {
+    NativeModules.MParticle.removeUserAttribute(key)
+  }
+
+  static getUserIdentities (completion) {
+    NativeModules.MParticle.getUserIdentities((error, userIdentities) => {
+        completion(userIdentities)
+      });
   }
 }
 
-const setUserAttributeArray = (key, values) => {
-  NativeModules.MParticle.setUserAttributeArray(key, values)
+class IdentityRequest {
+  constructor () {
+  }
+
+  setEmail (email) {
+    this.email = email
+    return this
+  }
+
+  setCustomerID (customerId) {
+    this.customerId = customerId
+    return this
+  }
+
+  setUserIdentity (userIdentity, identityType) {
+    switch (identityType) {
+      case UserIdentityType.Other:
+        this.other = userIdentity;
+        break;
+      case UserIdentityType.CustomerId:
+        this.customerId = userIdentity;
+        break;
+      case UserIdentityType.Facebook:
+        this.facebook = userIdentit;
+        break;
+      case UserIdentityType.Twitter:
+        this.twitter = userIdentity;
+        break;
+      case UserIdentityType.Google:
+        this.google = userIdentity;
+        break;
+      case UserIdentityType.Microsoft:
+        this.microsoft = userIdentity;
+        break;
+      case UserIdentityType.Yahoo:
+        this.yahoo = userIdentity;
+        break;
+      case UserIdentityType.Email:
+        this.email = userIdentity;
+        break;
+      case UserIdentityType.FacebookCustomAudienceId:
+        this.facebookCustom = userIdentity;
+        break;
+      case UserIdentityType.Other2:
+        this.other2 = userIdentity;
+        break;
+      case UserIdentityType.Other3:
+        this.other3 = userIdentity;
+        break;
+      case UserIdentityType.Other4:
+        this.other4 = userIdentity;
+        break;
+      default: 
+        break;
+    }
+    return this
+  }
+
+  setOnUserAlias (onUserAlias) {
+    this.onUserAlias = onUserAlias
+    return this
+  }
 }
 
-const setUserTag = (tag) => {
-  NativeModules.MParticle.setUserTag(tag)
-}
+class Identity {
 
-const removeUserAttribute = (key) => {
-  NativeModules.MParticle.removeUserAttribute(key)
-}
+  static getCurrentUser (completion) {
+    NativeModules.MParticle.getCurrentUserWithCompletion((error, userId) => {
+      var currentUser = new User(userId)
+      completion(currentUser)
+    });
+  }
 
-const setUserIdentity = (userIdentity, identityType) => {
-  NativeModules.MParticle.setUserIdentity(userIdentity, identityType)
-}
+  static identify (IdentityRequest, completion) {
+    NativeModules.MParticle.identify(IdentityRequest, (error, userId) => {
+      var currentUser = new User(userId)
+      completion(currentUser)
+    });
+  }
+
+  static login (IdentityRequest, completion) {
+    if(IdentityRequest.onUserAlias !== undefined) {
+      MParticle.Identity.getCurrentUser(oldUser) => {
+        NativeModules.MParticle.login(IdentityRequest, (error, userId) => {
+          var currentUser = User(userId)
+          IdentityRequest.onUserAlias(oldUser, currentUser)
+          completion(currentUser)
+        }
+      });
+    } else {
+      NativeModules.MParticle.login(IdentityRequest, (error, userId) => {
+        var currentUser = User(userId)
+        completion(currentUser)
+      }
+    }
+  }
+
+  static logout (IdentityRequest, completion) {
+    if(IdentityRequest.onUserAlias !== undefined) {
+      MParticle.Identity.getCurrentUser(oldUser) => {
+        NativeModules.MParticle.logout(IdentityRequest, (error, userId) => {
+          var currentUser = User(userId)
+          IdentityRequest.onUserAlias(oldUser, currentUser)
+          completion(currentUser)
+        }
+      });
+    } else {
+      NativeModules.MParticle.logout(IdentityRequest, (error, userId) => {
+        var currentUser = User(userId)
+        completion(currentUser)
+      }
+    }
+  }
+
+  static modify (IdentityRequest, completion) {
+    if(IdentityRequest.onUserAlias !== undefined) {
+      MParticle.Identity.getCurrentUser(oldUser) => {
+        NativeModules.MParticle.modify(IdentityRequest, (error, userId) => {
+          var currentUser = User(userId)
+          IdentityRequest.onUserAlias(oldUser, currentUser)
+          completion(currentUser)
+        }
+      });
+    } else {
+      NativeModules.MParticle.modify(IdentityRequest, (error, userId) => {
+        var currentUser = User(userId)
+        completion(currentUser)
+      }
+    }
+  }
 
 // ******** Commerce ********
 
@@ -291,15 +438,13 @@ const MParticle = {
   Promotion,
   CommerceEvent,
   TransactionAttributes,
+  IdentityRequest,
+  Identity,
+  User,
 
   logEvent,             // Methods
   logCommerceEvent,
-  logScreenEvent,
-  setUserAttribute,
-  setUserAttributeArray,
-  setUserTag,
-  removeUserAttribute,
-  setUserIdentity
+  logScreenEvent
 
 }
 
