@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.facebook.react.ReactApplication;
 import com.mparticle.MParticle;
+import com.mparticle.identity.IdentityApiRequest;
 import com.mparticle.react.MParticlePackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
@@ -14,6 +15,9 @@ import com.facebook.soloader.SoLoader;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.mparticle.MParticleOptions;
+import com.mparticle.identity.BaseIdentityTask;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -40,7 +44,16 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
-    MParticle.start(this);
+
+    IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
+
+    MParticleOptions options = MParticleOptions.builder(this)
+      .credentials("REPLACE ME WITH KEY","REPLACE ME WITH SECRET")
+      .logLevel(MParticle.LogLevel.VERBOSE)
+      .identify(identityRequest.build())
+      .build();
+
+    MParticle.start(options);
     SoLoader.init(this, /* native exopackage */ false);
   }
 }

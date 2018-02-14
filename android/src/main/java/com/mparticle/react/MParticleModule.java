@@ -8,12 +8,20 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.Callback;
 import com.mparticle.MParticle;
+import com.mparticle.MPEvent;
 import com.mparticle.commerce.CommerceEvent;
 import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
 import com.mparticle.commerce.TransactionAttributes;
 import com.mparticle.commerce.Promotion;
+import com.mparticle.identity.IdentityApiRequest;
+import com.mparticle.identity.IdentityApiResult;
+import com.mparticle.identity.MParticleUser;
+import com.mparticle.identity.IdentityHttpResponse;
+import com.mparticle.identity.TaskFailureListener;
+import com.mparticle.identity.TaskSuccessListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +49,18 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     public void logEvent(final String name, int type, final ReadableMap attributesMap) {
         Map<String, String> attributes = ConvertStringMap(attributesMap);
         MParticle.EventType eventType = ConvertEventType(type);
-        MParticle.getInstance().logEvent(name, eventType, attributes);
+
+        MPEvent event = new MPEvent.Builder(name, eventType)
+                .info(attributes)
+                .build();
+        MParticle.getInstance().logEvent(event);
+    }
+
+    @ReactMethod
+    public void logMPEvent(final ReadableMap attributesMap) {
+        MPEvent event = ConvertMPEvent(attributesMap);
+
+        MParticle.getInstance().logEvent(event);
     }
 
     @ReactMethod
@@ -59,35 +78,200 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setUserAttribute(final String userAttribute, final String value) {
-        MParticle.getInstance().setUserAttribute(userAttribute, value);
+    public void setUserAttribute(final String userId, final String userAttribute, final String value) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        if (selectedUser != null) {
+            selectedUser.setUserAttribute(userAttribute, value);
+        }
     }
 
     @ReactMethod
-    public void setUserAttributeArray(final String key, final ReadableArray values) {
+    public void setUserAttributeArray(final String userId, final String key, final ReadableArray values) {
      if (values != null) {
         List<String> list = new ArrayList<String>();
         for (int i = 0; i < values.size(); ++i) {
             list.add(values.getString(i));
         }
-        MParticle.getInstance().setUserAttributeList(key, list);
+
+         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+         if (selectedUser != null) {
+            selectedUser.setUserAttributeList(key, list);
+        }
       }
     }
 
     @ReactMethod
-    public void setUserTag(final String tag) {
-        MParticle.getInstance().setUserTag(tag);
+    public void setUserTag(final String userId, final String tag) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        if (selectedUser != null) {
+            selectedUser.setUserTag(tag);
+        }
     }
 
     @ReactMethod
-    public void removeUserAttribute(final String key) {
-        MParticle.getInstance().removeUserAttribute(key);
+    public void removeUserAttribute(final String userId, final String key) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        if (selectedUser != null) {
+            selectedUser.removeUserAttribute(key);
+        }
     }
 
     @ReactMethod
-    public void setUserIdentity(final String identity, int type) {
-      MParticle.IdentityType identityType = MParticle.IdentityType.parseInt(type);
-      MParticle.getInstance().setUserIdentity(identity, identityType);
+    public void identify(final ReadableMap requestMap, final Callback completion) {
+        IdentityApiRequest request = ConvertIdentityAPIRequest(requestMap);
+
+        MParticle.getInstance().Identity().identify(request)
+                .addFailureListener(new TaskFailureListener() {
+                    @Override
+                    public void onFailure(IdentityHttpResponse identityHttpResponse) {
+                        completion.invoke(identityHttpResponse, null);
+                    }
+                })
+                .addSuccessListener(new TaskSuccessListener() {
+                    @Override
+                    public void onSuccess(IdentityApiResult identityApiResult) {
+                        //Continue with login, and you can also access the new/updated user:
+                        MParticleUser user = identityApiResult.getUser();
+                        String userID = Long.toString(user.getId());
+                        completion.invoke(null, userID);
+                    }
+                });
+    }
+
+
+    @ReactMethod
+    public void login(final ReadableMap requestMap, final Callback completion) {
+        IdentityApiRequest request = ConvertIdentityAPIRequest(requestMap);
+
+        MParticle.getInstance().Identity().login(request)
+            .addFailureListener(new TaskFailureListener() {
+                @Override
+                public void onFailure(IdentityHttpResponse identityHttpResponse) {
+                    completion.invoke(identityHttpResponse, null);
+                }
+            })
+            .addSuccessListener(new TaskSuccessListener() {
+                @Override
+                public void onSuccess(IdentityApiResult identityApiResult) {
+                    //Continue with login, and you can also access the new/updated user:
+                    MParticleUser user = identityApiResult.getUser();
+                    String userID = Long.toString(user.getId());
+                    completion.invoke(null, userID);
+                }
+            });
+    }
+
+
+    @ReactMethod
+    public void logout(final ReadableMap requestMap, final Callback completion) {
+        IdentityApiRequest request = ConvertIdentityAPIRequest(requestMap);
+
+        MParticle.getInstance().Identity().logout(request)
+            .addFailureListener(new TaskFailureListener() {
+                    @Override
+                    public void onFailure(IdentityHttpResponse identityHttpResponse) {
+                        completion.invoke("Logout failed", null);
+                    }
+                })
+            .addSuccessListener(new TaskSuccessListener() {
+                @Override
+                public void onSuccess(IdentityApiResult identityApiResult) {
+                    //Continue with login, and you can also access the new/updated user:
+                    MParticleUser user = identityApiResult.getUser();
+                    String userID = Long.toString(user.getId());
+                    completion.invoke(null, userID);
+                }
+            });
+    }
+
+    @ReactMethod
+    public void modify(final ReadableMap requestMap, final Callback completion) {
+        IdentityApiRequest request = ConvertIdentityAPIRequest(requestMap);
+
+        MParticle.getInstance().Identity().modify(request)
+            .addFailureListener(new TaskFailureListener() {
+                @Override
+                public void onFailure(IdentityHttpResponse identityHttpResponse) {
+                    completion.invoke(identityHttpResponse, null);
+                }
+            })
+            .addSuccessListener(new TaskSuccessListener() {
+                @Override
+                public void onSuccess(IdentityApiResult identityApiResult) {
+                    //Continue with login, and you can also access the new/updated user:
+                    MParticleUser user = identityApiResult.getUser();
+                    String userID = Long.toString(user.getId());
+                    completion.invoke(null, userID);
+                }
+            });
+    }
+
+    @ReactMethod
+    public void getCurrentUserWithCompletion(Callback completion) {
+        MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
+        String userID = Long.toString(currentUser.getId());
+
+        completion.invoke(null, userID);
+    }
+
+    @ReactMethod
+    public void getUserIdentities(final String userId, Callback completion) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+
+        completion.invoke(selectedUser.getUserIdentities());
+    }
+
+    private static IdentityApiRequest ConvertIdentityAPIRequest(ReadableMap map) {
+        IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
+
+        if (map.hasKey("userIdentities")) {
+            Map<MParticle.IdentityType, String> userIdentities = ConvertUserIdentities(map.getMap("userIdentities"));
+            identityRequest.userIdentities(userIdentities);
+        }
+        if (map.hasKey("email")) {
+            identityRequest.email(map.getString("email"));
+        }
+        if (map.hasKey("customerID")) {
+            identityRequest.customerId(map.getString("customerID"));
+        }
+
+        return identityRequest.build();
+    }
+
+    private static MPEvent ConvertMPEvent(ReadableMap map) {
+        if ((map.hasKey("name")) && (map.hasKey("type"))) {
+            String name = map.getString("name");
+            Integer type = map.getInt("type");
+
+            MPEvent.Builder builder = new MPEvent.Builder(name, ConvertEventType(type));
+
+            if (map.hasKey("category")) {
+                builder.category(map.getString("category"));
+            }
+
+            if (map.hasKey("duration")) {
+                builder.duration(map.getDouble("duration"));
+            }
+
+            if (map.hasKey("info")) {
+                ReadableMap customInfoMap = map.getMap("info");
+                Map<String, String> customInfo = ConvertStringMap(customInfoMap);
+                builder.info(customInfo);
+            }
+
+            if (map.hasKey("customFlags")) {
+                ReadableMap customFlagsMap = map.getMap("customFlags");
+                Map<String, String> customFlags = ConvertStringMap(customFlagsMap);
+                for (Map.Entry<String, String> entry : customFlags.entrySet())
+                {
+                    builder.addCustomFlag(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return  builder.build();
+        }
+
+        return null;
     }
 
     private static CommerceEvent ConvertCommerceEvent(ReadableMap map) {
@@ -270,6 +454,54 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
 
         return map;
+    }
+
+    private static Map<MParticle.IdentityType, String> ConvertUserIdentities(ReadableMap readableMap) {
+        Map<MParticle.IdentityType, String> map = null;
+
+        if (readableMap != null) {
+            Map<String, String> stringMap = ConvertStringMap(readableMap);
+            for (Map.Entry<String, String> entry : stringMap.entrySet())
+            {
+                MParticle.IdentityType identity = ConvertIdentityType(entry.getKey());
+                String value= entry.getValue();
+
+                map.put(identity, value);
+            }
+        }
+
+        return map;
+    }
+
+    private static MParticle.IdentityType ConvertIdentityType(String val) {
+        switch(val) {
+            case "CustomerId":
+                return MParticle.IdentityType.CustomerId;
+            case "Facebook":
+                return MParticle.IdentityType.Facebook;
+            case "Twitter":
+                return MParticle.IdentityType.Twitter;
+            case "Google":
+                return MParticle.IdentityType.Google;
+            case "Microsoft":
+                return MParticle.IdentityType.Microsoft;
+            case "Yahoo":
+                return MParticle.IdentityType.Yahoo;
+            case "Email":
+                return MParticle.IdentityType.Email;
+            case "Alias":
+                return MParticle.IdentityType.Alias;
+            case "FacebookCustomAudienceId":
+                return MParticle.IdentityType.FacebookCustomAudienceId;
+            case "Other2":
+                return MParticle.IdentityType.Other2;
+            case "Other3":
+                return MParticle.IdentityType.Other3;
+            case "Other4":
+                return MParticle.IdentityType.Other4;
+            default:
+                return MParticle.IdentityType.Other;
+        }
     }
 
     private static MParticle.EventType ConvertEventType(int eventType) {

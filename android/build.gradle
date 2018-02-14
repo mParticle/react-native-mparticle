@@ -45,7 +45,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    provided 'com.mparticle:android-core:4+'
+    provided 'com.mparticle:android-core:5+'
 
     //
     // And, if you want to include kits, you can do so as follows:

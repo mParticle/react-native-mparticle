@@ -17,8 +17,18 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [[MParticle sharedInstance] startWithKey:@"REPLACE ME WITH KEY" secret:@"REPLACE ME WITH SECRET"];
-  [MParticle sharedInstance].logLevel = MPILogLevelVerbose;
+  MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
+                                                                 secret:@"REPLACE ME"];
+  //Please see the Identity page for more information on building this object
+  MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
+  request.email = @"email@example.com";
+  mParticleOptions.identifyRequest = request;
+  mParticleOptions.onIdentifyComplete = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+    NSLog(@"Identify complete. userId = %@ error = %@", apiResult.user.userId, error);
+  };
+  
+  [[MParticle sharedInstance] startWithOptions:mParticleOptions];
+  
   NSURL *jsCodeLocation;
 
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
