@@ -67,7 +67,7 @@ RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(R
         if (error) {
             reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
         }
-        completion(@[reactError, apiResult.user.userID]);
+        completion(@[reactError, apiResult.user.userId]);
     }];
 }
 
@@ -79,7 +79,7 @@ RCT_EXPORT_METHOD(login:(MPIdentityApiRequest *)identityRequest completion:(RCTR
                                           if (error) {
                                               reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
                                           }
-                                          completion(@[reactError, apiResult.user.userID]);
+                                          completion(@[reactError, apiResult.user.userId]);
                                       }];
 }
 
@@ -90,7 +90,7 @@ RCT_EXPORT_METHOD(logout:(MPIdentityApiRequest *)identityRequest completion:(RCT
                                            NSDictionary *reactError = nil;
                                            if (error) {
                                                reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
-                                           }                                           completion(@[reactError, apiResult.user.userID]);
+                                           }                                           completion(@[reactError, apiResult.user.userId]);
                                        }];
 }
 
@@ -101,7 +101,7 @@ RCT_EXPORT_METHOD(modify:(MPIdentityApiRequest *)identityRequest completion:(RCT
                                            NSDictionary *reactError = nil;
                                            if (error) {
                                                reactError = RCTMakeAndLogError(error.localizedDescription, error, error.userInfo);
-                                           }                                           completion(@[reactError, apiResult.user.userID]);
+                                           }                                           completion(@[reactError, apiResult.user.userId]);
                                        }];
 }
 
