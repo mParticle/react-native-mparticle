@@ -11,7 +11,7 @@ import {
   Text,
   View
 } from 'react-native';
-import MParticle from './index.js';
+import MParticle from 'react-native-mparticle';
 
 export default class MParticleSample extends Component {
   constructor(props) {
