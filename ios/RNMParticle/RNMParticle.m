@@ -56,6 +56,19 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
 
 @end
 
+typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
+    MPReactCommerceEventActionAddToCart = 1,
+    MPReactCommerceEventActionRemoveFromCart,
+    MPReactCommerceEventActionCheckout,
+    MPReactCommerceEventActionCheckoutOptions,
+    MPReactCommerceEventActionClick,
+    MPReactCommerceEventActionViewDetail,
+    MPReactCommerceEventActionPurchase,
+    MPReactCommerceEventActionRefund,
+    MPReactCommerceEventActionAddToWishList,
+    MPReactCommerceEventActionRemoveFromWishlist
+};
+
 @interface RCTConvert (MPCommerceEvent)
 
 + (MPCommerceEvent *)MPCommerceEvent:(id)json;
@@ -63,6 +76,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
 + (MPPromotion *)MPPromotion:(id)json;
 + (MPTransactionAttributes *)MPTransactionAttributes:(id)json;
 + (MPProduct *)MPProduct:(id)json;
++ (MPCommerceEventAction)MPCommerceEventAction:(id)json;
 
 @end
 
@@ -77,7 +91,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
 
     MPCommerceEvent *commerceEvent = nil;
     if (isProductAction) {
-        MPCommerceEventAction action = [json[@"productActionType"] intValue];
+        MPCommerceEventAction action = [RCTConvert MPCommerceEventAction:json[@"productActionType"]];
         commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
     }
     else if (isPromotion) {
@@ -94,7 +108,7 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
     commerceEvent.productListSource = json[@"productActionListSource"];
     commerceEvent.screenName = json[@"screenName"];
     commerceEvent.transactionAttributes = [RCTConvert MPTransactionAttributes:json[@"transactionAttributes"]];
-    commerceEvent.action = [json[@"productActionType"] intValue];
+    commerceEvent.action = [RCTConvert MPCommerceEventAction:json[@"productActionType"]];
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
 
@@ -168,6 +182,58 @@ RCT_EXPORT_METHOD(setUserIdentity:(NSString *)identity type:(NSInteger)type)
         [product setObject:value forKeyedSubscript:key];
     }
     return product;
+}
+
++ (MPCommerceEventAction)MPCommerceEventAction:(NSNumber *)json {
+    int actionInt = [json intValue];
+    MPCommerceEventAction action;
+    switch (actionInt) {
+        case MPReactCommerceEventActionAddToCart:
+        action = MPCommerceEventActionAddToCart;
+        break;
+
+        case MPReactCommerceEventActionRemoveFromCart:
+        action = MPCommerceEventActionRemoveFromCart;
+        break;
+
+        case MPReactCommerceEventActionCheckout:
+        action = MPCommerceEventActionCheckout;
+        break;
+
+        case MPReactCommerceEventActionCheckoutOptions:
+        action = MPCommerceEventActionCheckoutOptions;
+        break;
+
+        case MPReactCommerceEventActionClick:
+        action = MPCommerceEventActionClick;
+        break;
+
+        case MPReactCommerceEventActionViewDetail:
+        action = MPCommerceEventActionViewDetail;
+        break;
+
+        case MPReactCommerceEventActionPurchase:
+        action = MPCommerceEventActionPurchase;
+        break;
+
+        case MPReactCommerceEventActionRefund:
+        action = MPCommerceEventActionRefund;
+        break;
+
+        case MPReactCommerceEventActionAddToWishList:
+        action = MPCommerceEventActionAddToWishList;
+        break;
+
+        case MPReactCommerceEventActionRemoveFromWishlist:
+        action = MPCommerceEventActionRemoveFromWishlist;
+        break;
+
+        default:
+        action = MPCommerceEventActionAddToCart;
+        NSAssert(NO, @"Invalid commerce event action");
+        break;
+    }
+    return action;
 }
 
 @end
