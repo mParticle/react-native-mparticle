@@ -13,7 +13,7 @@ target 'MParticleSample' do
   #
   # (See https://github.com/mparticle/mparticle/apple-sdk for the latest version)
   #
-  pod 'mParticle-Apple-SDK'
+  pod 'mParticle-Apple-SDK', '~> 6'
 
   #
   # And, if you want to include kits, you can do so as follows:
