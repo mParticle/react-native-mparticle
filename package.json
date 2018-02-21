@@ -2,7 +2,8 @@
   "name": "react-native-mparticle",
   "description": "React Native module for mParticle",
   "homepage": "https://www.mparticle.com",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
+  "repository": "mParticle/react-native-mparticle",
   "version": "1.0.4",
   "main": "js/index.js",
   "scripts": {
