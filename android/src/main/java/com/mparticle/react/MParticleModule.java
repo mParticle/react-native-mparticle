@@ -104,7 +104,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
         if (isProductAction) {
             int productActionInt = map.getInt("productActionType");
-            String productAction = ConvertPromotionActionType(productActionInt);
+            String productAction = ConvertProductActionType(productActionInt);
             ReadableArray productsArray = map.getArray("products");
             ReadableMap productMap = productsArray.getMap(0);
             Product product = ConvertProduct(productMap);
