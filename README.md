@@ -235,7 +235,8 @@ request.onUserAlias = (previousUser, newUser) => {
 **Setting** user identities:
 
 ```js
-MParticle.IdentityRequest.setUserIdentity('example@example.com', MParticle.UserIdentityType.Email)
+var request = new MParticle.IdentityRequest();
+request.setUserIdentity('example@example.com', MParticle.UserIdentityType.Email);
 ```
 
 ## Identity

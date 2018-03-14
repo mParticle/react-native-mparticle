@@ -86,32 +86,32 @@ class User {
     this.userId = userId
   }
 
-  static setUserAttribute (userId, key, value) {
+  setUserAttribute (key, value) {
     if (value && value.constructor === Array) {
-      NativeModules.Mparticle.setUserAttributeArray(userId, key, value)
+      NativeModules.Mparticle.setUserAttributeArray(this.userId, key, value)
     } else {
       NativeModules.MParticle.setUserAttribute(userId, key, value)
     }
   }
 
-  static setUserAttributeArray (userId, key, value) {
-    NativeModules.MParticle.setUserAttributeArray(userId, key, value)
+  setUserAttributeArray (key, value) {
+    NativeModules.MParticle.setUserAttributeArray(this.userId, key, value)
   }
 
-  static setUserTag (userId, value) {
-    NativeModules.MParticle.setUserTag(userId, value)
+  setUserTag (value) {
+    NativeModules.MParticle.setUserTag(this.userId, value)
   }
 
-  static incrementUserAtrribute (userId, key, value) {
-    NativeModules.MParticle.incrementUserAtrribute(userId, key, value)
+  incrementUserAtrribute (key, value) {
+    NativeModules.MParticle.incrementUserAtrribute(this.userId, key, value)
   }
 
-  static removeUserAttribute (userId, key) {
-    NativeModules.MParticle.removeUserAttribute(userId, key)
+  removeUserAttribute (key) {
+    NativeModules.MParticle.removeUserAttribute(this.userId, key)
   }
 
-  static getUserIdentities (userId, completion) {
-    NativeModules.MParticle.getUserIdentities(userId, (error, userIdentities) => {
+  getUserIdentities (completion) {
+    NativeModules.MParticle.getUserIdentities(this.userId, (error, userIdentities) => {
       completion(userIdentities)
     })
   }

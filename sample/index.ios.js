@@ -39,8 +39,7 @@ export default class MParticleSample extends Component {
       this.setState(previousState => {
         //MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value' })
         MParticle.Identity.getCurrentUser((currentUser) => {
-          console.debug('current user:');
-          console.debug(currentUser);
+          currentUser.setUserTag('regular');
         });
         var request = new MParticle.IdentityRequest();
         request.email = 'testing2@gmail.com';
@@ -56,11 +55,11 @@ export default class MParticleSample extends Component {
           }
         });
 
-        //const product = new MParticle.Product('Test product for cart', '1234', 19.99)
-        //const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
-        //const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
+        const product = new MParticle.Product('Test product for cart', '1234', 19.99)
+        const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
+        const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
 
-        //MParticle.logCommerceEvent(event)
+        MParticle.logCommerceEvent(event)
 
         return { isShowingText: !previousState.isShowingText };
       });
