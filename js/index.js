@@ -90,7 +90,7 @@ class User {
     if (value && value.constructor === Array) {
       NativeModules.Mparticle.setUserAttributeArray(this.userId, key, value)
     } else {
-      NativeModules.MParticle.setUserAttribute(userId, key, value)
+      NativeModules.MParticle.setUserAttribute(this.userId, key, value)
     }
   }
 
@@ -112,6 +112,9 @@ class User {
 
   getUserIdentities (completion) {
     NativeModules.MParticle.getUserIdentities(this.userId, (error, userIdentities) => {
+      if (error) {
+        console.log(error.stack)
+      }
       completion(userIdentities)
     })
   }
@@ -183,6 +186,9 @@ class Identity {
 
   static getCurrentUser (completion) {
     NativeModules.MParticle.getCurrentUserWithCompletion((error, userId) => {
+      if (error) {
+        console.log(error.stack)
+      }
       var currentUser = new User(userId)
       completion(currentUser)
     })
@@ -190,7 +196,7 @@ class Identity {
 
   static identify (IdentityRequest, completion) {
     NativeModules.MParticle.identify(IdentityRequest, (error, userId) => {
-      if (error == undefined) {
+      if (error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
@@ -208,7 +214,7 @@ class Identity {
         })
       }
 
-      if (error == undefined) {
+      if (error === undefined) {
         var parsedError = new MParticleError(error)
         completion(parsedError, userId)
       } else {
@@ -226,7 +232,7 @@ class Identity {
         })
       }
 
-      if (error == undefined) {
+      if (error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
@@ -244,7 +250,7 @@ class Identity {
         })
       }
 
-      if (error == undefined) {
+      if (error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
