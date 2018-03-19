@@ -26,7 +26,7 @@ $ react-native link
 **Install the SDK** using CocoaPods:
 
 ```bash
-$ # Update your Podfile to depend on 'mParticle-Apple-SDK'
+$ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or later
 $ pod install
 ```
 
