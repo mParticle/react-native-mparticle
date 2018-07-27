@@ -21,7 +21,7 @@ $ react-native link
 
 [1]: https://app.mparticle.com/apps
 
-## iOS
+## <a name="iOS"></a>iOS
 
 **Install the SDK** using CocoaPods:
 
@@ -50,6 +50,9 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
         mParticleOptions.identifyRequest = request
         mParticleOptions.onIdentifyComplete = { (apiResult, error) in
             NSLog("Identify complete. userId = %@ error = %@", apiResult?.user.userId.stringValue ?? "Null User ID", error?.localizedDescription ?? "No Error Available")
+        }
+        mParticleOptions.onAttributionComplete = { (attributionResult, error) in
+                    NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
         }
         
        //Start the SDK
@@ -94,6 +97,9 @@ Next, you'll need to start the SDK:
     mParticleOptions.onIdentifyComplete = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
         NSLog(@"Identify complete. userId = %@ error = %@", apiResult.user.userId, error);
     };
+    mParticleOptions.onAttributionComplete(MPAttributionResult * _Nullable attributionResult, NSError * _Nullable error) {
+        NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
+    }
     
     [[MParticle sharedInstance] startWithOptions:mParticleOptions];
     
@@ -104,7 +110,7 @@ Next, you'll need to start the SDK:
 Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 
-## Android
+## <a name="Android"></a>Android
 
 1. Grab your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/apps) and construct an `MParticleOptions` object.
 
@@ -129,6 +135,7 @@ public class MyApplication extends Application {
                         .addFailureListener(this)
                         .addSuccessListener(this)
                     )
+            .attributionListener(this)
             .build();
 
         MParticle.start(options);
@@ -299,6 +306,13 @@ MParticle.Identity.modify(request, (error, userId) => {
     }
 });
 ```
+
+## Attribution
+```
+var attributions = MParticle.getAttributions();
+```
+
+In order to listen for Attributions asynchronously, you need to set the proper field in `MParticleOptions` as shown in the [Android](#Android) or the [iOS](#iOS) SDK start examples.
 
 # License
 

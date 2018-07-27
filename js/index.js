@@ -80,6 +80,26 @@ const logScreenEvent = (screenName, attributes = null) => {
   NativeModules.MParticle.logScreenEvent(screenName, attributes)
 }
 
+const setOptOut = (optOut) => {
+  NativeModules.MParticle.setOptOut(optOut)
+}
+
+const getOptOut = (completion) => {
+  NativeModules.MParticle.getOptOut(completion)
+}
+
+const isKitActive = (kitId, completion) => {
+  NativeModules.MParticle.isKitActive(kitId, completion)
+}
+
+const getAttributions = (completion) => {
+  NativeModules.MParticle.getAttributions(completion)
+}
+
+const logPushRegistration = (registrationField1, registrationField2) => {
+  NativeModules.MParticle.logPushRegistration(registrationField1, registrationField2)
+}
+
 // ******** Identity ********
 class User {
   constructor (userId) {
@@ -196,7 +216,7 @@ class Identity {
 
   static identify (IdentityRequest, completion) {
     NativeModules.MParticle.identify(IdentityRequest, (error, userId) => {
-      if (error === undefined) {
+      if (error == null || error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
@@ -214,11 +234,11 @@ class Identity {
         })
       }
 
-      if (error === undefined) {
+      if (error == null || error === undefined) {
+        completion(error, userId)
+      } else {
         var parsedError = new MParticleError(error)
         completion(parsedError, userId)
-      } else {
-        completion(error, userId)
       }
     })
   }
@@ -232,7 +252,7 @@ class Identity {
         })
       }
 
-      if (error === undefined) {
+      if (error == null || error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
@@ -250,7 +270,7 @@ class Identity {
         })
       }
 
-      if (error === undefined) {
+      if (error == null || error === undefined) {
         completion(error, userId)
       } else {
         var parsedError = new MParticleError(error)
@@ -520,8 +540,12 @@ const MParticle = {
   logEvent,             // Methods
   logMPEvent,
   logCommerceEvent,
-  logScreenEvent
-
+  logScreenEvent,
+  setOptOut,
+  getOptOut,
+  isKitActive,
+  getAttributions,
+  logPushRegistration
 }
 
 export default MParticle

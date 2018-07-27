@@ -39,6 +39,50 @@ RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary
     [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes];
 }
 
+RCT_EXPORT_METHOD(setOptOut:(BOOL)optOut)
+{
+    [[MParticle sharedInstance] setOptOut:optOut];
+}
+
+RCT_EXPORT_METHOD(getOptOut:(RCTResponseSenderBlock)completion)
+{
+    BOOL optedOut = [[MParticle sharedInstance] optOut];
+    completion(@[[NSNumber numberWithBool:optedOut]]);
+}
+
+RCT_EXPORT_METHOD(logPushRegistration:(NSString *)iosToken androidField:(NSString *)androidField)
+{
+    if (iosToken != nil) {
+        NSData* pushTokenData = [iosToken dataUsingEncoding:NSUTF8StringEncoding];
+        MParticle* instance = [MParticle sharedInstance];
+        instance.pushNotificationToken = pushTokenData;
+    }
+}
+
+RCT_EXPORT_METHOD(isKitActive:(nonnull NSNumber*)kitId completion:(RCTResponseSenderBlock)completion)
+{
+    BOOL active = [[MParticle sharedInstance] isKitActive:kitId];
+    completion(@[[NSNumber numberWithBool:active]]);
+}
+
+RCT_EXPORT_METHOD(getAttributions:(RCTResponseSenderBlock)completion)
+{
+    NSDictionary<NSNumber *, MPAttributionResult *> *attributions = [[MParticle sharedInstance]attributionInfo];
+    NSMutableDictionary*dictionary = [[NSMutableDictionary alloc]init];
+    for (NSNumber *kitId in attributions) {
+        MPAttributionResult *attributionResult = attributions[kitId];
+        NSMutableDictionary *attributionDict = [[NSMutableDictionary alloc]initWithCapacity:2];
+        if (attributionResult.linkInfo != nil) {
+            attributionDict[@"linkParameters"] = attributionResult.linkInfo;
+        }
+        if (attributionResult.kitCode != nil) {
+            attributionDict[@"kitId"] = attributionResult.kitCode;
+        }
+        dictionary[[kitId stringValue]] = attributionDict;
+    }
+    completion(@[dictionary]);
+}
+
 RCT_EXPORT_METHOD(setUserAttribute:(NSString *)userId key:(NSString *)key value:(NSString *)value)
 {
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
@@ -75,22 +119,28 @@ RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(R
         NSMutableDictionary *reactError;
         if (error) {
             reactError = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
             MPIdentityHTTPErrorResponse *response = error.userInfo[mParticleIdentityErrorKey];
             
-            if ([NSNumber numberWithLong:response.httpCode] != nil) {
-                [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+            if ([response isKindOfClass:[NSString class]]) {
+                [reactError setObject:response forKey:@"message"];
+            } else {
+                if ([NSNumber numberWithLong:response.httpCode] != nil) {
+                    [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+                }
+                
+                if ([NSNumber numberWithInt:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                }
+                
+                if (response.message != nil) {
+                    [reactError setObject:response.message forKey:@"message"];
+                }
             }
-            
-            if ([NSNumber numberWithInt:response.code] != nil) {
-                [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+            if (apiResult != nil) {
+                completion(@[reactError, apiResult.user.userId.stringValue]);
+            } else {
+                completion(@[reactError, @0]);
             }
-            
-            if (response.message != nil) {
-                [reactError setObject:response.message forKey:@"message"];
-            }
-            
-            completion(@[reactError, apiResult.user.userId.stringValue]);
         } else {
             completion(@[[NSNull null], apiResult.user.userId.stringValue]);
         }
@@ -103,22 +153,28 @@ RCT_EXPORT_METHOD(login:(MPIdentityApiRequest *)identityRequest completion:(RCTR
         NSMutableDictionary *reactError;
         if (error) {
             reactError = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
             MPIdentityHTTPErrorResponse *response = error.userInfo[mParticleIdentityErrorKey];
             
-            if ([NSNumber numberWithLong:response.httpCode] != nil) {
-                [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+            if ([response isKindOfClass:[NSString class]]) {
+                [reactError setObject:response forKey:@"message"];
+            } else {
+                if ([NSNumber numberWithLong:response.httpCode] != nil) {
+                    [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+                }
+                
+                if ([NSNumber numberWithInt:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                }
+                
+                if (response.message != nil) {
+                    [reactError setObject:response.message forKey:@"message"];
+                }
             }
-            
-            if ([NSNumber numberWithInt:response.code] != nil) {
-                [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
-            }
-            
-            if (response.message != nil) {
-                [reactError setObject:response.message forKey:@"message"];
-            }
-            
-            completion(@[reactError, apiResult.user.userId.stringValue]);
+            if (apiResult != nil) {
+                completion(@[reactError, apiResult.user.userId.stringValue]);
+            } else {
+                completion(@[reactError, @0]);
+            }        
         } else {
             completion(@[[NSNull null], apiResult.user.userId.stringValue]);
         }
@@ -131,22 +187,28 @@ RCT_EXPORT_METHOD(logout:(MPIdentityApiRequest *)identityRequest completion:(RCT
         NSMutableDictionary *reactError;
         if (error) {
             reactError = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
             MPIdentityHTTPErrorResponse *response = error.userInfo[mParticleIdentityErrorKey];
             
-            if ([NSNumber numberWithLong:response.httpCode] != nil) {
-                [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+            if ([response isKindOfClass:[NSString class]]) {
+                [reactError setObject:response forKey:@"message"];
+            } else {
+                if ([NSNumber numberWithLong:response.httpCode] != nil) {
+                    [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+                }
+                
+                if ([NSNumber numberWithInt:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                }
+                
+                if (response.message != nil) {
+                    [reactError setObject:response.message forKey:@"message"];
+                }
             }
-            
-            if ([NSNumber numberWithInt:response.code] != nil) {
-                [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+            if (apiResult != nil) {
+                completion(@[reactError, apiResult.user.userId.stringValue]);
+            } else {
+                completion(@[reactError, @0]);
             }
-            
-            if (response.message != nil) {
-                [reactError setObject:response.message forKey:@"message"];
-            }
-            
-            completion(@[reactError, apiResult.user.userId.stringValue]);
         } else {
             completion(@[[NSNull null], apiResult.user.userId.stringValue]);
         }
@@ -159,22 +221,28 @@ RCT_EXPORT_METHOD(modify:(MPIdentityApiRequest *)identityRequest completion:(RCT
         NSMutableDictionary *reactError;
         if (error) {
             reactError = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
             MPIdentityHTTPErrorResponse *response = error.userInfo[mParticleIdentityErrorKey];
             
-            if ([NSNumber numberWithLong:response.httpCode] != nil) {
-                [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+            if ([response isKindOfClass:[NSString class]]) {
+                [reactError setObject:response forKey:@"message"];
+            } else {
+                if ([NSNumber numberWithLong:response.httpCode] != nil) {
+                    [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
+                }
+                
+                if ([NSNumber numberWithInt:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                }
+                
+                if (response.message != nil) {
+                    [reactError setObject:response.message forKey:@"message"];
+                }
             }
-            
-            if ([NSNumber numberWithInt:response.code] != nil) {
-                [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+            if (apiResult != nil) {
+                completion(@[reactError, apiResult.user.userId.stringValue]);
+            } else {
+                completion(@[reactError, @0]);
             }
-            
-            if (response.message != nil) {
-                [reactError setObject:response.message forKey:@"message"];
-            }
-            
-            completion(@[reactError, apiResult.user.userId.stringValue]);
         } else {
             completion(@[[NSNull null], apiResult.user.userId.stringValue]);
         }

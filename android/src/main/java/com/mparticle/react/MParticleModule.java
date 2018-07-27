@@ -2,6 +2,7 @@ package com.mparticle.react;
 
 import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -9,6 +10,8 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.WritableMap;
+import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.MPEvent;
 import com.mparticle.commerce.CommerceEvent;
@@ -124,7 +127,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 .addFailureListener(new TaskFailureListener() {
                     @Override
                     public void onFailure(IdentityHttpResponse identityHttpResponse) {
-                        completion.invoke(identityHttpResponse, null);
+                        completion.invoke(ConvertIdentityHttpResponse(identityHttpResponse), null);
                     }
                 })
                 .addSuccessListener(new TaskSuccessListener() {
@@ -147,7 +150,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             .addFailureListener(new TaskFailureListener() {
                 @Override
                 public void onFailure(IdentityHttpResponse identityHttpResponse) {
-                    completion.invoke(identityHttpResponse, null);
+                    completion.invoke(ConvertIdentityHttpResponse(identityHttpResponse), null);
                 }
             })
             .addSuccessListener(new TaskSuccessListener() {
@@ -170,7 +173,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             .addFailureListener(new TaskFailureListener() {
                     @Override
                     public void onFailure(IdentityHttpResponse identityHttpResponse) {
-                        completion.invoke("Logout failed", null);
+                        completion.invoke(ConvertIdentityHttpResponse(identityHttpResponse), null);
                     }
                 })
             .addSuccessListener(new TaskSuccessListener() {
@@ -192,7 +195,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             .addFailureListener(new TaskFailureListener() {
                 @Override
                 public void onFailure(IdentityHttpResponse identityHttpResponse) {
-                    completion.invoke(identityHttpResponse, null);
+                    completion.invoke(ConvertIdentityHttpResponse(identityHttpResponse), null);
                 }
             })
             .addSuccessListener(new TaskSuccessListener() {
@@ -219,6 +222,53 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
 
         completion.invoke(selectedUser.getUserIdentities());
+    }
+
+    @ReactMethod
+    public void getAttributions(Callback completion) {
+        Map<Integer, AttributionResult> attributionResultMap = MParticle.getInstance().getAttributionResults();
+        WritableMap map = Arguments.createMap();
+        if (attributionResultMap != null) {
+            for (Map.Entry<Integer, AttributionResult> entry : attributionResultMap.entrySet()) {
+                WritableMap attributeMap = Arguments.createMap();
+                AttributionResult attribution = entry.getValue();
+                if (attribution != null) {
+                    attributeMap.putInt("kitId", attribution.getServiceProviderId());
+                    if (attribution.getLink() != null) {
+                        attributeMap.putString("link", attribution.getLink());
+                    }
+                    if (attribution.getParameters() != null) {
+                        attributeMap.putString("linkParameters", attribution.getParameters().toString());
+                    }
+                }
+                map.putMap(String.valueOf(entry.getKey()), attributeMap);
+            }
+        }
+        completion.invoke(map);
+    }
+
+    @ReactMethod
+    public void setOptOut(Boolean optOut) {
+        MParticle.getInstance().setOptOut(optOut);
+    }
+
+    @ReactMethod
+    public void getOptOut(Callback completion) {
+        boolean optedOut = MParticle.getInstance().getOptOut();
+        completion.invoke(optedOut);
+    }
+
+    @ReactMethod
+    public void isKitActive(Integer kitId, Callback completion) {
+        boolean isActive = MParticle.getInstance().isKitActive(kitId);
+        completion.invoke(isActive);
+    }
+
+    @ReactMethod
+    public void logPushRegistration(String instanceId, String senderId) {
+        if (!isEmpty(instanceId) && !isEmpty(senderId)) {
+            MParticle.getInstance().logPushRegistration(instanceId, senderId);
+        }
     }
 
     private static IdentityApiRequest ConvertIdentityAPIRequest(ReadableMap map) {
@@ -272,6 +322,25 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
 
         return null;
+    }
+
+    private static ReadableMap ConvertIdentityHttpResponse(IdentityHttpResponse response) {
+        WritableMap map = Arguments.createMap();
+        map.putInt("httpCode", response.getHttpCode());
+        if (response.getMpId() != 0) {
+            map.putString("mpid", String.valueOf(response.getMpId()));
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        if (response.getErrors() != null) {
+            for (IdentityHttpResponse.Error error: response.getErrors()) {
+                if (error != null) {
+                    stringBuilder.append("Code: " + error.code + "\n");
+                    stringBuilder.append("Message: " + error.message + "\n");
+                }
+            }
+        }
+        map.putString("errors", stringBuilder.toString());
+        return map;
     }
 
     private static CommerceEvent ConvertCommerceEvent(ReadableMap map) {
@@ -557,5 +626,9 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             default:
                 return Promotion.CLICK;
         }
+    }
+
+    private boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
     }
 }
