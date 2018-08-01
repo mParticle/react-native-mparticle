@@ -314,6 +314,37 @@ var attributions = MParticle.getAttributions();
 
 In order to listen for Attributions asynchronously, you need to set the proper field in `MParticleOptions` as shown in the [Android](#Android) or the [iOS](#iOS) SDK start examples.
 
+## Kits
+Check if a kit is active
+
+```
+var isKitActive = MParticle.isKitActive(kitId);
+```
+
+Check and set the SDK's opt out status
+
+```
+var isOptedOut = MParticle.getOptOut();
+MParticle.setOptOut(!isOptedOut);
+```
+
+## Push Registration
+
+The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, provide both the instanceId and senderId. For iOS, provide the push token in the first parameter, and simply pass `null` for the second parameter
+
+### Android
+
+```
+MParticle.logPushRegistration(instanceId, senderId);
+```
+
+### iOS
+
+```
+MParticle.logPushRegistration(pushToken, null);
+```
+
+
 # License
 
 Apache 2.0
