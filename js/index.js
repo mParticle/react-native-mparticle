@@ -143,17 +143,17 @@ class User {
 class IdentityRequest {
 
   setEmail (email) {
-    this[IdentityType.Email] = email
+    this[UserIdentityType.Email] = email
     return this
   }
 
   setCustomerID (customerId) {
-    this[IdentityType.CustomerId] = customerId
+    this[UserIdentityType.CustomerId] = customerId
     return this
   }
 
   setUserIdentity (userIdentity, identityType) {
-    this[identityType] = userIdentity;
+    this[identityType] = userIdentity
     return this
   }
 
