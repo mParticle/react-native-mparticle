@@ -212,9 +212,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getCurrentUserWithCompletion(Callback completion) {
         MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
-        String userID = Long.toString(currentUser.getId());
+        if (currentUser != null) {
+            String userID = Long.toString(currentUser.getId());
+            completion.invoke(null, userID);
+        } else {
+            completion.invoke(null, null);
+        }
 
-        completion.invoke(null, userID);
     }
 
     @ReactMethod
@@ -273,17 +277,8 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     private static IdentityApiRequest ConvertIdentityAPIRequest(ReadableMap map) {
         IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
-
-        if (map.hasKey("userIdentities")) {
-            Map<MParticle.IdentityType, String> userIdentities = ConvertUserIdentities(map.getMap("userIdentities"));
-            identityRequest.userIdentities(userIdentities);
-        }
-        if (map.hasKey("email")) {
-            identityRequest.email(map.getString("email"));
-        }
-        if (map.hasKey("customerID")) {
-            identityRequest.customerId(map.getString("customerID"));
-        }
+        Map<MParticle.IdentityType, String> userIdentities = ConvertUserIdentities(map);
+        identityRequest.userIdentities(userIdentities);
 
         return identityRequest.build();
     }
@@ -526,51 +521,25 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     private static Map<MParticle.IdentityType, String> ConvertUserIdentities(ReadableMap readableMap) {
-        Map<MParticle.IdentityType, String> map = null;
-
+        Map<MParticle.IdentityType, String> map = new HashMap<>();
         if (readableMap != null) {
-            Map<String, String> stringMap = ConvertStringMap(readableMap);
-            for (Map.Entry<String, String> entry : stringMap.entrySet())
-            {
-                MParticle.IdentityType identity = ConvertIdentityType(entry.getKey());
-                String value= entry.getValue();
-
-                map.put(identity, value);
+            ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+            while (iterator.hasNextKey()) {
+                MParticle.IdentityType identity;
+                String key = iterator.nextKey();
+                if ("email".equals(key)) {
+                    identity = MParticle.IdentityType.Email;
+                } else if ("customerId".equals(key)) {
+                    identity = MParticle.IdentityType.CustomerId;
+                } else {
+                    identity = MParticle.IdentityType.parseInt(Integer.parseInt(key));
+                }
+                if (identity != null) {
+                    map.put(identity, readableMap.getString(key));
+                }
             }
         }
-
         return map;
-    }
-
-    private static MParticle.IdentityType ConvertIdentityType(String val) {
-        switch(val) {
-            case "CustomerId":
-                return MParticle.IdentityType.CustomerId;
-            case "Facebook":
-                return MParticle.IdentityType.Facebook;
-            case "Twitter":
-                return MParticle.IdentityType.Twitter;
-            case "Google":
-                return MParticle.IdentityType.Google;
-            case "Microsoft":
-                return MParticle.IdentityType.Microsoft;
-            case "Yahoo":
-                return MParticle.IdentityType.Yahoo;
-            case "Email":
-                return MParticle.IdentityType.Email;
-            case "Alias":
-                return MParticle.IdentityType.Alias;
-            case "FacebookCustomAudienceId":
-                return MParticle.IdentityType.FacebookCustomAudienceId;
-            case "Other2":
-                return MParticle.IdentityType.Other2;
-            case "Other3":
-                return MParticle.IdentityType.Other3;
-            case "Other4":
-                return MParticle.IdentityType.Other4;
-            default:
-                return MParticle.IdentityType.Other;
-        }
     }
 
     private static MParticle.EventType ConvertEventType(int eventType) {

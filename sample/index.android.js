@@ -12,8 +12,8 @@ import {
   View,
   Button
 } from 'react-native';
-// import MParticle from './index.js'
-import MParticle from 'react-native-mparticle'
+import MParticle from './index.js'
+// import MParticle from 'react-native-mparticle'
 
 export default class MParticleSample extends Component {
   constructor(props) {
@@ -54,7 +54,9 @@ export default class MParticleSample extends Component {
           currentUser.setUserTag('regular');
         });
         var request = new MParticle.IdentityRequest();
-        request.email = 'testing2@gmail.com';
+        request.email = 'testing1@gmail.com';
+        request.customerId = "vlknasdlknv"
+        request.setUserIdentity('12345', MParticle.UserIdentityType.Alias);
 
         MParticle.Identity.login(request, (error, userID) => {
           if (error) {

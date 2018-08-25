@@ -449,13 +449,16 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json {
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
-    request.email = json[@"email"];
-    NSDictionary *jsonAttributes = json[@"userIdentities"];
-    for (NSString *key in jsonAttributes) {
-        NSString *value = jsonAttributes[key];
-        [request.userIdentities setObject:value forKeyedSubscript:key];
+    for (NSString *key in json) {
+        if ([key isEqualToString:@"email"]) {
+            request.email = json[@"email"];
+        } else if ([key isEqualToString:@"customerId"]) {
+            request.customerId = json[@"customerId"];
+        } else {
+            NSString *value = json[key];
+            [request.userIdentities setObject:value forKeyedSubscript:key];
+        }
     }
-    
     return request;
 }
 
