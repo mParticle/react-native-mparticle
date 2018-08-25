@@ -143,56 +143,17 @@ class User {
 class IdentityRequest {
 
   setEmail (email) {
-    this.email = email
+    this[UserIdentityType.Email] = email
     return this
   }
 
   setCustomerID (customerId) {
-    this.customerId = customerId
+    this[UserIdentityType.CustomerId] = customerId
     return this
   }
 
   setUserIdentity (userIdentity, identityType) {
-    switch (identityType) {
-      case UserIdentityType.Other:
-        this.other = userIdentity
-        break
-      case UserIdentityType.CustomerId:
-        this.customerId = userIdentity
-        break
-      case UserIdentityType.Facebook:
-        this.facebook = userIdentity
-        break
-      case UserIdentityType.Twitter:
-        this.twitter = userIdentity
-        break
-      case UserIdentityType.Google:
-        this.google = userIdentity
-        break
-      case UserIdentityType.Microsoft:
-        this.microsoft = userIdentity
-        break
-      case UserIdentityType.Yahoo:
-        this.yahoo = userIdentity
-        break
-      case UserIdentityType.Email:
-        this.email = userIdentity
-        break
-      case UserIdentityType.FacebookCustomAudienceId:
-        this.facebookCustom = userIdentity
-        break
-      case UserIdentityType.Other2:
-        this.other2 = userIdentity
-        break
-      case UserIdentityType.Other3:
-        this.other3 = userIdentity
-        break
-      case UserIdentityType.Other4:
-        this.other4 = userIdentity
-        break
-      default:
-        break
-    }
+    this[identityType] = userIdentity
     return this
   }
 
