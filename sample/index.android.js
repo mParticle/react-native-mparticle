@@ -103,6 +103,12 @@ export default class MParticleSample extends Component {
     })
   }
 
+  _incrementAttribute() {
+    MParticle.Identity.getCurrentUser((currentUser) => {
+      currentUser.incrementUserAttribute("incrementedAttribute", 1)
+    })
+  }
+
   render() {
     let display = this.state.isShowingText ? 'Sending Event' : ' '
     let optedOut = this.state.optedOut ? 'true' : 'false'
@@ -138,6 +144,11 @@ export default class MParticleSample extends Component {
           Press Cmd+R to reload,{'\n'}
           Cmd+D or shake for dev menu
         </Text>
+
+        <Button
+          onPress={() => {this._incrementAttribute()}}
+          title="Increment Attribute"/>
+        
       </View>
     );
   }

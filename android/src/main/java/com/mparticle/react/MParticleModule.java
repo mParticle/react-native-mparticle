@@ -62,7 +62,6 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void logMPEvent(final ReadableMap attributesMap) {
         MPEvent event = ConvertMPEvent(attributesMap);
-
         MParticle.getInstance().logEvent(event);
     }
 
@@ -119,6 +118,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void incrementUserAttribute(final String userId, final String key, final Integer value) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        if (selectedUser != null) {
+            selectedUser.incrementUserAttribute(key, value);
+        }
+    }
     @ReactMethod
     public void identify(final ReadableMap requestMap, final Callback completion) {
         IdentityApiRequest request = ConvertIdentityAPIRequest(requestMap);

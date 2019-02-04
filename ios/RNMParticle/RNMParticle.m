@@ -113,6 +113,14 @@ RCT_EXPORT_METHOD(removeUserAttribute:(NSString *)userId key:(NSString *)key)
     [selectedUser removeUserAttribute:key];
 }
 
+RCT_EXPORT_METHOD(incrementUserAttribute:(NSString *)userId key:(NSString *)key value:(NSNumber * _Nonnull)value)
+{
+    MParticleUser *selectedUser = [[MParticleUser alloc] init];
+    selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
+    [selectedUser incrementUserAttribute:key
+                            byValue:value];
+}
+
 RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(RCTResponseSenderBlock)completion)
 {
     [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {

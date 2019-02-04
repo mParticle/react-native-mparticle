@@ -71,7 +71,6 @@ export default class MParticleSample extends Component {
         const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
 
         MParticle.logCommerceEvent(event)
-        // MParticle.logPushRegistration("afslibvnoewtibnsgb", "vdasvadsdsav");
         console.debug("interval")
     }, 5000);
   }
@@ -100,6 +99,12 @@ export default class MParticleSample extends Component {
       this.setState((previousState) => {
         return {isKitActive: active}
       })
+    })
+  }
+
+  _incrementAttribute() {
+    MParticle.Identity.getCurrentUser((currentUser) => {
+      currentUser.incrementUserAttribute("incrementedAttribute", 1)
     })
   }
 
@@ -138,6 +143,9 @@ export default class MParticleSample extends Component {
           Press Cmd+R to reload,{'\n'}
           Cmd+D or shake for dev menu
         </Text>
+        <Button
+          onPress={() => {this._incrementAttribute()}}
+          title="Increment Attribute"/>
       </View>
     );
   }

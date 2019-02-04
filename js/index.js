@@ -122,8 +122,8 @@ class User {
     NativeModules.MParticle.setUserTag(this.userId, value)
   }
 
-  incrementUserAtrribute (key, value) {
-    NativeModules.MParticle.incrementUserAtrribute(this.userId, key, value)
+  incrementUserAttribute (key, value) {
+    NativeModules.MParticle.incrementUserAttribute(this.userId, key, value)
   }
 
   removeUserAttribute (key) {
