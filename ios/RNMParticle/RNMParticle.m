@@ -50,6 +50,24 @@ RCT_EXPORT_METHOD(getOptOut:(RCTResponseSenderBlock)completion)
     completion(@[[NSNumber numberWithBool:optedOut]]);
 }
 
+RCT_EXPORT_METHOD(addGDPRConsentState:(MPGDPRConsent *)gdprConsentState purpose:(NSString *)purpose)
+{
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+
+    MPConsentState *consentState = user.consentState ? user.consentState : [[MPConsentState alloc] init];
+    [consentState addGDPRConsentState:gdprConsentState purpose:purpose];
+    user.consentState = consentState;
+}
+
+RCT_EXPORT_METHOD(removeGDPRConsentStateWithPurpose:(NSString *)purpose)
+{
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+    
+    MPConsentState *consentState = user.consentState ? user.consentState : [[MPConsentState alloc] init];
+    [consentState removeGDPRConsentStateWithPurpose:purpose];
+    user.consentState = consentState;
+}
+
 RCT_EXPORT_METHOD(logPushRegistration:(NSString *)iosToken androidField:(NSString *)androidField)
 {
     if (iosToken != nil) {
@@ -296,6 +314,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 + (MPIdentityApiResult *)MPIdentityApiResult:(id)json;
 + (MParticleUser *)MParticleUser:(id)json;
 + (MPEvent *)MPEvent:(id)json;
++ (MPGDPRConsent *)MPGDPRConsent:(id)json;
 
 @end
 
@@ -503,6 +522,18 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     }
     
     return event;
+}
+
++ (MPGDPRConsent *)MPGDPRConsent:(id)json {
+    MPGDPRConsent *mpConsent = [[MPGDPRConsent alloc] init];
+    
+    mpConsent.consented = [RCTConvert BOOL:json[@"consented"]];
+    mpConsent.document = json[@"document"];
+    mpConsent.timestamp = [RCTConvert NSDate:json[@"timestamp"]];
+    mpConsent.location = json[@"location"];
+    mpConsent.hardwareId = json[@"hardwareId"];
+    
+    return mpConsent;
 }
 
 @end
