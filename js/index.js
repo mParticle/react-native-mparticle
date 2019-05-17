@@ -114,6 +114,10 @@ class User {
     this.userId = userId
   }
 
+  getMpid () {
+    return this.userId
+  }
+
   setUserAttribute (key, value) {
     if (value && value.constructor === Array) {
       NativeModules.Mparticle.setUserAttributeArray(this.userId, key, value)

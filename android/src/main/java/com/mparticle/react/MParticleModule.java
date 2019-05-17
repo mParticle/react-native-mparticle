@@ -81,7 +81,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setUserAttribute(final String userId, final String userAttribute, final String value) {
-        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
             selectedUser.setUserAttribute(userAttribute, value);
         }
@@ -95,7 +95,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             list.add(values.getString(i));
         }
 
-         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
          if (selectedUser != null) {
             selectedUser.setUserAttributeList(key, list);
         }
@@ -104,7 +104,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setUserTag(final String userId, final String tag) {
-        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
             selectedUser.setUserTag(tag);
         }
@@ -112,7 +112,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void removeUserAttribute(final String userId, final String key) {
-        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
             selectedUser.removeUserAttribute(key);
         }
@@ -120,7 +120,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void incrementUserAttribute(final String userId, final String key, final Integer value) {
-        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
             selectedUser.incrementUserAttribute(key, value);
         }
@@ -229,9 +229,12 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getUserIdentities(final String userId, Callback completion) {
-        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Long.parseLong(userId));
-
-        completion.invoke(selectedUser.getUserIdentities());
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
+        if (selectedUser != null) {
+            completion.invoke(selectedUser.getUserIdentities());
+        } else {
+            completion.invoke();
+        }
     }
 
     @ReactMethod
@@ -605,5 +608,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     private boolean isEmpty(String str) {
         return str == null || str.length() == 0;
+    }
+
+    private long parseMpid(String longString) {
+        try {
+            return Long.parseLong(longString);
+        } catch (NumberFormatException ex) {
+            return 0L;
+        }
     }
 }
