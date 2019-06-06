@@ -138,7 +138,7 @@ export default class MParticleSample extends Component {
             onPress={() => {this._isKitActive()}}
             title="Check Kit Active"/>
         <Text style={styles.instructions}>
-          To get started, edit index.ios.js
+          To get started, edit index.android.js
         </Text>
         <Text style={styles.instructions}>
           Press Cmd+R to reload,{'\n'}
