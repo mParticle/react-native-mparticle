@@ -483,7 +483,8 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
             request.customerId = json[@"customerId"];
         } else {
             NSString *value = json[key];
-            [request.userIdentities setObject:value forKeyedSubscript:key];
+            MPUserIdentity identityType = (MPUserIdentity)key.intValue;
+            [request setUserIdentity:value identityType:identityType];
         }
     }
     return request;
