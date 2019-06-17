@@ -163,12 +163,12 @@ RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(R
                 }
             }
             if (apiResult != nil) {
-                completion(@[reactError, apiResult.user.userId.stringValue]);
+                completion(@[reactError, apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
             } else {
                 completion(@[reactError, @0]);
             }
         } else {
-            completion(@[[NSNull null], apiResult.user.userId.stringValue]);
+            completion(@[[NSNull null], apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
         }
     }];
 }
@@ -197,12 +197,12 @@ RCT_EXPORT_METHOD(login:(MPIdentityApiRequest *)identityRequest completion:(RCTR
                 }
             }
             if (apiResult != nil) {
-                completion(@[reactError, apiResult.user.userId.stringValue]);
+                completion(@[reactError, apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
             } else {
                 completion(@[reactError, @0]);
             }        
         } else {
-            completion(@[[NSNull null], apiResult.user.userId.stringValue]);
+            completion(@[[NSNull null], apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
         }
     }];
 }
@@ -231,12 +231,12 @@ RCT_EXPORT_METHOD(logout:(MPIdentityApiRequest *)identityRequest completion:(RCT
                 }
             }
             if (apiResult != nil) {
-                completion(@[reactError, apiResult.user.userId.stringValue]);
+                completion(@[reactError, apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
             } else {
                 completion(@[reactError, @0]);
             }
         } else {
-            completion(@[[NSNull null], apiResult.user.userId.stringValue]);
+            completion(@[[NSNull null], apiResult.user.userId.stringValue, apiResult.previousUser.userId.stringValue]);
         }
     }];
 }
@@ -265,14 +265,20 @@ RCT_EXPORT_METHOD(modify:(MPIdentityApiRequest *)identityRequest completion:(RCT
                 }
             }
             if (apiResult != nil) {
-                completion(@[reactError, apiResult.user.userId.stringValue]);
+                completion(@[reactError, apiResult.user.userId.stringValue, [NSNull null]]);
             } else {
                 completion(@[reactError, @0]);
             }
         } else {
-            completion(@[[NSNull null], apiResult.user.userId.stringValue]);
+            completion(@[[NSNull null], apiResult.user.userId.stringValue, [NSNull null]]);
         }
     }];
+}
+
+RCT_EXPORT_METHOD(aliasUsers:(MPAliasRequest *) aliasRequest completion:(RCTResponseSenderBlock)completion)
+{
+    BOOL success = [[[MParticle sharedInstance] identity] aliasUsers:aliasRequest];
+    completion(@[[NSNull null], success ? @"true" : @"false"]);
 }
 
 RCT_EXPORT_METHOD(getCurrentUserWithCompletion:(RCTResponseSenderBlock)completion)
@@ -285,6 +291,20 @@ RCT_EXPORT_METHOD(getUserIdentities:(NSString *)userId completion:(RCTResponseSe
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
     selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
     completion(@[[NSNull null], [selectedUser userIdentities]]);
+}
+
+RCT_EXPORT_METHOD(getFirstSeen:(NSString *)userId completion:(RCTResponseSenderBlock)completion)
+{
+    MParticleUser *selectedUser = [[MParticleUser alloc] init];
+    selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
+    completion(@[[NSNull null], [selectedUser firstSeen]]);
+}
+
+RCT_EXPORT_METHOD(getLastSeen:(NSString *)userId completion:(RCTResponseSenderBlock)completion)
+{
+    MParticleUser *selectedUser = [[MParticleUser alloc] init];
+    selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
+    completion(@[[NSNull null], [selectedUser lastSeen]]);
 }
 
 @end
@@ -312,6 +332,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json;
 + (MPIdentityApiResult *)MPIdentityApiResult:(id)json;
++ (MPAliasRequest *)MPAliasRequest:(id)json;
 + (MParticleUser *)MParticleUser:(id)json;
 + (MPEvent *)MPEvent:(id)json;
 + (MPGDPRConsent *)MPGDPRConsent:(id)json;
@@ -496,6 +517,24 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     result.user = [RCTConvert MParticleUser:obj];
     
     return result;
+}
+
++ (MPAliasRequest *)MPAliasRequest:(id)json {
+    NSString *destinationMpidString = json[@"destinationMpid"];
+    NSString *sourceMpidString = json[@"sourceMpid"];
+    NSString *startTime = json[@"startTime"];
+    NSString *endTime = json[@"endTime"];
+    NSNumber *destinationMpid = [NSNumber numberWithLong:destinationMpidString.longLongValue];
+    NSNumber *sourceMpid = [NSNumber numberWithLong:sourceMpidString.longLongValue];
+    if (startTime != nil || endTime != nil) {
+        MParticleUser *destinationUser = [[MParticleUser alloc] init];
+        MParticleUser *sourceUser = [[MParticleUser alloc] init];
+        destinationUser.userId = destinationMpid;
+        sourceUser.userId = sourceMpid;
+        return [MPAliasRequest requestWithSourceUser:sourceUser destinationUser: destinationUser];
+    } else {
+         return [MPAliasRequest requestWithSourceMPID:sourceMpid destinationMPID:destinationMpid startTime:[NSDate dateWithTimeIntervalSince1970:startTime.longLongValue] endTime:[NSDate dateWithTimeIntervalSince1970:endTime.longLongValue]];
+    }
 }
 
 + (MParticleUser *)MParticleUser:(id)json {

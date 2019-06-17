@@ -150,6 +150,14 @@ class User {
       completion(userIdentities)
     })
   }
+
+  getFirstSeen (completion) {
+    NativeModules.MParticle.getFirstSeen(this.userId, completion)
+  }
+
+  getLastSeen (completion) {
+    NativeModules.MParticle.getLastSeen(this.userId, completion)
+  }
 }
 
 class IdentityRequest {
@@ -170,8 +178,7 @@ class IdentityRequest {
   }
 
   setOnUserAlias (onUserAlias) {
-    this.onUserAlias = onUserAlias
-    return this
+    console.log("Warning: deprecated method 'setUserAlias(onUserAlias)', will be removed in future releases")
   }
 }
 
@@ -188,69 +195,53 @@ class Identity {
   }
 
   static identify (IdentityRequest, completion) {
-    NativeModules.MParticle.identify(IdentityRequest, (error, userId) => {
+    NativeModules.MParticle.identify(IdentityRequest, (error, userId, previousUserId) => {
       if (error == null || error === undefined) {
-        completion(error, userId)
+        completion(error, userId, previousUserId)
       } else {
         var parsedError = new MParticleError(error)
-        completion(parsedError, userId)
+        completion(parsedError, userId, previousUserId)
       }
     })
   }
 
   static login (IdentityRequest, completion) {
-    NativeModules.MParticle.login(IdentityRequest, (error, userId) => {
-      if (IdentityRequest.onUserAlias !== undefined) {
-        MParticle.Identity.getCurrentUser((oldUser) => {
-          var currentUser = new User(userId)
-          IdentityRequest.onUserAlias(oldUser, currentUser)
-        })
-      }
-
+    NativeModules.MParticle.login(IdentityRequest, (error, userId, previousUserId) => {
       if (error == null || error === undefined) {
-        completion(error, userId)
+        completion(error, userId, previousUserId)
       } else {
         var parsedError = new MParticleError(error)
-        completion(parsedError, userId)
+        completion(parsedError, userId, previousUserId)
       }
     })
   }
 
   static logout (IdentityRequest, completion) {
-    NativeModules.MParticle.logout(IdentityRequest, (error, userId) => {
-      if (IdentityRequest.onUserAlias !== undefined) {
-        MParticle.Identity.getCurrentUser((oldUser) => {
-          var currentUser = new User(userId)
-          IdentityRequest.onUserAlias(oldUser, currentUser)
-        })
-      }
-
+    NativeModules.MParticle.logout(IdentityRequest, (error, userId, previousUserId) => {
       if (error == null || error === undefined) {
-        completion(error, userId)
+        completion(error, userId, previousUserId)
       } else {
         var parsedError = new MParticleError(error)
-        completion(parsedError, userId)
+        completion(parsedError, userId, previousUserId)
       }
     })
   }
 
   static modify (IdentityRequest, completion) {
-    NativeModules.MParticle.modify(IdentityRequest, (error, userId) => {
-      if (IdentityRequest.onUserAlias !== undefined) {
-        MParticle.Identity.getCurrentUser((oldUser) => {
-          var currentUser = new User(userId)
-          IdentityRequest.onUserAlias(oldUser, currentUser)
-        })
-      }
-
+    NativeModules.MParticle.modify(IdentityRequest, (error, userId, previousUserId) => {
       if (error == null || error === undefined) {
-        completion(error, userId)
+        completion(error, userId, previousUserId)
       } else {
         var parsedError = new MParticleError(error)
-        completion(parsedError, userId)
+        completion(parsedError, userId, previousUserId)
       }
     })
   }
+
+  static aliasUsers (AliasRequest, completion) {
+    NativeModules.MParticle.aliasUsers(AliasRequest, completion)
+  }
+
 }
 
 // ******** Commerce ********
@@ -268,6 +259,29 @@ class Promotion {
     this.name = name
     this.creative = creative
     this.position = position
+  }
+}
+
+class AliasRequest {
+
+  sourceMpid (mpid) {
+    this.sourceMpid = mpid
+    return this
+  }
+
+  destinationMpid (mpid) {
+    this.destinationMpid = mpid
+    return this
+  }
+
+  endTime (mpid) {
+    this.endTime = mpid
+    return this
+  }
+
+  startTime (mpid) {
+    this.startTime = mpid
+    return this
   }
 }
 
@@ -541,6 +555,7 @@ const MParticle = {
   CommerceEvent,
   TransactionAttributes,
   IdentityRequest,
+  AliasRequest,
   Identity,
   User,
   Event,

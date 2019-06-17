@@ -19,12 +19,15 @@ import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
 import com.mparticle.commerce.TransactionAttributes;
 import com.mparticle.commerce.Promotion;
+import com.mparticle.identity.AliasRequest;
+import com.mparticle.identity.IdentityApi;
 import com.mparticle.identity.IdentityApiRequest;
 import com.mparticle.identity.IdentityApiResult;
 import com.mparticle.identity.MParticleUser;
 import com.mparticle.identity.IdentityHttpResponse;
 import com.mparticle.identity.TaskFailureListener;
 import com.mparticle.identity.TaskSuccessListener;
+import com.mparticle.internal.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,8 +167,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 public void onSuccess(IdentityApiResult identityApiResult) {
                     //Continue with login, and you can also access the new/updated user:
                     MParticleUser user = identityApiResult.getUser();
-                    String userID = Long.toString(user.getId());
-                    completion.invoke(null, userID);
+                    String userId = Long.toString(user.getId());
+                    MParticleUser previousUser = identityApiResult.getPreviousUser();
+                    String previousUserId = null;
+                    if (previousUser != null) {
+                        previousUserId = Long.toString(previousUser.getId());
+                    }
+                    completion.invoke(null, userId, previousUserId);
                 }
             });
     }
@@ -228,10 +236,89 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void aliasUsers(final ReadableMap readableMap, final Callback completion) {
+        IdentityApi identityApi = MParticle.getInstance().Identity();
+        ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+        Long destinationMpid = null;
+        Long sourceMpid = null;
+        Long startTime = null;
+        Long endTime = null;
+
+        while (iterator.hasNextKey()) {
+            try {
+                switch (iterator.nextKey()) {
+                    case "destinationMpid":
+                        destinationMpid = Utils.getLong(readableMap, "destinationMpid", false);
+                        break;
+                    case "sourceMpid":
+                        sourceMpid = Utils.getLong(readableMap, "sourceMpid", false);
+                        break;
+                    case "startTime":
+                        startTime = Utils.getLong(readableMap, "startTime", true);
+                        break;
+                    case "endTime":
+                        endTime = Utils.getLong(readableMap, "endTime", true);
+                        break;
+                }
+            } catch (NumberFormatException ex) {
+                Logger.error(ex.getMessage());
+                completion.invoke(false, ex.getMessage());
+                return;
+            }
+        }
+        if (startTime == null && endTime == null) {
+            MParticleUser sourceUser = null;
+            MParticleUser destinationUser = null;
+            if (sourceMpid != null) {
+                sourceUser = identityApi.getUser(sourceMpid);
+            }
+            if (destinationMpid != null) {
+                destinationUser = identityApi.getUser(destinationMpid);
+            }
+            if (sourceUser != null && destinationUser != null) {
+                AliasRequest request = AliasRequest.builder(sourceUser, destinationUser).build();
+                boolean success = MParticle.getInstance().Identity().aliasUsers(request);
+                completion.invoke(success);
+            } else {
+                completion.invoke(false, "MParticleUser could not be found for provided sourceMpid and destinationMpid");
+            }
+        } else {
+            AliasRequest request = AliasRequest.builder()
+                    .destinationMpid(destinationMpid)
+                    .sourceMpid(sourceMpid)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .build();
+            boolean success = identityApi.aliasUsers(request);
+            completion.invoke(success);
+        }
+    }
+
+    @ReactMethod
     public void getUserIdentities(final String userId, Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
             completion.invoke(selectedUser.getUserIdentities());
+        } else {
+            completion.invoke();
+        }
+    }
+
+    @ReactMethod
+    public void getFirstSeen(final String userId, Callback completion) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Utils.parseMpid(userId));
+        if (selectedUser != null) {
+            completion.invoke(String.valueOf(selectedUser.getFirstSeenTime()));
+        } else {
+            completion.invoke();
+        }
+    }
+
+    @ReactMethod
+    public void getLastSeen(final String userId, Callback completion) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(Utils.parseMpid(userId));
+        if (selectedUser != null) {
+            completion.invoke(String.valueOf(selectedUser.getLastSeenTime()));
         } else {
             completion.invoke();
         }

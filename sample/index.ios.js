@@ -12,8 +12,8 @@ import {
   View,
   Button
 } from 'react-native';
-import MParticle from './index.js'
-// import MParticle from 'react-native-mparticle'
+import MParticle from 'react-native-mparticle'
+
 
 export default class MParticleSample extends Component {
   constructor(props) {
@@ -30,22 +30,61 @@ export default class MParticleSample extends Component {
 
     // Example Login
     var request = new MParticle.IdentityRequest();
-    request.setUserIdentity('testing1@gmail.com', MParticle.UserIdentityType.CustomerId);
-    request.onUserAlias = (previousUser, newUser) => {
-      console.debug(previousUser.userID);
-      console.debug(newUser.userID);
-    };
-
-    MParticle.Identity.login(request, (error, user) => {
+    request.email = 'testing1@gmail.com';
+    request.customerId = "123"
+    MParticle.Identity.login(request, (error, userId, previousUserId) => {
       if (error) {
         console.debug(error);
-      } else {
-        console.debug(user.userAttributes);
       }
+      var previousUser = new MParticle.User(previousUserId);
+      previousUser.getFirstSeen((firstSeen) => {
+        previousUser.getLastSeen((lastSeen) => {  
+          var aliasRequest = new MParticle.AliasRequest()
+            .sourceMpid(previousUser.getMpid())
+            .destinationMpid(userId)
+            .startTime(firstSeen - 1000)
+            .endTime(lastSeen - 1000)
+          console.log("AliasRequest = " + JSON.stringify(aliasRequest));
+          MParticle.Identity.aliasUsers(aliasRequest, (success, error) => {
+            if (error) {
+              console.log("Alias error = " + error);
+            }
+            console.log("Alias result: " + success);
+          });
+
+          var aliasRequest2 = new MParticle.AliasRequest()
+            .sourceMpid(previousUser.getMpid())
+            .destinationMpid(userId)
+          console.log("AliasRequest2 = " + JSON.stringify(aliasRequest2));
+          MParticle.Identity.aliasUsers(aliasRequest2, (success, error) => {
+            if (error) {
+              console.log("Alias 2 error = " + error);
+            }
+            console.log("Alias 2 result: " + success);
+          });
+        })
+      }) 
+      
+      var user = new MParticle.User(userId);
+      console.debug("User Attributes = " + user.userAttributes);
+      MParticle.Identity.logout({}, (error, userId) => {
+        if (error) {
+          console.debug("Logout error" + error);
+        }
+        var request = new MParticle.IdentityRequest();
+        request.email = 'testing2@gmail.com';
+        request.customerId = '456'
+        MParticle.Identity.modify(request, (error) => {
+          if (error) {
+            console.debug("Modify error = " + error)
+          }
+        });
+      });
     });
 
-    // Toggle the state every few seconds
-    setInterval(() => {
+    var i = 0;
+    // Toggle the state every few seconds, 10 times
+    var intervalId = setInterval(() => {
         MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value' })
         this.setState((previousState) => {
           return {isShowingText: !previousState.isShowingText}
@@ -58,20 +97,17 @@ export default class MParticleSample extends Component {
         request.customerId = "vlknasdlknv"
         request.setUserIdentity('12345', MParticle.UserIdentityType.Alias);
 
-        MParticle.Identity.login(request, (error, userID) => {
-          if (error) {
-            console.debug(error);
-          } else {
-            console.debug(userID);
-          }
-        });
-
         const product = new MParticle.Product('Test product for cart', '1234', 19.99)
         const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
         const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
 
         MParticle.logCommerceEvent(event)
+        MParticle.logPushRegistration("afslibvnoewtibnsgb", "vdasvadsdsav");
         console.debug("interval")
+        i++;
+        if (i >= 10) {
+          clearInterval(intervalId);
+        }
     }, 5000);
   }
 
@@ -143,9 +179,11 @@ export default class MParticleSample extends Component {
           Press Cmd+R to reload,{'\n'}
           Cmd+D or shake for dev menu
         </Text>
+
         <Button
           onPress={() => {this._incrementAttribute()}}
           title="Increment Attribute"/>
+        
       </View>
     );
   }

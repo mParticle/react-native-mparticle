@@ -47,7 +47,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    compileOnly 'com.mparticle:android-core:5+'
+    compileOnly 'com.mparticle:android-core:[5.9.3, )'
 
     //
     // And, if you want to include kits, you can do so as follows:
@@ -58,6 +58,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-android:2.18.3'
     testImplementation 'com.android.support:support-annotations:27.1.1'
     testImplementation 'junit:junit:4.12'
+    testImplementation files('libs/java-json.jar')
 
     testImplementation 'com.mparticle:android-core:5+'
     testImplementation 'com.facebook.react:react-native:+'
