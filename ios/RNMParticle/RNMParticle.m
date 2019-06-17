@@ -113,8 +113,8 @@ RCT_EXPORT_METHOD(setUserAttributeArray:(NSString *)userId key:(NSString *)key v
 {
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
     selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
-    [selectedUser setUserAttribute:key
-                             value:values];
+    [selectedUser setUserAttributeList:key
+                                values:values];
 }
 
 RCT_EXPORT_METHOD(setUserTag:(NSString *)userId tag:(NSString *)tag)
