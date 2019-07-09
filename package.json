@@ -4,7 +4,7 @@
   "homepage": "https://www.mparticle.com",
   "license": "Apache-2.0",
   "repository": "mParticle/react-native-mparticle",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "main": "js/index.js",
   "scripts": {
     "test": "./node_modules/standard/bin/cmd.js",
