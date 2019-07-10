@@ -294,6 +294,11 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
     }
 
+    public void getSession(Callback completion) {
+        String sessionID = MParticle.getInstance().getCurrentSession().getSessionUUID();
+        completion.invoke(sessionID);
+    }
+
     @ReactMethod
     public void getUserIdentities(final String userId, Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
