@@ -21,6 +21,7 @@ export default class MParticleSample extends Component {
     this.state = {isShowingText: true,
                   optedOut: true,
                   attributionResults: "{value: no attributionResults}",
+                  session: '',
                   isKitActive: true};
 
     this._toggleOptOut = this._toggleOptOut.bind(this)
@@ -111,6 +112,10 @@ export default class MParticleSample extends Component {
     }, 5000);
   }
 
+  componentDidMount() {
+    MParticle.getSession(session => this.setState({ session }))
+  }
+
   _toggleOptOut() {
     MParticle.getOptOut((optedOut) => {
           MParticle.setOptOut(!optedOut)
@@ -157,9 +162,12 @@ export default class MParticleSample extends Component {
         <Text style={styles.welcome}>
         Opted Out = {optedOut}
         </Text>
-        <Button 
+        <Button
           onPress={() => {this._toggleOptOut()}}
           title={'Opt ' + optAction}/>
+        <Text>
+          Session = {JSON.stringify(this.state.session)}
+        </Text>
         <Text>
           Attributes = {JSON.stringify(this.state.attributionResults)}
           </Text>
@@ -183,7 +191,6 @@ export default class MParticleSample extends Component {
         <Button
           onPress={() => {this._incrementAttribute()}}
           title="Increment Attribute"/>
-        
       </View>
     );
   }
