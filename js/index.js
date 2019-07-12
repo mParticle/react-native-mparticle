@@ -108,6 +108,10 @@ const logPushRegistration = (registrationField1, registrationField2) => {
   NativeModules.MParticle.logPushRegistration(registrationField1, registrationField2)
 }
 
+const getSession = (completion) => {
+  NativeModules.MParticle.getSession(completion)
+}
+
 // ******** Identity ********
 class User {
   constructor (userId) {
@@ -572,7 +576,8 @@ const MParticle = {
   removeGDPRConsentStateWithPurpose,
   isKitActive,
   getAttributions,
-  logPushRegistration
+  logPushRegistration,
+  getSession
 }
 
 export default MParticle
