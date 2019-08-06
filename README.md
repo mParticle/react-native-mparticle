@@ -330,12 +330,12 @@ MParticle.setOptOut(!isOptedOut);
 
 ## Push Registration
 
-The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, provide both the instanceId and senderId. For iOS, provide the push token in the first parameter, and simply pass `null` for the second parameter
+The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, provide both the pushToken and senderId. For iOS, provide the push token in the first parameter, and simply pass `null` for the second parameter
 
 ### Android
 
 ```
-MParticle.logPushRegistration(instanceId, senderId);
+MParticle.logPushRegistration(pushToken, senderId);
 ```
 
 ### iOS
