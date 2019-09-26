@@ -294,6 +294,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
     public void getSession(Callback completion) {
         String sessionID = MParticle.getInstance().getCurrentSession().getSessionUUID();
         completion.invoke(sessionID);
