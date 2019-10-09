@@ -14,6 +14,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.MPEvent;
+import com.mparticle.Session;
 import com.mparticle.commerce.CommerceEvent;
 import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
@@ -296,8 +297,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getSession(Callback completion) {
-        String sessionID = MParticle.getInstance().getCurrentSession().getSessionUUID();
-        completion.invoke(sessionID);
+        Session session = MParticle.getInstance().getCurrentSession();
+        if (session != null) {
+            String sessionId = session.getSessionUUID();
+            completion.invoke(sessionId);
+        } else {
+            completion.invoke();
+        }
     }
 
     @ReactMethod
