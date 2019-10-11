@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
@@ -20,6 +21,8 @@ import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
 import com.mparticle.commerce.TransactionAttributes;
 import com.mparticle.commerce.Promotion;
+import com.mparticle.consent.ConsentState;
+import com.mparticle.consent.GDPRConsent;
 import com.mparticle.identity.AliasRequest;
 import com.mparticle.identity.IdentityApi;
 import com.mparticle.identity.IdentityApiRequest;
@@ -34,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 public class MParticleModule extends ReactContextBaseJavaModule {
 
@@ -383,6 +388,36 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void addGDPRConsentState(final ReadableMap map, String purpose) {
+        MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
+        if (currentUser != null) {
+
+
+            GDPRConsent consent = ConvertToGDPRConsent(map);
+            if (consent != null) {
+                ConsentState consentState = ConsentState.withConsentState(currentUser.getConsentState())
+                        .addGDPRConsentState(purpose, consent)
+                        .build();
+                currentUser.setConsentState(consentState);
+                Logger.info("GDPRConsentState added, \n\t\"purpose\": " + purpose + "\n" + consentState.toString());
+            } else {
+                Logger.warning("GDPRConsentState was not able to be deserialized, will not be added");
+            }
+        }
+    }
+
+    @ReactMethod
+    public void removeGDPRConsentStateWithPurpose(String purpose) {
+        MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
+        if (currentUser != null) {
+            ConsentState consentState = ConsentState.withConsentState(currentUser.getConsentState())
+                    .removeGDPRConsentState(purpose)
+                    .build();
+            currentUser.setConsentState(consentState);
+        }
+    }
+
     private static IdentityApiRequest ConvertIdentityAPIRequest(ReadableMap map) {
         IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
         Map<MParticle.IdentityType, String> userIdentities = ConvertUserIdentities(map);
@@ -715,5 +750,45 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         } catch (NumberFormatException ex) {
             return 0L;
         }
+    }
+
+    @Nullable
+    private GDPRConsent ConvertToGDPRConsent(ReadableMap map ) {
+        Boolean consented;
+        try {
+            if (map.getType("consented").equals(ReadableType.Boolean)) {
+                consented = map.getBoolean("consented");
+            } else {
+                consented = Boolean.valueOf(map.getString("consented"));
+            }
+        } catch (Exception ex) {
+            Logger.error("failed to convert \"consented\" value to a Boolean, unable to process addGDPRConsentState");
+            return null;
+        }
+        GDPRConsent.Builder builder = GDPRConsent.builder(consented);
+
+        if (map.hasKey("document")) {
+            String document = map.getString("document");
+            builder.document(document);
+        }
+        if (map.hasKey("hardwareId")) {
+            String hardwareId = map.getString("hardwareId");
+            builder.hardwareId(hardwareId);
+        }
+        if (map.hasKey("location")) {
+            String location = map.getString("location");
+            builder.location(location);
+        }
+        if (map.hasKey("timestamp")) {
+            Long timestamp = null;
+            try {
+                String timestampString = map.getString("timestamp");
+                timestamp = Long.valueOf(timestampString);
+                builder.timestamp(timestamp);
+            } catch (Exception ex) {
+                Logger.warning("failed to convert \"timestamp\" value to Long");
+            }
+        }
+        return builder.build();
     }
 }
