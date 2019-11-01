@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.MPEvent;
@@ -315,7 +316,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     public void getUserIdentities(final String userId, Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
-            completion.invoke(selectedUser.getUserIdentities());
+            completion.invoke(null, ConvertToUserIdentities(selectedUser.getUserIdentities()));
         } else {
             completion.invoke();
         }
@@ -416,6 +417,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                     .build();
             currentUser.setConsentState(consentState);
         }
+    }
+
+    protected WritableMap getWritableMap() {
+        return new WritableNativeMap();
     }
 
     private static IdentityApiRequest ConvertIdentityAPIRequest(ReadableMap map) {
@@ -684,6 +689,15 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
         return map;
     }
+
+    private WritableMap ConvertToUserIdentities(Map<MParticle.IdentityType, String> userIdentities) {
+        WritableMap nativeMap = getWritableMap();
+        for (Map.Entry<MParticle.IdentityType, String> entry: userIdentities.entrySet()) {
+            nativeMap.putString(String.valueOf(entry.getKey().getValue()), entry.getValue());
+        }
+        return nativeMap;
+    }
+
 
     private static MParticle.EventType ConvertEventType(int eventType) {
         switch (eventType) {

@@ -4,10 +4,12 @@ import android.support.annotation.NonNull;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.WritableMap;
 import com.mparticle.MParticle;
 import com.mparticle.identity.IdentityApi;
 import com.mparticle.identity.MParticleUser;
 import com.mparticle.react.testutils.MockMParticleUser;
+import com.mparticle.react.testutils.MockMap;
 import com.mparticle.react.testutils.MockReadableArray;
 import com.mparticle.react.testutils.Mutable;
 
@@ -20,7 +22,6 @@ import java.util.Map;
 import java.util.Random;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -34,7 +35,12 @@ public class MParticleUserTest {
         MParticle.setInstance(Mockito.mock(MParticle.class));
         Mockito.when(MParticle.getInstance().Identity()).thenReturn(Mockito.mock(IdentityApi.class));
         Mockito.when(MParticle.getInstance().Identity().getUser(null)).thenReturn(null);
-        mParticleUser = new MParticleModule(Mockito.mock(ReactApplicationContext.class));
+        mParticleUser = new MParticleModule(Mockito.mock(ReactApplicationContext.class)) {
+            @Override
+            public WritableMap getWritableMap() {
+                return new MockMap();
+            }
+        };
     }
 
     @Test
@@ -89,20 +95,19 @@ public class MParticleUserTest {
 
         Mockito.when(MParticle.getInstance().Identity().getUser(Mockito.anyLong())).thenReturn(mockUser);
 
-        final Mutable<Map<MParticle.IdentityType, String>> callbackResult = new Mutable<>();
+        final Mutable<WritableMap> callbackResult = new Mutable<>();
         mParticleUser.getUserIdentities("1", new Callback() {
             @Override
             public void invoke(Object... args) {
-                assertEquals(1, args.length);
-                callbackResult.value = (Map<MParticle.IdentityType,String>)args[0];
+                assertEquals(2, args.length);
+                assertNull(args[0]);
+                callbackResult.value = (WritableMap)args[1];
             }
         });
 
         assertNotNull(callbackResult.value);
-        assertEquals(identities.size(), callbackResult.value.size());
-
         for (Map.Entry<MParticle.IdentityType, String> entry: identities.entrySet()) {
-            assertEquals(entry.getValue(), callbackResult.value.get(entry.getKey()));
+            assertEquals(entry.getValue(), callbackResult.value.getString(String.valueOf(entry.getKey().getValue())));
         }
     }
 

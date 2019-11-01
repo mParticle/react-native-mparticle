@@ -10,7 +10,7 @@ import com.mparticle.identity.AliasRequest;
 import com.mparticle.identity.IdentityApi;
 import com.mparticle.identity.MParticleUser;
 import com.mparticle.react.testutils.MockMParticleUser;
-import com.mparticle.react.testutils.MockReadableMap;
+import com.mparticle.react.testutils.MockMap;
 import com.mparticle.react.testutils.Mutable;
 
 import org.json.JSONException;
@@ -89,7 +89,7 @@ public class IdentityApiTest {
                 .put("destinationMpid", "2")
                 .put("startTime", "3")
                 .put("endTime", "4");
-        ReadableMap map = new MockReadableMap(aliasJson);
+        ReadableMap map = new MockMap(aliasJson);
 
         identityApi.aliasUsers(map, new Callback() {
             @Override
@@ -135,7 +135,7 @@ public class IdentityApiTest {
         JSONObject aliasJson = new JSONObject()
                 .put("sourceMpid", "1")
                 .put("destinationMpid", "2");
-        ReadableMap map = new MockReadableMap(aliasJson);
+        ReadableMap map = new MockMap(aliasJson);
 
         identityApi.aliasUsers(map, new Callback() {
             @Override
@@ -171,7 +171,7 @@ public class IdentityApiTest {
                 .put("startTime", "3")
                 .put("endTime", "4");
 
-        identityApi.aliasUsers(new MockReadableMap(aliasJson), callback);
+        identityApi.aliasUsers(new MockMap(aliasJson), callback);
 
         Mockito.when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
         assertEquals(2, callbackResult.value.length);
@@ -183,7 +183,7 @@ public class IdentityApiTest {
                 .put("sourceMpid", "1")
                 .put("destinationMpid", 2);
 
-        identityApi.aliasUsers(new MockReadableMap(aliasJson), callback);
+        identityApi.aliasUsers(new MockMap(aliasJson), callback);
 
         Mockito.when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
         assertEquals(2, callbackResult.value.length);
@@ -204,7 +204,7 @@ public class IdentityApiTest {
                 .put("destinationMpid", "2")
                 .put("startTime", "3")
                 .put("endTime", "4");
-        ReadableMap map = new MockReadableMap(aliasJson);
+        ReadableMap map = new MockMap(aliasJson);
 
         identityApi.aliasUsers(map, new Callback() {
             @Override

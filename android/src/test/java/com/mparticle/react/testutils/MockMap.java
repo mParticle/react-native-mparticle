@@ -4,6 +4,8 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,10 +17,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class MockReadableMap implements ReadableMap {
-    private Map map;
+public class MockMap implements WritableMap {
+    private Map map = new HashMap();
 
-    public MockReadableMap(JSONObject jsonObject) throws JSONException {
+    public MockMap() {}
+
+    public MockMap(JSONObject jsonObject) throws JSONException {
         Map map = new HashMap();
         Iterator<String> keys = jsonObject.keys();
         while(keys.hasNext()) {
@@ -28,7 +32,7 @@ public class MockReadableMap implements ReadableMap {
         this.map = map;
     }
 
-    public MockReadableMap(Map map) {
+    public MockMap(Map map) {
         this.map = map;
     }
 
@@ -69,7 +73,7 @@ public class MockReadableMap implements ReadableMap {
 
     @Override
     public ReadableMap getMap(String name) {
-        return new MockReadableMap((Map) map.get(name));
+        return new MockMap((Map) map.get(name));
     }
 
     @Override
@@ -99,6 +103,46 @@ public class MockReadableMap implements ReadableMap {
     @Override
     public ReadableMapKeySetIterator keySetIterator() {
         return new MockReadableMapKeySetIterator(map.keySet());
+    }
+
+    @Override
+    public void putNull(String key) {
+        map.put(key, null);
+    }
+
+    @Override
+    public void putBoolean(String key, boolean value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void putDouble(String key, double value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void putInt(String key, int value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void putString(String key, String value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void putArray(String key, WritableArray value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void putMap(String key, WritableMap value) {
+        map.put(key, value);
+    }
+
+    @Override
+    public void merge(ReadableMap source) {
+        throw new RuntimeException("Not Implemented");
     }
 
 
