@@ -310,7 +310,7 @@ RCT_EXPORT_METHOD(getLastSeen:(NSString *)userId completion:(RCTResponseSenderBl
 RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
 {
     MParticleSession *session = [MParticle sharedInstance].currentSession;
-    if (session) {
+    if (session && session.UUID) {
         completion(@[session.UUID]);
     } else {
         completion(@[[NSNull null]]);
