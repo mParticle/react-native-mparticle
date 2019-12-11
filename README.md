@@ -344,6 +344,25 @@ MParticle.logPushRegistration(pushToken, senderId);
 MParticle.logPushRegistration(pushToken, null);
 ```
 
+## GDPR Consent
+Add a GDPRConsent
+
+```
+var gdprConsent = GDPRConsent()
+    .setConsented(true)
+    .setDocument("the document")
+    .setTimestamp(new Date().getTime())  // optional, native SDK will automatically set current timestamp if omitted
+    .setLocation("the location")
+    .setHardwareId("the hardwareId");
+
+MParticle.addGDPRConsentState(gdprConsent, "the purpose");
+```
+
+Remove a GDPRConsent
+```
+MParticle.removeGDPRConsentStateWithPurpose("the purpose");
+```
+
 
 # License
 
