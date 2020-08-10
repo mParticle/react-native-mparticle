@@ -96,6 +96,14 @@ const removeGDPRConsentStateWithPurpose = (purpose) => {
   NativeModules.MParticle.removeGDPRConsentStateWithPurpose(purpose)
 }
 
+const setCCPAConsentState = (newConsentState) => {
+  NativeModules.MParticle.setCCPAConsentState(newConsentState)
+}
+
+const removeCCPAConsentState = () => {
+  NativeModules.MParticle.removeCCPAConsentState()
+}
+
 const isKitActive = (kitId, completion) => {
   NativeModules.MParticle.isKitActive(kitId, completion)
 }
@@ -395,6 +403,42 @@ class GDPRConsent {
   }
 }
 
+class CCPAConsent {
+
+  constructor (consented, doc, timestamp, location, hardwareId) {
+    this.consented = consented
+    this.document = doc
+    this.timestamp = timestamp
+    this.location = location
+    this.hardwareId = hardwareId
+  }
+
+  setConsented (consented) {
+    this.consented = consented
+    return this
+  }
+
+  setDocument (doc) {
+    this.document = doc
+    return this
+  }
+
+  setTimestamp (timestamp) {
+    this.timestamp = timestamp
+    return this
+  }
+
+  setLocation (location) {
+    this.location = location
+    return this
+  }
+
+  setHardwareId (hardwareId) {
+    this.hardwareId = hardwareId
+    return this
+  }
+}
+
 class CommerceEvent {
 
   static createProductActionEvent (productActionType, products, transactionAttributes = {}) {
@@ -565,6 +609,7 @@ const MParticle = {
   Event,
   MParticleError,
   GDPRConsent,
+  CCPAConsent,
 
   logEvent,             // Methods
   logMPEvent,
@@ -574,6 +619,8 @@ const MParticle = {
   getOptOut,
   addGDPRConsentState,
   removeGDPRConsentStateWithPurpose,
+  setCCPAConsentState,
+  removeCCPAConsentState,
   isKitActive,
   getAttributions,
   logPushRegistration,

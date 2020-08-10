@@ -24,6 +24,7 @@ import com.mparticle.commerce.TransactionAttributes;
 import com.mparticle.commerce.Promotion;
 import com.mparticle.consent.ConsentState;
 import com.mparticle.consent.GDPRConsent;
+import com.mparticle.consent.CCPAConsent;
 import com.mparticle.identity.AliasRequest;
 import com.mparticle.identity.IdentityApi;
 import com.mparticle.identity.IdentityApiRequest;
@@ -419,6 +420,36 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
     }
 
+        @ReactMethod
+    public void setCCPAConsentState(final ReadableMap map) {
+        MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
+        if (currentUser != null) {
+
+
+            CCPAConsent consent = ConvertToCCPAConsent(map);
+            if (consent != null) {
+                ConsentState consentState = ConsentState.withConsentState(currentUser.getConsentState())
+                        .setCCPAConsentState(consent)
+                        .build();
+                currentUser.setConsentState(consentState);
+                Logger.info("CCPAConsentState added, \n" + consentState.toString());
+            } else {
+                Logger.warning("CCPAConsentState was not able to be deserialized, will not be added");
+            }
+        }
+    }
+
+    @ReactMethod
+    public void removeCCPAConsentState() {
+        MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
+        if (currentUser != null) {
+            ConsentState consentState = ConsentState.withConsentState(currentUser.getConsentState())
+                    .removeCCPAConsentState()
+                    .build();
+            currentUser.setConsentState(consentState);
+        }
+    }
+
     protected WritableMap getWritableMap() {
         return new WritableNativeMap();
     }
@@ -780,6 +811,46 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             return null;
         }
         GDPRConsent.Builder builder = GDPRConsent.builder(consented);
+
+        if (map.hasKey("document")) {
+            String document = map.getString("document");
+            builder.document(document);
+        }
+        if (map.hasKey("hardwareId")) {
+            String hardwareId = map.getString("hardwareId");
+            builder.hardwareId(hardwareId);
+        }
+        if (map.hasKey("location")) {
+            String location = map.getString("location");
+            builder.location(location);
+        }
+        if (map.hasKey("timestamp")) {
+            Long timestamp = null;
+            try {
+                String timestampString = map.getString("timestamp");
+                timestamp = Long.valueOf(timestampString);
+                builder.timestamp(timestamp);
+            } catch (Exception ex) {
+                Logger.warning("failed to convert \"timestamp\" value to Long");
+            }
+        }
+        return builder.build();
+    }
+
+    @Nullable
+    private CCPAConsent ConvertToCCPAConsent(ReadableMap map ) {
+        Boolean consented;
+        try {
+            if (map.getType("consented").equals(ReadableType.Boolean)) {
+                consented = map.getBoolean("consented");
+            } else {
+                consented = Boolean.valueOf(map.getString("consented"));
+            }
+        } catch (Exception ex) {
+            Logger.error("failed to convert \"consented\" value to a Boolean, unable to process addCCPAConsentState");
+            return null;
+        }
+        CCPAConsent.Builder builder = CCPAConsent.builder(consented);
 
         if (map.hasKey("document")) {
             String document = map.getString("document");
