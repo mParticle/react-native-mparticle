@@ -363,6 +363,25 @@ Remove a GDPRConsent
 MParticle.removeGDPRConsentStateWithPurpose("the purpose");
 ```
 
+## CCPA Consent
+Add a CCPAConsent
+
+```
+var ccpaConsent = CCPAConsent()
+    .setConsented(true)
+    .setDocument("the document")
+    .setTimestamp(new Date().getTime())  // optional, native SDK will automatically set current timestamp if omitted
+    .setLocation("the location")
+    .setHardwareId("the hardwareId");
+
+MParticle.addCCPAConsentState(ccpaConsent);
+```
+
+Remove CCPAConsent
+```
+MParticle.removeCCPAConsentState();
+```
+
 
 # License
 
