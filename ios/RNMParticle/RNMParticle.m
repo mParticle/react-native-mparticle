@@ -534,7 +534,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
         } else {
             NSString *value = json[key];
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
-            [request setUserIdentity:value identityType:identityType];
+            [request setIdentity:value identityType:identityType];
         }
     }
     return request;
