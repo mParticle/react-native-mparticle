@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 
 import com.mparticle.MParticle;
 import com.mparticle.UserAttributeListener;
-import com.mparticle.commerce.Cart;
 import com.mparticle.consent.ConsentState;
 import com.mparticle.identity.MParticleUser;
 
@@ -24,12 +23,6 @@ public class MockMParticleUser implements MParticleUser {
     @Override
     public long getId() {
         return mpid;
-    }
-
-    @NonNull
-    @Override
-    public Cart getCart() {
-        return null;
     }
 
     @NonNull
