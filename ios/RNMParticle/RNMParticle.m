@@ -308,7 +308,7 @@ RCT_EXPORT_METHOD(getUserIdentities:(NSString *)userId completion:(RCTResponseSe
 {
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
     selectedUser.userId = [NSNumber numberWithLong:userId.longLongValue];
-    completion(@[[NSNull null], [selectedUser userIdentities]]);
+    completion(@[[NSNull null], [selectedUser identities]]);
 }
 
 RCT_EXPORT_METHOD(getFirstSeen:(NSString *)userId completion:(RCTResponseSenderBlock)completion)
