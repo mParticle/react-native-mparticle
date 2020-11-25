@@ -3942,9 +3942,9 @@ react-is@^16.8.1, react-is@^16.8.6:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
 
-react-native-mparticle@2.4.3:
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.3.tgz#b88cbee36cf75b4a387efdd71f10bf1899012086"
+react-native-mparticle@2.4.6:
+  version "2.4.6"
+  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.6.tgz#cecb8e6b3e47c813177b88e38a5dc901aeebd865"
 
 react-native@^0.53.3:
   version "0.53.3"
@@ -5039,8 +5039,8 @@ write-file-atomic@^1.2.0:
     slide "^1.1.5"
 
 ws@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-1.1.1.tgz#082ddb6c641e85d4bb451f03d52f06eabdb1f018"
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-1.1.5.tgz#cbd9e6e75e09fc5d2c90015f21f0c40875e0dd51"
   dependencies:
     options ">=0.0.5"
     ultron "1.0.x"
