@@ -39,6 +39,11 @@ RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary
     [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes];
 }
 
+RCT_EXPORT_METHOD(setATTStatus:(NSInteger)status withTimestamp:(NSNumber *)timestamp)
+{
+    [[MParticle sharedInstance] setATTStatus:status withTimestamp:timestamp];
+}
+
 RCT_EXPORT_METHOD(setOptOut:(BOOL)optOut)
 {
     [[MParticle sharedInstance] setOptOut:optOut];
