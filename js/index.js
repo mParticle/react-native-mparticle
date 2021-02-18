@@ -80,6 +80,10 @@ const logScreenEvent = (screenName, attributes = null) => {
   NativeModules.MParticle.logScreenEvent(screenName, attributes)
 }
 
+const setATTStatus = (status, timestamp = null) => {
+  NativeModules.MParticle.setATTStatus(status, timestamp)
+}
+
 const setOptOut = (optOut) => {
   NativeModules.MParticle.setOptOut(optOut)
 }
@@ -615,6 +619,7 @@ const MParticle = {
   logMPEvent,
   logCommerceEvent,
   logScreenEvent,
+  setATTStatus,
   setOptOut,
   getOptOut,
   addGDPRConsentState,
