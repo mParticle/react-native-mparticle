@@ -39,6 +39,11 @@ RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary
     [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes];
 }
 
+RCT_EXPORT_METHOD(setATTStatus:(NSInteger)status withATTStatusTimestampMillis:(NSNumber *)timestamp)
+{
+    [[MParticle sharedInstance] setATTStatus:status withATTStatusTimestampMillis:timestamp];
+}
+
 RCT_EXPORT_METHOD(setOptOut:(BOOL)optOut)
 {
     [[MParticle sharedInstance] setOptOut:optOut];
@@ -531,10 +536,12 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
             request.email = json[@"email"];
         } else if ([key isEqualToString:@"customerId"]) {
             request.customerId = json[@"customerId"];
-        } else {
+        } else if ((key.intValue <= MPIdentityDeviceApplicationStamp) && (MPIdentityOther <= key.intValue)) {
             NSString *value = json[key];
             MPIdentity identityType = (MPIdentity)key.intValue;
             [request setIdentity:value identityType:identityType];
+        } else {
+            NSAssert(NO, @"Invalid identity request - Please only use MPIdentity keys");
         }
     }
     return request;
