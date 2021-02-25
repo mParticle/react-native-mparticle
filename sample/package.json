@@ -9,7 +9,7 @@
   "dependencies": {
     "react": "*",
     "react-native": "^0.53.3",
-    "react-native-mparticle": "2.4.7"
+    "react-native-mparticle": "2.4.8"
   },
   "devDependencies": {
     "babel-jest": "18.0.0",
