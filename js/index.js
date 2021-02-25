@@ -63,10 +63,10 @@ const PromotionActionType = {
 }
 
 const ATTAuthStatus = {
-  MPReactATTAuthStatusNotDetermined: 0,
-  MPReactATTAuthStatusRestricted: 1,
-  MPReactATTAuthStatusDenied: 2,
-  MPReactATTAuthStatusAuthorized: 3
+  NotDetermined: 0,
+  Restricted: 1,
+  Denied: 2,
+  Authorized: 3
 };
 
 // ******** Main API ********
