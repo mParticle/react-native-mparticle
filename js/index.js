@@ -62,6 +62,13 @@ const PromotionActionType = {
   Click: 1
 }
 
+const ATTAuthStatus = {
+  MPReactATTAuthStatusNotDetermined: 0,
+  MPReactATTAuthStatusRestricted: 1,
+  MPReactATTAuthStatusDenied: 2,
+  MPReactATTAuthStatusAuthorized: 3
+};
+
 // ******** Main API ********
 
 const logEvent = (eventName, type = EventType.Other, attributes = null) => {
@@ -80,6 +87,7 @@ const logScreenEvent = (screenName, attributes = null) => {
   NativeModules.MParticle.logScreenEvent(screenName, attributes)
 }
 
+// Use ATTAuthStatus constants for status
 const setATTStatus = (status, timestamp = null) => {
   NativeModules.MParticle.setATTStatus(status, timestamp)
 }
@@ -600,6 +608,7 @@ const MParticle = {
   UserAttributeType,
   ProductActionType,
   PromotionActionType,
+  ATTAuthStatus,
 
   Product,              // Classes
   Impression,
