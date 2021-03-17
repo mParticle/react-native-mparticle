@@ -115,11 +115,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getUserAttributes(final String userId, Callback completion) {
+    public void getUserAttributes(final String userId, final Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
-            MParticle.getInstance().Identity().getUserAttributes()
-            .addUserAttributeListener(new UserAttributeListener() {
+            selectedUser.getUserAttributes(new UserAttributeListener() {
                 @Override
                 public void onUserAttributesReceived(Map<String, String> userAttributes, Map<String, List<String>> userAttributeLists, Long mpid) {
                     completion.invoke(null, userAttributes);
