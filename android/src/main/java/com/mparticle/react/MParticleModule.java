@@ -34,6 +34,7 @@ import com.mparticle.identity.IdentityHttpResponse;
 import com.mparticle.identity.TaskFailureListener;
 import com.mparticle.identity.TaskSuccessListener;
 import com.mparticle.internal.Logger;
+import com.mparticle.UserAttributeListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,7 +118,13 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     public void getUserAttributes(final String userId, Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
-            completion.invoke(null, ConvertToUserIdentities(selectedUser.getUserAttributes()));
+            MParticle.getInstance().Identity().getUserAttributes()
+            .addUserAttributeListener(new UserAttributeListener() {
+                @Override
+                public void onUserAttributesReceived(Map<String, String> userAttributes, Map<String, List<String>> userAttributeLists, Long mpid) {
+                    completion.invoke(null, userAttributes);
+                }
+            });
         } else {
             completion.invoke();
         }
