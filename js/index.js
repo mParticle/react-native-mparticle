@@ -67,7 +67,7 @@ const ATTAuthStatus = {
   Restricted: 1,
   Denied: 2,
   Authorized: 3
-};
+}
 
 // ******** Main API ********
 
@@ -152,6 +152,15 @@ class User {
 
   setUserAttributeArray (key, value) {
     NativeModules.MParticle.setUserAttributeArray(this.userId, key, value)
+  }
+
+  getUserAttributes (completion) {
+    NativeModules.MParticle.getUserAttributes((error, userAttributes) => {
+      if (error) {
+        console.log(error.stack)
+      }
+      completion(userAttributes)
+    })
   }
 
   setUserTag (value) {

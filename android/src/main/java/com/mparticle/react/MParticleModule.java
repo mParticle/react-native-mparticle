@@ -114,6 +114,16 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getUserAttributes(final String userId, Callback completion) {
+        MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
+        if (selectedUser != null) {
+            completion.invoke(null, ConvertToUserIdentities(selectedUser.getUserAttributes()));
+        } else {
+            completion.invoke();
+        }
+    }
+
+    @ReactMethod
     public void setUserTag(final String userId, final String tag) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
