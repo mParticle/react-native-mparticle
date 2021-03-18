@@ -41,7 +41,20 @@ const UserIdentityType = {
   FacebookCustomAudienceId: 9,
   Other2: 10,
   Other3: 11,
-  Other4: 12
+  Other4: 12,
+  Other5: 13,
+  Other6: 14,
+  Other7: 15,
+  Other8: 16,
+  Other9: 17,
+  Other10: 18,
+  MobileNumber: 19,
+  PhoneNumber2: 20,
+  PhoneNumber3: 21,
+  IOSAdvertiserId: 22,
+  IOSVendorId: 23,
+  PushToken: 24,
+  DeviceApplicationStamp: 25
 }
 
 const ProductActionType = {
