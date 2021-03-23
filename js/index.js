@@ -101,7 +101,11 @@ const logScreenEvent = (screenName, attributes = null) => {
 }
 
 // Use ATTAuthStatus constants for status
-const setATTStatus = (status, timestamp = null) => {
+const setATTStatus = (status) => {
+  NativeModules.MParticle.setATTStatus(status)
+}
+
+const setATTStatusWithCustomTimestamp = (status, timestamp) => {
   NativeModules.MParticle.setATTStatus(status, timestamp)
 }
 
@@ -651,6 +655,7 @@ const MParticle = {
   logCommerceEvent,
   logScreenEvent,
   setATTStatus,
+  setATTStatusWithCustomTimestamp,
   setOptOut,
   getOptOut,
   addGDPRConsentState,
