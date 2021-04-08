@@ -161,7 +161,7 @@ class User {
 
   setUserAttribute (key, value) {
     if (value && value.constructor === Array) {
-      NativeModules.Mparticle.setUserAttributeArray(this.userId, key, value)
+      NativeModules.MParticle.setUserAttributeArray(this.userId, key, value)
     } else {
       NativeModules.MParticle.setUserAttribute(this.userId, key, value)
     }
