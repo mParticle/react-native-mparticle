@@ -172,7 +172,7 @@ class User {
   }
 
   getUserAttributes (completion) {
-    NativeModules.MParticle.getUserAttributes((error, userAttributes) => {
+    NativeModules.MParticle.getUserAttributes(this.userId, (error, userAttributes) => {
       if (error) {
         console.log(error.stack)
       }
