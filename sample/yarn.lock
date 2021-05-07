@@ -3913,9 +3913,9 @@ react-is@^16.8.1, react-is@^16.8.6:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
 
-react-native-mparticle@2.4.6:
-  version "2.4.6"
-  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.6.tgz#cecb8e6b3e47c813177b88e38a5dc901aeebd865"
+react-native-mparticle@2.4.12:
+  version "2.4.12"
+  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.12.tgz#16c75ca7d370c085d2bea92740dfce623e330eff"
 
 react-native@^0.53.3:
   version "0.53.3"
@@ -4774,8 +4774,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 ua-parser-js@^0.7.18:
-  version "0.7.21"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.21.tgz#853cf9ce93f642f67174273cc34565ae6f308777"
+  version "0.7.28"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.28.tgz#8ba04e653f35ce210239c64661685bf9121dec31"
 
 uglify-es@^3.1.9:
   version "3.3.9"
