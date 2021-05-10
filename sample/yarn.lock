@@ -3913,9 +3913,9 @@ react-is@^16.8.1, react-is@^16.8.6:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
 
-react-native-mparticle@2.4.6:
-  version "2.4.6"
-  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.6.tgz#cecb8e6b3e47c813177b88e38a5dc901aeebd865"
+react-native-mparticle@2.4.12:
+  version "2.4.12"
+  resolved "https://registry.yarnpkg.com/react-native-mparticle/-/react-native-mparticle-2.4.12.tgz#16c75ca7d370c085d2bea92740dfce623e330eff"
 
 react-native@^0.53.3:
   version "0.53.3"
@@ -5031,8 +5031,8 @@ xpipe@^1.0.5:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
 
 yallist@^2.0.0:
   version "2.0.0"
