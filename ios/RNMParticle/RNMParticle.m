@@ -416,6 +416,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     commerceEvent.action = [RCTConvert MPCommerceEventAction:json[@"productActionType"]];
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
+    commerceEvent.customAttributes = json[@"customAttributes"];
 
     NSMutableArray *products = [NSMutableArray array];
     NSArray *jsonProducts = json[@"products"];

@@ -169,7 +169,10 @@ MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test 
 ```js
 const product = new MParticle.Product('Test product for cart', '1234', 19.99)
 const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
-const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
+const customAttributes = {
+    myCustomAttribute: 'value',
+}
+const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes, customAttributes)
 
 MParticle.logCommerceEvent(event)
 ```

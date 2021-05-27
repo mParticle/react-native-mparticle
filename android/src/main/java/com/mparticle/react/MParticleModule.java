@@ -544,6 +544,11 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         }
 
         CommerceEvent.Builder builder = null;
+        Map customAttributes = null;
+
+        if (map.hasKey("customAttributes")) {
+            customAttributes = map.getMap("customAttributes").toHashMap();
+        }
 
         if (isProductAction) {
             int productActionInt = map.getInt("productActionType");
@@ -553,7 +558,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             Product product = ConvertProduct(productMap);
             ReadableMap transactionAttributesMap = map.getMap("transactionAttributes");
             TransactionAttributes transactionAttributes = ConvertTransactionAttributes(transactionAttributesMap);
-            builder = new CommerceEvent.Builder(productAction, product).transactionAttributes(transactionAttributes);
+            builder = new CommerceEvent.Builder(productAction, product).transactionAttributes(transactionAttributes).customAttributes(customAttributes);
 
             for (int i = 1; i < productsArray.size(); ++i) {
                 productMap = productsArray.getMap(i);
@@ -567,7 +572,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             ReadableArray promotionsReadableArray = map.getArray("promotions");
             ReadableMap promotionMap = promotionsReadableArray.getMap(0);
             Promotion promotion = ConvertPromotion(promotionMap);
-            builder = new CommerceEvent.Builder(promotionAction, promotion);
+            builder = new CommerceEvent.Builder(promotionAction, promotion).customAttributes(customAttributes);
 
             for (int i = 0; i < promotionsReadableArray.size(); ++i) {
                 promotionMap = promotionsReadableArray.getMap(i);
@@ -579,7 +584,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             ReadableArray impressionsArray = map.getArray("impressions");
             ReadableMap impressionMap = impressionsArray.getMap(0);
             Impression impression = ConvertImpression(impressionMap);
-            builder = new CommerceEvent.Builder(impression);
+            builder = new CommerceEvent.Builder(impression).customAttributes(customAttributes);
 
             for (int i = 0; i < impressionsArray.size(); ++i) {
                 impressionMap = impressionsArray.getMap(i);

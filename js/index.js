@@ -479,10 +479,11 @@ class CCPAConsent {
 
 class CommerceEvent {
 
-  static createProductActionEvent (productActionType, products, transactionAttributes = {}) {
+  static createProductActionEvent (productActionType, products, transactionAttributes = {}, customAttributes = {}) {
     return new CommerceEvent()
                     .setProductActionType(productActionType)
                     .setProducts(products)
+                    .setCustomAttributes(customAttributes)
                     .setTransactionAttributes(transactionAttributes)
   }
 
