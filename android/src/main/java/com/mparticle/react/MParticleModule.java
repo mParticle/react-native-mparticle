@@ -508,6 +508,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 }
             }
 
+            if (map.hasKey("shouldUploadEvent")) {
+                builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"));
+            }
+
             return  builder.build();
         }
 
@@ -586,6 +590,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 impression = ConvertImpression(impressionMap);
                 builder.addImpression(impression);
             }
+        }
+
+        if (map.hasKey("shouldUploadEvent")) {
+            builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"));
         }
 
         return builder.build();

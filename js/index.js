@@ -566,6 +566,11 @@ class CommerceEvent {
     this.nonInteractive = nonInteractive
     return this
   }
+
+  setShouldUploadEvent (shouldUploadEvent) {
+    this.shouldUploadEvent = shouldUploadEvent
+    return this
+  }
 }
 
 class Event {
@@ -602,6 +607,11 @@ class Event {
 
   setType (type) {
     this.type = type
+    return this
+  }
+
+  setShouldUploadEvent (shouldUploadEvent) {
+    this.shouldUploadEvent = shouldUploadEvent
     return this
   }
 
