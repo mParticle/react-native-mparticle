@@ -508,6 +508,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 }
             }
 
+            if (map.hasKey("shouldUploadEvent")) {
+                builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"));
+            }
+
             return  builder.build();
         }
 
@@ -591,6 +595,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 impression = ConvertImpression(impressionMap);
                 builder.addImpression(impression);
             }
+        }
+
+        if (map.hasKey("shouldUploadEvent")) {
+            builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"));
         }
 
         return builder.build();
@@ -713,7 +721,34 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
             while (iterator.hasNextKey()) {
                 String key = iterator.nextKey();
-                map.put(key, readableMap.getString(key));
+                switch (readableMap.getType(key)) {
+                    case Null:
+                        map.put(key, null);
+                        break;
+                    case Boolean:
+                        map.put(key, Boolean.valueOf(readableMap.getBoolean(key)).toString());
+                        break;
+                    case Number:
+                        try {
+                            map.put(key, Integer.toString(readableMap.getInt(key)));
+                        } catch (Exception e) {
+                            try {
+                                map.put(key, Double.toString(readableMap.getDouble(key)));
+                            } catch (Exception ex) {
+                                Logger.warning("Unable to parse value for \"" + key + "\"");
+                            }
+                        }
+                        break;
+                    case String:
+                        map.put(key, readableMap.getString(key));
+                        break;
+                    case Map:
+                        Logger.warning("Maps are not supported Attribute value types");
+                        break;
+                    case Array:
+                        Logger.warning("Lists are not supported Attribute value types");
+                        break;
+                }
             }
         }
 
