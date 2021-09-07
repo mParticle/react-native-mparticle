@@ -126,10 +126,9 @@ android {
 }
 
 dependencies {
-    compile project(':react-native-mparticle')
-    compile fileTree(dir: "libs", include: ["*.jar"])
-    compile "com.android.support:appcompat-v7:28+"
-    compile "com.facebook.react:react-native:+"  // From node_modules
+    implementation project(':react-native-mparticle')
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "com.facebook.react:react-native:+"  // From node_modules
 
     //
     // In your app, you should include mParticle core like this:
@@ -138,7 +137,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    compile "com.mparticle:android-core:5.+"
+    implementation "com.mparticle:android-core:5.+"
 
     //
     // And, if you want to include kits, you can do so as follows:
