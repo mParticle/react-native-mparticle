@@ -86,7 +86,7 @@ export default class MParticleSample extends Component {
     var i = 0;
     // Toggle the state every few seconds, 10 times
     var intervalId = setInterval(() => {
-        MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value' })
+        MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value', 'Test Boolean': true, 'Test Int': 1235, 'Test Double': 123.123 })
         this.setState((previousState) => {
           return {isShowingText: !previousState.isShowingText}
         })

@@ -48,7 +48,7 @@ public class MainApplication extends Application implements ReactApplication {
     IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
 
     MParticleOptions options = MParticleOptions.builder(this)
-      .credentials("REPLACE ME WITH KEY","REPLACE ME WITH SECRET")
+      .credentials("us1-352af4d005e49047a7bcc78281f33e9c","flR34mIajnAA5F-Ouha7JQF5v0JqFUfo_QjJtM_16VESU2hS0ikp3hRILG70-aBk")
       .logLevel(MParticle.LogLevel.VERBOSE)
       .identify(identityRequest.build())
       .build();
