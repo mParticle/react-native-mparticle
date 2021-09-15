@@ -416,7 +416,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     commerceEvent.action = [RCTConvert MPCommerceEventAction:json[@"productActionType"]];
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
-    if json[@"shouldUploadEvent"] != nil {
+    if (json[@"shouldUploadEvent"] != nil) {
         event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue]
     }
 
@@ -605,7 +605,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     event.name = json[@"name"];
     event.startTime = json[@"startTime"];
     event.type = [json[@"type"] intValue];
-    if json[@"shouldUploadEvent"] != nil {
+    if (json[@"shouldUploadEvent"] != nil) {
         event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue]
     }
 
