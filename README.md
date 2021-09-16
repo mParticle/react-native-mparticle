@@ -16,21 +16,21 @@ React Native allows developers to use a single code base to deploy features to m
 
 # Installation
 
-**First, download the library** from npm:
+1. **Download the library** from npm:
 
 ```bash
 $ npm install react-native-mparticle --save
 ```
 
-**Second, install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
+2. **Install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
 
 ```bash
 $ react-native link
 ```
 
-**Grab your mParticle key and secret** from [your app's dashboard][1] and move on to the OS-specific instructions below.
+3. **Grab your mParticle key and secret** from [your app's dashboard][1] and move on to the OS-specific instructions below.
 
-[1]: https://app.mparticle.com/apps
+[1]: https://app.mparticle.com/setup/inputs/apps
 
 ## <a name="iOS"></a>iOS
 
@@ -41,7 +41,11 @@ $ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or late
 $ pod install
 ```
 
-The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`. The `startWithOptions` method requires an options argument containing your key and secret and an initial Identity request.
+The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
+
+Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`.
+
+The `startWithOptions` method requires an options argument containing your key and secret and an initial Identity request.
 
 > Note that it is imperative for the SDK to be initialized in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
 
@@ -125,7 +129,7 @@ Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) fo
 
 ## <a name="Android"></a>Android
 
-1. Grab your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/apps) and construct an `MParticleOptions` object.
+1. Grab your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/setup/inputs/apps) and construct an `MParticleOptions` object.
 
 2. Call `start` from the `onCreate` method of your app's `Application` class. It's crucial that the SDK be started here for proper session management. If you don't already have an `Application` class, create it and then specify its fully-qualified name in the `<application>` tag of your app's `AndroidManifest.xml`.
 
