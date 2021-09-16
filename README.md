@@ -3,6 +3,17 @@
 [![npm version](https://badge.fury.io/js/react-native-mparticle.svg)](https://badge.fury.io/js/react-native-mparticle)
 [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](http://standardjs.com/)
 
+React Native allows developers to use a single code base to deploy features to multiple platforms. With the mParticle React Native library, you can leverage a single API to deploy your data to hundreds of integrations from your iOS and Android apps
+
+### Supported Features
+| Method | Android | iOS |
+| ---    | ---     | --- |
+| Custom Events | <li> [X] </li> | <li> [X]  </li> | |
+| Page Views | <li> [X]  </li> | <li> [X]  </li> | | 
+| Identity | <li> [X]  </li> | <li> [X]  </li> | |
+| eCommerce | <li> [X]  </li> | <li> [X]  </li> | |
+| Consent | <li> [X]  </li> | <li> [X]  </li> | |
+
 # Installation
 
 **First, download the library** from npm:
@@ -33,6 +44,8 @@ $ pod install
 The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`. The `startWithOptions` method requires an options argument containing your key and secret and an initial Identity request.
 
 > Note that it is imperative for the SDK to be initialized in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
+
+For more help, see [the full iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
 
 #### Swift
 
