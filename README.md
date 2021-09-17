@@ -8,11 +8,11 @@ React Native allows developers to use a single code base to deploy features to m
 ### Supported Features
 | Method | Android | iOS |
 | ---    | ---     | --- |
-| Custom Events | <li> [X] </li> | <li> [X]  </li> | |
-| Page Views | <li> [X]  </li> | <li> [X]  </li> | | 
-| Identity | <li> [X]  </li> | <li> [X]  </li> | |
-| eCommerce | <li> [X]  </li> | <li> [X]  </li> | |
-| Consent | <li> [X]  </li> | <li> [X]  </li> | |
+| Custom Events | <li> [X] </li> | <li> [X]  </li> |
+| Page Views | <li> [X]  </li> | <li> [X]  </li> |
+| Identity | <li> [X]  </li> | <li> [X]  </li> |
+| eCommerce | <li> [X]  </li> | <li> [X]  </li> |
+| Consent | <li> [X]  </li> | <li> [X]  </li> |
 
 # Installation
 
