@@ -3,38 +3,58 @@
 [![npm version](https://badge.fury.io/js/react-native-mparticle.svg)](https://badge.fury.io/js/react-native-mparticle)
 [![Standard - JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](http://standardjs.com/)
 
+React Native allows developers to use a single code base to deploy features to multiple platforms. With the mParticle React Native library, you can leverage a single API to deploy your data to hundreds of integrations from your iOS and Android apps.
+
+### Supported Features
+| Method | Android | iOS |
+| ---    | ---     | --- |
+| Custom Events | <li> [X] </li> | <li> [X]  </li> |
+| Page Views | <li> [X]  </li> | <li> [X]  </li> |
+| Identity | <li> [X]  </li> | <li> [X]  </li> |
+| eCommerce | <li> [X]  </li> | <li> [X]  </li> |
+| Consent | <li> [X]  </li> | <li> [X]  </li> |
+
 # Installation
 
-**First, download the library** from npm:
+1. **Download and install the mParticle React Native library** from npm:
 
 ```bash
 $ npm install react-native-mparticle --save
 ```
 
-**Second, install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
+2. **Install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
 
 ```bash
 $ react-native link
 ```
 
-**Grab your mParticle key and secret** from [your app's dashboard][1] and move on to the OS-specific instructions below.
-
-[1]: https://app.mparticle.com/apps
-
 ## <a name="iOS"></a>iOS
 
-**Install the SDK** using CocoaPods:
+1. **Copy your mParticle key and secret** from [your app's dashboard][1].
+
+[1]: https://app.mparticle.com/setup/inputs/apps
+
+2. **Install the SDK** using CocoaPods:
 
 ```bash
 $ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or later
 $ pod install
 ```
 
-The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`. The `startWithOptions` method requires an options argument containing your key and secret and an initial Identity request.
+The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
 
-> Note that it is imperative for the SDK to be initialized in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
+Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`.
 
-#### Swift
+The `startWithOptions` method requires an options argument containing your key and secret and an initial Identity request.
+
+> Note that you must initialize the SDK in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
+
+For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
+
+3. Import and start the mParticle Apple SDK into Swift or Objective-C.
+
+
+#### Swift Example
 
 ```swift
 import mParticle_Apple_SDK
@@ -62,7 +82,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 }
 ```
 
-#### Objective-C
+#### Objective-C Example
 
 For apps supporting iOS 8 and above, Apple recommends using the import syntax for **modules** or **semantic import**. However, if you prefer the traditional CocoaPods and static libraries delivery mechanism, that is fully supported as well.
 
@@ -107,14 +127,16 @@ Next, you'll need to start the SDK:
 }
 ```
 
-Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
+See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 
 ## <a name="Android"></a>Android
 
-1. Grab your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/apps) and construct an `MParticleOptions` object.
+1. Copy your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/setup/inputs/apps) and construct an `MParticleOptions` object.
 
 2. Call `start` from the `onCreate` method of your app's `Application` class. It's crucial that the SDK be started here for proper session management. If you don't already have an `Application` class, create it and then specify its fully-qualified name in the `<application>` tag of your app's `AndroidManifest.xml`.
+
+For more help, see [the Android set up docs](https://docs.mparticle.com/developers/sdk/android/getting-started/#create-an-input).
 
 ```java
 package com.example.myapp;
@@ -143,28 +165,26 @@ public class MyApplication extends Application {
 }
 ```
 
-> **Warning:** It's generally not a good idea to log events in your `Application.onCreate()`. Android may instantiate your `Application` class for a lot of reasons, in the background, while the user isn't even using their device. 
+> **Warning:** Don't log events in your `Application.onCreate()`. Android may instantiate your `Application` class in the background without your knowledge, including when the user isn't using their device, and lead to unexpected results. 
 
 
 # Usage
 
-## Import
-
-**Importing** the module:
+## Import the mParticle Module
 
 ```js
 import MParticle from 'react-native-mparticle'
 ```
 
-## Events
+## Logging Events
 
-**Logging** events:
+To log basic events:
 
 ```js
 MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value' })
 ```
 
-**Logging** commerce events:
+To log commerce events:
 
 ```js
 const product = new MParticle.Product('Test product for cart', '1234', 19.99)
@@ -189,16 +209,16 @@ const event = MParticle.CommerceEvent.createImpressionEvent([impression])
 MParticle.logCommerceEvent(event)
 ```
 
-**Logging** screen events:
+To log screen events:
 
 ```js
 MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' })
 ```
 
 ## User
-**Setting** user attributes and tags:
 
-Use Identify or currentUser to retrieve the userID for these calls
+To set, remove, and get user details, call the `User` or `Identity` methods as follows:
+
 ```js
 MParticle.User.setUserAttribute('User ID', 'Test key', 'Test value')
 ```
@@ -253,9 +273,6 @@ MParticle.Identity.getCurrentUser((currentUser) => {
     console.debug(currentUser.userID);
 });
 ```
-
-**Using** static methods to update and change identity
-
 
 ```js
 var request = new MParticle.IdentityRequest();
@@ -330,7 +347,7 @@ MParticle.setOptOut(!isOptedOut);
 
 ## Push Registration
 
-The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, provide both the pushToken and senderId. For iOS, provide the push token in the first parameter, and simply pass `null` for the second parameter
+The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, provide both the `pushToken` and `senderId`. For iOS, provide the push token in the first parameter, and simply pass `null` for the second parameter.
 
 ### Android
 
