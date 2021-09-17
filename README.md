@@ -217,9 +217,7 @@ MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' })
 
 ## User
 
-Get the current user in order to apply and remove attributes, tags, etc.
-
-Use `Identify` or `currentUser` methods to retrieve the `userID` for these calls
+To set, remove, and get user details, call the `User` or `Identity` methods as follows:
 
 ```js
 MParticle.User.setUserAttribute('User ID', 'Test key', 'Test value')
