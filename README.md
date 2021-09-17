@@ -165,7 +165,7 @@ public class MyApplication extends Application {
 }
 ```
 
-> **Warning:** Don't log events in your `Application.onCreate()`. Android may instantiate your `Application` class in the background without your knowledge, eventwhile the user isn't even using their device, and lead to unexpected results. 
+> **Warning:** Don't log events in your `Application.onCreate()`. Android may instantiate your `Application` class in the background without your knowledge, including when the user isn't using their device, and lead to unexpected results. 
 
 
 # Usage
