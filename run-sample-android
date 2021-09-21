@@ -1,0 +1,6 @@
+npm install;
+yarn install;
+cd sample;
+npm install;
+yarn install;
+npx react-native run-android

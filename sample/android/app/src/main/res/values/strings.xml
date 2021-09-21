@@ -1,5 +1,3 @@
 <resources>
-    <string name="app_name">MParticleSample</string>
-    <string name="mp_key">REPLACE ME WITH KEY</string>
-    <string name="mp_secret">REPLACE ME WITH SECRET</string>
+    <string name="app_name">sampleApp</string>
 </resources>

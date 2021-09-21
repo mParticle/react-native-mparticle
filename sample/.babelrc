@@ -1,3 +1,11 @@
 {
-"presets": ["react-native"]
+  "plugins": [
+    ["module-resolver", {
+      "root": ["../js"],
+      "alias": {
+        "test": "./test",
+        "underscore": "lodash"
+      }
+    }]
+  ]
 }

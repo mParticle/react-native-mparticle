@@ -603,7 +603,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     event.category = json[@"category"];
     event.duration = json[@"duration"];
     event.endTime = json[@"endTime"];
-    event.info = json[@"info"];
+    event.customAttributes = json[@"info"];
     event.name = json[@"name"];
     event.startTime = json[@"startTime"];
     event.type = [json[@"type"] intValue];

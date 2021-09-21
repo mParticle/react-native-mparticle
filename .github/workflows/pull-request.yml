@@ -1,0 +1,74 @@
+name: Continuous Integration
+
+on:
+  [pull_request, push]
+
+jobs:
+  build-js:
+    name: "Run React JS Tests"
+    runs-on: macOS-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@master
+    - uses: c-hive/gha-yarn-cache@v1
+
+    - name: "Install node modules"
+      run: yarn install
+        
+    - name: "Run React Tests"
+      run: yarn test
+  build-ios:
+    name: "Build iOS Sample App"
+    runs-on: macOS-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@master
+    - uses: c-hive/gha-yarn-cache@v1
+
+    - name: "Install Node Modules"
+      run: npm install; yarn install
+
+    - name: "Install Node Modules, Sample App"
+      working-directory: sample
+      run: npm install; yarn install
+
+    - name: "Install Pods, Sample App"
+      working-directory: sample/ios
+      run: pod install
+
+    - name: "XCode build"
+      working-directory: sample/ios
+      run: xcodebuild -allowProvisioningUpdates -workspace sampleApp.xcworkspace -scheme sampleApp -destination 'platform=iOS Simulator,name=iPhone 11,OS=latest'
+
+  build-android:
+    name: "Build Android Sample App"
+    runs-on: ubuntu-18.04
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@master
+    - uses: c-hive/gha-yarn-cache@v1
+
+    - name: "Install Node Modules"
+      run: npm install; yarn install
+
+    - name: "Install Node Modules, Sample App"
+      working-directory: sample
+      run: npm install; yarn install
+
+    - name: "Android Build"
+      working-directory: sample/android
+      run: ./gradlew assembleDebug
+
+  android-unit-tests:
+    name: "Run Android Unit Tests"
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Run Android Unit Tests
+        working-directory: android
+        run: ./gradlew test
