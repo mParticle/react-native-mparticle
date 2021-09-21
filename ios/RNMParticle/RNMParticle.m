@@ -417,7 +417,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
     if (json[@"shouldUploadEvent"] != nil) {
-        event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue]
+        commerceEvent.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue];
     }
 
     NSMutableArray *products = [NSMutableArray array];
@@ -606,7 +606,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     event.startTime = json[@"startTime"];
     event.type = [json[@"type"] intValue];
     if (json[@"shouldUploadEvent"] != nil) {
-        event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue]
+        event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue];
     }
 
     NSDictionary *jsonFlags = json[@"customFlags"];
