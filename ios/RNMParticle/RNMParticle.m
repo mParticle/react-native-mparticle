@@ -34,9 +34,9 @@ RCT_EXPORT_METHOD(logCommerceEvent:(MPCommerceEvent *)commerceEvent)
     [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
 }
 
-RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary *)attributes)
+RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary *)attributes shouldUploadEvent:(BOOL)shouldUploadEvent)
 {
-    [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes];
+    [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes shouldUploadEvent:shouldUploadEvent];
 }
 
 RCT_EXPORT_METHOD(setATTStatus:(NSInteger)status withATTStatusTimestampMillis:(nonnull NSNumber *)timestamp)
