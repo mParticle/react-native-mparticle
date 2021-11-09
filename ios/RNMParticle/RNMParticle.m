@@ -419,6 +419,9 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     if (json[@"shouldUploadEvent"] != nil) {
         commerceEvent.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue];
     }
+    if (json[@"customAttributes"] != nil) {
+        commerceEvent.customAttributes = json[@"customAttributes"];
+    }
 
     NSMutableArray *products = [NSMutableArray array];
     NSArray *jsonProducts = json[@"products"];
