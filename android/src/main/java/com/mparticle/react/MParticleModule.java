@@ -595,6 +595,9 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         if (map.hasKey("shouldUploadEvent")) {
             builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"));
         }
+        if (map.hasKey("customAttributes")) {
+            builder.customAttributes(ConvertStringMap(map.getMap("customAttributes")));
+        }
 
         return builder.build();
     }
