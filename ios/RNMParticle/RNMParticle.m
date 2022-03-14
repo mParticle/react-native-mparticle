@@ -395,7 +395,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     NSAssert(isProductAction || isPromotion || isImpression, @"Invalid commerce event");
 
     MPCommerceEvent *commerceEvent = nil;
-    if (isProductAction) {
+    if isProductAction {
         MPCommerceEventAction action = [RCTConvert MPCommerceEventAction:json[@"productActionType"]];
         commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
     }
