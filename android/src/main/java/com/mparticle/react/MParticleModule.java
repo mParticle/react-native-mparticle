@@ -598,6 +598,16 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         if (map.hasKey("customAttributes")) {
             builder.customAttributes(ConvertStringMap(map.getMap("customAttributes")));
         }
+        if (map.hasKey("currency")) {
+            builder.currency(map.getString("currency"));
+        }
+        if (map.hasKey("checkoutStep")) {
+            builder.checkoutStep(map.getInt("checkoutStep"));
+        }
+        if (map.hasKey("checkoutOptions")) {
+            builder.checkoutOptions(map.getString("checkoutOptions"));
+        }
+
 
         return builder.build();
     }
