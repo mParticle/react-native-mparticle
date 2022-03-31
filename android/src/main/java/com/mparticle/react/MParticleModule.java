@@ -86,9 +86,9 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void logScreenEvent(final String event, final ReadableMap attributesMap) {
+    public void logScreenEvent(final String event, final ReadableMap attributesMap, final boolean shouldUploadEvent) {
         Map<String, String> attributes = ConvertStringMap(attributesMap);
-        MParticle.getInstance().logScreen(event, attributes);
+        MParticle.getInstance().logScreen(event, attributes, shouldUploadEvent);
     }
 
     @ReactMethod

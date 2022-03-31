@@ -96,8 +96,8 @@ const logCommerceEvent = (commerceEvent) => {
   NativeModules.MParticle.logCommerceEvent(commerceEvent)
 }
 
-const logScreenEvent = (screenName, attributes = null) => {
-  NativeModules.MParticle.logScreenEvent(screenName, attributes)
+const logScreenEvent = (screenName, attributes = null, shouldUploadEvent = true) => {
+  NativeModules.MParticle.logScreenEvent(screenName, attributes, shouldUploadEvent)
 }
 
 // Use ATTAuthStatus constants for status
