@@ -64,7 +64,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
        // Override point for customization after application launch.
         let mParticleOptions = MParticleOptions(key: "<<<App Key Here>>>", secret: "<<<App Secret Here>>>")
         
-       //Please see the Identity page for more information on building this object
+       /* Optional - Please see the Identity page for more information on building this object
         let request = MPIdentityApiRequest()
         request.email = "email@example.com"
         mParticleOptions.identifyRequest = request
@@ -74,6 +74,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
         mParticleOptions.onAttributionComplete = { (attributionResult, error) in
                     NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
         }
+	*/
         
        //Start the SDK
         MParticle.sharedInstance().start(with: mParticleOptions)
@@ -110,7 +111,7 @@ Next, you'll need to start the SDK:
     MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
                                                                    secret:@"REPLACE ME"];
     
-    //Please see the Identity page for more information on building this object
+    /* Optional - Please see the Identity page for more information on building this object
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
     request.email = @"email@example.com";
     mParticleOptions.identifyRequest = request;
@@ -120,6 +121,7 @@ Next, you'll need to start the SDK:
     mParticleOptions.onAttributionComplete(MPAttributionResult * _Nullable attributionResult, NSError * _Nullable error) {
         NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
     }
+    */
     
     [[MParticle sharedInstance] startWithOptions:mParticleOptions];
     
@@ -151,7 +153,7 @@ public class MyApplication extends Application {
         MParticleOptions options = MParticleOptions.builder(this)
             .credentials("REPLACE ME WITH KEY","REPLACE ME WITH SECRET")
             .setLogLevel(MParticle.LogLevel.VERBOSE)
-            .identify(identifyRequest)
+            // .identify(identifyRequest) Optinal
             .identifyTask(
                 new BaseIdentityTask()
                         .addFailureListener(this)
