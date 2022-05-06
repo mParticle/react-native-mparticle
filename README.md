@@ -61,24 +61,23 @@ import mParticle_Apple_SDK
 
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-       // Override point for customization after application launch.
+        //override point for customization after application launch.
         let mParticleOptions = MParticleOptions(key: "<<<App Key Here>>>", secret: "<<<App Secret Here>>>")
         
-       //Please see the Identity page for more information on building this object
+        //optional- Please see the Identity page for more information on building this object
         let request = MPIdentityApiRequest()
         request.email = "email@example.com"
         mParticleOptions.identifyRequest = request
+        //optional
         mParticleOptions.onIdentifyComplete = { (apiResult, error) in
             NSLog("Identify complete. userId = %@ error = %@", apiResult?.user.userId.stringValue ?? "Null User ID", error?.localizedDescription ?? "No Error Available")
         }
+        //optional
         mParticleOptions.onAttributionComplete = { (attributionResult, error) in
                     NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
         }
-        
-       //Start the SDK
-        MParticle.sharedInstance().start(with: mParticleOptions)
-        
-       return true
+        MParticle.sharedInstance().start(with: mParticleOptions)        
+        return true
 }
 ```
 
@@ -110,13 +109,15 @@ Next, you'll need to start the SDK:
     MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
                                                                    secret:@"REPLACE ME"];
     
-    //Please see the Identity page for more information on building this object
+    //optional - Please see the Identity page for more information on building this object
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
     request.email = @"email@example.com";
     mParticleOptions.identifyRequest = request;
+    //optional
     mParticleOptions.onIdentifyComplete = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
         NSLog(@"Identify complete. userId = %@ error = %@", apiResult.user.userId, error);
     };
+    //optional
     mParticleOptions.onAttributionComplete(MPAttributionResult * _Nullable attributionResult, NSError * _Nullable error) {
         NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
     }
@@ -138,29 +139,31 @@ See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more 
 
 For more help, see [the Android set up docs](https://docs.mparticle.com/developers/sdk/android/getting-started/#create-an-input).
 
-```java
+```kotlin
 package com.example.myapp;
 
 import android.app.Application;
 import com.mparticle.MParticle;
 
-public class MyApplication extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        MParticleOptions options = MParticleOptions.builder(this)
-            .credentials("REPLACE ME WITH KEY","REPLACE ME WITH SECRET")
-            .setLogLevel(MParticle.LogLevel.VERBOSE)
+class MyApplication : Application() {
+    fun onCreate() {
+        super.onCreate()
+        val options: MParticleOptions = MParticleOptions.builder(this)
+            .credentials("REPLACE ME WITH KEY", "REPLACE ME WITH SECRET")
+            //optional
+            .logLevel(MParticle.LogLevel.VERBOSE)
+            //optional
             .identify(identifyRequest)
+            //optional
             .identifyTask(
-                new BaseIdentityTask()
-                        .addFailureListener(this)
-                        .addSuccessListener(this)
-                    )
+                BaseIdentityTask()
+                    .addFailureListener { errorResponse -> }
+                    .addSuccessListener{ result -> }
+            )
+            //optional
             .attributionListener(this)
-            .build();
-
-        MParticle.start(options);
+            .build()
+        MParticle.start(options)
     }
 }
 ```
