@@ -13,6 +13,8 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.MPEvent;
@@ -121,7 +123,19 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             selectedUser.getUserAttributes(new UserAttributeListener() {
                 @Override
                 public void onUserAttributesReceived(Map<String, String> userAttributes, Map<String, List<String>> userAttributeLists, Long mpid) {
-                    completion.invoke(null, userAttributes);
+                    WritableMap resultMap = new WritableNativeMap();
+                    for (Map.Entry<String, String> entry : userAttributes.entrySet()) {
+                        resultMap.putString(entry.getKey(), entry.getValue());
+                    }
+                    for (Map.Entry<String, List<String>> entry : userAttributeLists.entrySet()) {
+                        WritableArray resultArray = new WritableNativeArray();
+                        List<String> valueList = entry.getValue();
+                        for (String arrayVal : valueList) {
+                            resultArray.pushString(arrayVal);
+                        }
+                        resultMap.putArray(entry.getKey(), resultArray);
+                    }
+                    completion.invoke(null, resultMap);
                 }
             });
         } else {
