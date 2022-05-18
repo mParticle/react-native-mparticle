@@ -68,7 +68,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         MParticle.EventType eventType = ConvertEventType(type);
 
         MPEvent event = new MPEvent.Builder(name, eventType)
-                .info(attributes)
+                .customAttributes(attributes)
                 .build();
         MParticle.getInstance().logEvent(event);
     }
@@ -510,7 +510,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             if (map.hasKey("info")) {
                 ReadableMap customInfoMap = map.getMap("info");
                 Map<String, String> customInfo = ConvertStringMap(customInfoMap);
-                builder.info(customInfo);
+                builder.customAttributes(customInfo);
             }
 
             if (map.hasKey("customFlags")) {
