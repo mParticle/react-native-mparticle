@@ -1,0 +1,31 @@
+name: "Build and Test"
+
+on: [pull_request, push]
+
+jobs:
+    js-tests:
+      name: "JS Tests"
+      runs-on: macOS-latest
+      steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+      - uses: c-hive/gha-yarn-cache@v1
+
+      - name: "Install node modules"
+        run: |
+          yarn install
+          
+      - name: "Run test"
+        run: |
+          yarn test
+    android-unit-tests:
+      name: "Android Unit Tests"
+      runs-on: ubuntu-18.04
+      steps:
+          - name: "Checkout"
+            uses: actions/checkout@v2
+          
+          - name: "Run Android Unit Tests"
+            working-directory: android
+            run: ./gradlew test
