@@ -96,6 +96,7 @@ RCT_EXPORT_METHOD(removeCCPAConsentState)
     user.consentState = consentState;
 }
 
+#if TARGET_OS_IOS == 1
 RCT_EXPORT_METHOD(logPushRegistration:(NSString *)iosToken androidField:(NSString *)androidField)
 {
     if (iosToken != nil) {
@@ -104,6 +105,7 @@ RCT_EXPORT_METHOD(logPushRegistration:(NSString *)iosToken androidField:(NSStrin
         instance.pushNotificationToken = pushTokenData;
     }
 }
+#endif
 
 RCT_EXPORT_METHOD(isKitActive:(nonnull NSNumber*)kitId completion:(RCTResponseSenderBlock)completion)
 {
