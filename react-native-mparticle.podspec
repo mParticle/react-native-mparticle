@@ -11,9 +11,7 @@ Pod::Spec.new do |s|
 
   s.homepage     = package['homepage']
   s.license      = package['license']
-  s.platform     = :ios, "9.0"
-  s.tvos.deployment_target = "13.0"
-
+  s.platforms = { :ios => "9.0", :tvos => "9.2" }
 
   s.source       = { :git => "https://github.com/mParticle/react-native-mparticle.git", :tag => "#{s.version}" }
   s.source_files  = "ios/**/*.{h,m}"
