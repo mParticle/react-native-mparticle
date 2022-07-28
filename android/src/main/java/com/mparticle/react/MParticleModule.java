@@ -587,7 +587,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             Promotion promotion = ConvertPromotion(promotionMap);
             builder = new CommerceEvent.Builder(promotionAction, promotion);
 
-            for (int i = 0; i < promotionsReadableArray.size(); ++i) {
+            for (int i = 1; i < promotionsReadableArray.size(); ++i) {
                 promotionMap = promotionsReadableArray.getMap(i);
                 promotion = ConvertPromotion(promotionMap);
                 builder.addPromotion(promotion);
@@ -599,7 +599,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             Impression impression = ConvertImpression(impressionMap);
             builder = new CommerceEvent.Builder(impression);
 
-            for (int i = 0; i < impressionsArray.size(); ++i) {
+            for (int i = 1; i < impressionsArray.size(); ++i) {
                 impressionMap = impressionsArray.getMap(i);
                 impression = ConvertImpression(impressionMap);
                 builder.addImpression(impression);
