@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 
 import com.mparticle.MParticle;
 import com.mparticle.UserAttributeListener;
+import com.mparticle.UserAttributeListenerType;
 import com.mparticle.consent.ConsentState;
 import com.mparticle.identity.MParticleUser;
 
@@ -33,7 +34,7 @@ public class MockMParticleUser implements MParticleUser {
 
     @Nullable
     @Override
-    public Map<String, Object> getUserAttributes(@Nullable UserAttributeListener userAttributeListener) {
+    public Map<String, Object> getUserAttributes(@Nullable UserAttributeListenerType userAttributeListener) {
         return null;
     }
 
@@ -59,7 +60,7 @@ public class MockMParticleUser implements MParticleUser {
     }
 
     @Override
-    public boolean incrementUserAttribute(@NonNull String s, int i) {
+    public boolean incrementUserAttribute(@NonNull String s, Number i) {
         return false;
     }
 
