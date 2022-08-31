@@ -346,17 +346,17 @@ class TransactionAttributes {
   }
 
   setRevenue (revenue) {
-    this.revenue = revenue
+    this.revenue = typeof revenue === 'string' ? parseFloat(revenue) : revenue
     return this
   }
 
   setShipping (shipping) {
-    this.shipping = shipping
+    this.shipping = typeof shipping === 'string' ? parseFloat(shipping) : shipping
     return this
   }
 
   setTax (tax) {
-    this.tax = tax
+    this.tax = typeof tax === 'string' ? parseFloat(tax) : tax
     return this
   }
 
