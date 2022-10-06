@@ -487,7 +487,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     product.sku = json[@"sku"];
     product.variant = json[@"variant"];
     product.position = [json[@"position"] intValue];
-    product.quantity = json[@"quantity"];
+    product.quantity = @([json[@"quantity"] intValue]);
     NSDictionary *jsonAttributes = json[@"customAttributes"];
     for (NSString *key in jsonAttributes) {
         NSString *value = jsonAttributes[key];
