@@ -8,9 +8,9 @@ jobs:
       runs-on: macOS-latest
       steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - uses: actions/setup-node@master
-      - uses: c-hive/gha-yarn-cache@v1
+      - uses: c-hive/gha-yarn-cache@v2
 
       - name: "Install node modules"
         run: |
@@ -21,10 +21,10 @@ jobs:
           yarn test
     android-unit-tests:
       name: "Android Unit Tests"
-      runs-on: ubuntu-18.04
+      runs-on: ubuntu-latest
       steps:
           - name: "Checkout"
-            uses: actions/checkout@v2
+            uses: actions/checkout@v3
           
           - name: "Run Android Unit Tests"
             working-directory: android

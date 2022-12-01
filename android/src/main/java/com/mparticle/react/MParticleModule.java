@@ -120,7 +120,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     public void getUserAttributes(final String userId, final Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
-            selectedUser.getUserAttributes(new UserAttributeListener() {
+            selectedUser.getUserAttributes(new UserAttributeListenerType() {
                 @Override
                 public void onUserAttributesReceived(Map<String, String> userAttributes, Map<String, List<String>> userAttributeLists, Long mpid) {
                     WritableMap resultMap = new WritableNativeMap();
