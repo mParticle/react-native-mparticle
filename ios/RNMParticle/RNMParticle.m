@@ -19,6 +19,11 @@ RCT_EXTERN void RCTRegisterModule(Class);
     RCTRegisterModule(self);
 }
 
+RCT_EXPORT_METHOD(upload)
+{
+    [[MParticle sharedInstance] upload];
+}
+
 RCT_EXPORT_METHOD(logEvent:(NSString *)eventName type:(NSInteger)type attributes:(NSDictionary *)attributes)
 {
     [[MParticle sharedInstance] logEvent:eventName eventType:type eventInfo:attributes];
