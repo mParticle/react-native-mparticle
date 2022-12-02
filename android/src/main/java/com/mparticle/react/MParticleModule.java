@@ -64,7 +64,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void upload() {
-        MParticle.getInstance().upload()
+        MParticle.getInstance().upload();
     }
 
     @ReactMethod
