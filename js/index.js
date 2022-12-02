@@ -84,6 +84,10 @@ const ATTAuthStatus = {
 
 // ******** Main API ********
 
+const upload = () => {
+  NativeModules.MParticle.upload()
+}
+
 const logEvent = (eventName, type = EventType.Other, attributes = null) => {
   NativeModules.MParticle.logEvent(eventName, type, attributes)
 }
@@ -660,6 +664,7 @@ const MParticle = {
   GDPRConsent,
   CCPAConsent,
 
+  upload,
   logEvent,             // Methods
   logMPEvent,
   logCommerceEvent,
