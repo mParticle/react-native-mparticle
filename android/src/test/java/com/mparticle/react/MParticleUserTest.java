@@ -1,6 +1,6 @@
 package com.mparticle.react;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -15,7 +15,10 @@ import com.mparticle.react.testutils.Mutable;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,15 +29,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(MockitoJUnitRunner.class)
 public class MParticleUserTest {
     MParticleModule mParticleUser;
     Random random = new Random();
 
     @Before
     public void before() {
+        MockitoAnnotations.openMocks(this);
         MParticle.setInstance(Mockito.mock(MParticle.class));
         Mockito.when(MParticle.getInstance().Identity()).thenReturn(Mockito.mock(IdentityApi.class));
-        Mockito.when(MParticle.getInstance().Identity().getUser(null)).thenReturn(null);
+        Mockito.when(MParticle.getInstance().Identity().getUser(0L)).thenReturn(null);
         mParticleUser = new MParticleModule(Mockito.mock(ReactApplicationContext.class)) {
             @Override
             public WritableMap getWritableMap() {

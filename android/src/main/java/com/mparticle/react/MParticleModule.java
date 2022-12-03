@@ -19,6 +19,7 @@ import com.mparticle.AttributionResult;
 import com.mparticle.MParticle;
 import com.mparticle.MPEvent;
 import com.mparticle.Session;
+import com.mparticle.UserAttributeListenerType;
 import com.mparticle.commerce.CommerceEvent;
 import com.mparticle.commerce.Impression;
 import com.mparticle.commerce.Product;
@@ -120,7 +121,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     public void getUserAttributes(final String userId, final Callback completion) {
         MParticleUser selectedUser = MParticle.getInstance().Identity().getUser(parseMpid(userId));
         if (selectedUser != null) {
-            selectedUser.getUserAttributes(new UserAttributeListenerType() {
+            selectedUser.getUserAttributes(new UserAttributeListener() {
                 @Override
                 public void onUserAttributesReceived(Map<String, String> userAttributes, Map<String, List<String>> userAttributeLists, Long mpid) {
                     WritableMap resultMap = new WritableNativeMap();
@@ -876,7 +877,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @Nullable
-    private GDPRConsent ConvertToGDPRConsent(ReadableMap map ) {
+    private GDPRConsent ConvertToGDPRConsent(ReadableMap map) {
         Boolean consented;
         try {
             if (map.getType("consented").equals(ReadableType.Boolean)) {
