@@ -39,7 +39,7 @@ public class IdentityApiTest {
         MockitoAnnotations.openMocks(this);
         MParticle.setInstance(Mockito.mock(MParticle.class));
         Mockito.when(MParticle.getInstance().Identity()).thenReturn(Mockito.mock(IdentityApi.class));
-        Mockito.lenient().when(MParticle.getInstance().Identity().getUser(null)).thenReturn(null);
+        Mockito.lenient().when(MParticle.getInstance().Identity().getUser(0L)).thenReturn(null);
         identityApi = new MParticleModule(Mockito.mock(ReactApplicationContext.class));
     }
 

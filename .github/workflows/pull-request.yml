@@ -1,6 +1,14 @@
 name: "Build and Test"
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+  workflow_call:
+  workflow_dispatch:
+
+  # Run daily at midnight
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
     js-tests:
@@ -19,6 +27,7 @@ jobs:
       - name: "Run test"
         run: |
           yarn test
+
     android-unit-tests:
       name: "Android Unit Tests"
       runs-on: ubuntu-latest

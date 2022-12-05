@@ -2,24 +2,12 @@ name: Release SDK
 
 on:
     workflow_dispatch
+
 jobs:
     # SDK release is done from public/master branch.
     confirm-master-branch:
         name: Confirm release is run on public/master branch
-        runs-on: ubuntu-latest
-        steps:
-            - name: Git checkout
-              uses: actions/checkout@v3
-            - name: Branch name
-              run: |
-                  BRANCHNAME=${GITHUB_REF##*/}
-                  echo "pulling branch name, branch name is:"
-                  echo $BRANCHNAME
-                  if [ $BRANCHNAME != "master" ]
-                  then
-                    echo "You can only run a release from the master branch, you are trying to run it from ${BRANCHNAME}"
-                    exit 1
-                  fi
+        uses: mParticle/mparticle-workflows/.github/workflows/sdk-release-repo-branch-check.yml@main
 
     # All new code is stored in internal/development. Release from public/master will merge changes from internal/development into
     # public/master, then run semantic-release on public/master to update changelog and release notes. Before semantic-release publishes
@@ -51,7 +39,6 @@ jobs:
             
             - name: Run Android Unit Tests
               run: echo "pwd"; pwd; echo "ls:"; ls; cd android; ./gradlew test
-
 
     release-and-sync-repos:
         name: Release and Sync Repos
