@@ -1,6 +1,14 @@
 name: "Build and Test"
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+  workflow_call:
+  workflow_dispatch:
+
+  # Run daily at midnight
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
     js-tests:
@@ -8,9 +16,9 @@ jobs:
       runs-on: macOS-latest
       steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - uses: actions/setup-node@master
-      - uses: c-hive/gha-yarn-cache@v1
+      - uses: c-hive/gha-yarn-cache@v2
 
       - name: "Install node modules"
         run: |
@@ -19,12 +27,13 @@ jobs:
       - name: "Run test"
         run: |
           yarn test
+
     android-unit-tests:
       name: "Android Unit Tests"
-      runs-on: ubuntu-18.04
+      runs-on: ubuntu-latest
       steps:
           - name: "Checkout"
-            uses: actions/checkout@v2
+            uses: actions/checkout@v3
           
           - name: "Run Android Unit Tests"
             working-directory: android

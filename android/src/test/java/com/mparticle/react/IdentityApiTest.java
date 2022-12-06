@@ -1,6 +1,6 @@
 package com.mparticle.react;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -17,8 +17,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Random;
 
@@ -26,15 +29,17 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(MockitoJUnitRunner.class)
 public class IdentityApiTest {
     MParticleModule identityApi;
     Random random = new Random();
 
     @Before
     public void before() {
+        MockitoAnnotations.openMocks(this);
         MParticle.setInstance(Mockito.mock(MParticle.class));
         Mockito.when(MParticle.getInstance().Identity()).thenReturn(Mockito.mock(IdentityApi.class));
-        Mockito.when(MParticle.getInstance().Identity().getUser(null)).thenReturn(null);
+        Mockito.lenient().when(MParticle.getInstance().Identity().getUser(0L)).thenReturn(null);
         identityApi = new MParticleModule(Mockito.mock(ReactApplicationContext.class));
     }
 
@@ -127,7 +132,7 @@ public class IdentityApiTest {
         MParticleUser destinationUser = Mockito.mock(MParticleUser.class);
         Mockito.when(destinationUser.getId()).thenReturn(2L);
 
-        Mockito.when(MParticle.getInstance().Identity().getUser(1l)).thenReturn(sourceUser);
+        Mockito.when(MParticle.getInstance().Identity().getUser(1L)).thenReturn(sourceUser);
         Mockito.when(MParticle.getInstance().Identity().getUser(2L)).thenReturn(destinationUser);
 
         Mockito.when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenReturn(true);
@@ -173,7 +178,7 @@ public class IdentityApiTest {
 
         identityApi.aliasUsers(new MockMap(aliasJson), callback);
 
-        Mockito.when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
+        Mockito.lenient().when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
         assertEquals(2, callbackResult.value.length);
         assertEquals(false, callbackResult.value[0]);
         assertTrue(((String)callbackResult.value[1]).length() > 5);
@@ -185,7 +190,7 @@ public class IdentityApiTest {
 
         identityApi.aliasUsers(new MockMap(aliasJson), callback);
 
-        Mockito.when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
+        Mockito.lenient().when(MParticle.getInstance().Identity().aliasUsers(Mockito.any(AliasRequest.class))).thenThrow(new RuntimeException("aliasUsers() should not be called"));
         assertEquals(2, callbackResult.value.length);
         assertEquals(false, callbackResult.value[0]);
         assertTrue(((String)callbackResult.value[1]).length() > 5);
@@ -222,6 +227,4 @@ public class IdentityApiTest {
         assertEquals(3, aliasCaptor.getValue().getStartTime());
         assertEquals(4, aliasCaptor.getValue().getEndTime());
     }
-
-
 }
