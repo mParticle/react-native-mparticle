@@ -6,10 +6,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-  # Run daily at midnight
-  schedule:
-    - cron: "0 0 * * *"
-
 jobs:
     js-tests:
       name: "JS Tests"
@@ -34,7 +30,26 @@ jobs:
       steps:
           - name: "Checkout"
             uses: actions/checkout@v3
-          
           - name: "Run Android Unit Tests"
             working-directory: android
             run: ./gradlew test
+
+    android-lint:
+      name: "Android Unit Tests"
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Checkout"
+          uses: actions/checkout@v3
+        - name: "Run Android Unit Tests"
+          working-directory: android
+          run: ./gradlew lint
+
+    android-kotlin-lint:
+      name: "Android Unit Tests"
+      runs-on: ubuntu-latest
+      steps:
+        - name: "Checkout"
+          uses: actions/checkout@v3
+        - name: "Run Android Unit Tests"
+          working-directory: android
+          run: ./gradlew ktlintCheck

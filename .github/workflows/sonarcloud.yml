@@ -1,6 +1,7 @@
 name: "SonarCloud"
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Build and Test"]
     types:
@@ -11,3 +12,5 @@ jobs:
     name: "SonarCloud Check"
     uses: mParticle/mparticle-workflows/.github/workflows/sonarcloud.yml@main
     secrets: inherit
+    with:
+      app_relative_path: "android"
