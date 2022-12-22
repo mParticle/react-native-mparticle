@@ -53,3 +53,8 @@ jobs:
         - name: "Run Android Unit Tests"
           working-directory: android
           run: ./gradlew ktlintCheck
+
+    automerge-dependabot:
+      name: "Save PR Number for Dependabot Automerge"
+      needs: [ js-tests, android-unit-tests, android-lint, android-kotlin-lint ]
+      uses: mParticle/mparticle-workflows/.github/workflows/dependabot-save-pr-number.yml@main
