@@ -9,9 +9,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  daily-job:
-    name: "Daily Common Repo Checks"
-    uses: mParticle/mparticle-workflows/.github/workflows/daily-cron.yml@main
+
+#  daily-job:
+#    name: "Daily Common Repo Checks"
+#    uses: mParticle/mparticle-workflows/.github/workflows/daily-cron.yml@main
+
   daily-local-job:
     name: "Daily Local Repo Checks"
     uses: mParticle/react-native-mparticle/.github/workflows/pull-request.yml@main
