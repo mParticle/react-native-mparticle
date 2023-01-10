@@ -69,6 +69,11 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setUploadInterval(int uploadInterval) {
+        MParticle.getInstance().setUpdateInterval(uploadInterval);
+    }
+
+    @ReactMethod
     public void logEvent(final String name, int type, final ReadableMap attributesMap) {
         Map<String, String> attributes = ConvertStringMap(attributesMap);
         MParticle.EventType eventType = ConvertEventType(type);

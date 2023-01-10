@@ -88,6 +88,10 @@ const upload = () => {
   NativeModules.MParticle.upload()
 }
 
+const setUploadInterval = (uploadInterval) => {
+  NativeModules.MParticle.setUploadInterval(uploadInterval)
+}
+
 const logEvent = (eventName, type = EventType.Other, attributes = null) => {
   NativeModules.MParticle.logEvent(eventName, type, attributes)
 }
@@ -664,8 +668,9 @@ const MParticle = {
   GDPRConsent,
   CCPAConsent,
 
-  upload,
-  logEvent,             // Methods
+  upload,             // Methods
+  setUploadInterval,
+  logEvent,
   logMPEvent,
   logCommerceEvent,
   logScreenEvent,
