@@ -79,6 +79,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation files('libs/java-json.jar')
 
-    testImplementation 'com.mparticle:android-core:5.51.0'
+    testImplementation 'com.mparticle:android-core:5.51.1'
     testImplementation 'com.facebook.react:react-native:0.20.1'
 }
