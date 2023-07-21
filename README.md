@@ -37,8 +37,6 @@ Add the following 2 lines to you Podfile in the ios folder
   pod 'mParticle-Apple-SDK'
 
   use_frameworks! :linkage => :static
-
-    # :flipper_configuration => flipper_config,
 ```
 Disable the last line of code as shown bellow in the Podfile as it instructs for when using frameworks. 
 ```bash
