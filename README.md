@@ -30,16 +30,33 @@ $ react-native link
 
 ## <a name="iOS"></a>iOS
 
-1. **Copy your mParticle key and secret** from [your app's dashboard][1].
+1. **Install the SDK** using CocoaPods:
 
-[1]: https://app.mparticle.com/setup/inputs/apps
+Add the following 2 lines to you Podfile in the ios folder
+```bash
+  pod 'mParticle-Apple-SDK'
 
-2. **Install the SDK** using CocoaPods:
+  use_frameworks! :linkage => :static
 
+    # :flipper_configuration => flipper_config,
+```
+Disable the last line of code as shown bellow in the Podfile as it instructs for when using frameworks. 
+```bash
+    # Enables Flipper.
+    #
+    # Note that if you have use_frameworks! enabled, Flipper will not work and
+    # you should disable the next line.
+    # :flipper_configuration => flipper_config,
+```
+Install the sdk with CocoaPods.
 ```bash
 $ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or later
-$ pod install
+$ pod install  --repo-update
 ```
+
+2. **Copy your mParticle key and secret** from [your app's dashboard][1].
+
+[1]: https://app.mparticle.com/setup/inputs/apps
 
 The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
 
