@@ -83,17 +83,9 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 
 #### Objective-C Example
 
-For apps supporting iOS 8 and above, Apple recommends using the import syntax for **modules** or **semantic import**. However, if you prefer the traditional CocoaPods and static libraries delivery mechanism, that is fully supported as well.
+With recent changes in Swift support for static libraries and React Native's preference for the traditional CocoaPods and static libraries delivery mechanism, we reccomend against setting `use_frameworks!` in your Podfile.
 
-If you are using mParticle as a framework, your import statement will be as follows:
-
-```objective-c
-@import mParticle_Apple_SDK;                // Apple recommended syntax, but requires "Enable Modules (C and Objective-C)" in pbxproj
-#import <mParticle_Apple_SDK/mParticle.h>   // Works when modules are not enabled
-
-```
-
-Otherwise, for CocoaPods without `use_frameworks!`, you can use either of these statements:
+Your import statement can be either of these:
 
 ```objective-c
 #import <mParticle-Apple-SDK/mParticle.h>
