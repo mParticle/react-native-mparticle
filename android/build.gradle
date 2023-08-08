@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     id "org.sonarqube" version "4.3.0.3225"
-    id "org.jlleitschuh.gradle.ktlint" version "11.5.0"
+    id "org.jlleitschuh.gradle.ktlint" version "11.5.1"
 }
 
 sonarqube {
