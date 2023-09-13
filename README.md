@@ -246,14 +246,6 @@ MParticle.Identity.getUserIdentities((userIdentities) => {
 var request = new MParticle.IdentityRequest()
 ```
 
-**Set** a user Alias to be ran anytime the user’s identity changes
-```js
-request.onUserAlias = (previousUser, newUser) => {
-    console.debug(previousUser.userID);
-    console.debug(newUser.userID);
-};
-```
-
 **Setting** user identities:
 
 ```js
