@@ -72,7 +72,7 @@ dependencies {
     //   compile 'com.mparticle:android-example-kit:REPLACEME'
     //
 
-    testImplementation 'org.mockito:mockito-core:5.6.0'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
     androidTestImplementation 'org.mockito:mockito-android:5.7.0'
     testImplementation 'androidx.annotation:annotation:1.7.0'
 
