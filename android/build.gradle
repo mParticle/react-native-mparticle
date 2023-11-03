@@ -73,7 +73,7 @@ dependencies {
     //
 
     testImplementation 'org.mockito:mockito-core:5.6.0'
-    androidTestImplementation 'org.mockito:mockito-android:5.6.0'
+    androidTestImplementation 'org.mockito:mockito-android:5.7.0'
     testImplementation 'androidx.annotation:annotation:1.7.0'
 
     testImplementation 'junit:junit:4.13.2'
