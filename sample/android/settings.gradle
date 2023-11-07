@@ -1,5 +1,0 @@
-rootProject.name = 'MParticleSample'
-include ':react-native-mparticle'
-project(':react-native-mparticle').projectDir = new File(rootProject.projectDir, '../../android')
-
-include ':app'
