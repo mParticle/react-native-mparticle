@@ -49,7 +49,7 @@ The `startWithOptions` method requires an options argument containing your key a
 
 > Note that you must initialize the SDK in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
 
-For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
+For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/initialization/#initialize-the-sdk).
 
 3. Import and start the mParticle Apple SDK into Swift or Objective-C.
 
@@ -120,7 +120,7 @@ Next, you'll need to start the SDK:
 }
 ```
 
-See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
+See [Identity](https://docs.mparticle.com/developers/sdk/ios/idsync/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 
 ## <a name="Android"></a>Android
@@ -129,7 +129,7 @@ See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more 
 
 2. Call `start` from the `onCreate` method of your app's `Application` class. It's crucial that the SDK be started here for proper session management. If you don't already have an `Application` class, create it and then specify its fully-qualified name in the `<application>` tag of your app's `AndroidManifest.xml`.
 
-For more help, see [the Android set up docs](https://docs.mparticle.com/developers/sdk/android/getting-started/#create-an-input).
+For more help, see [the Android set up docs](https://docs.mparticle.com/developers/sdk/android/initialization/#initialize-the-sdk).
 
 ```kotlin
 package com.example.myapp;
