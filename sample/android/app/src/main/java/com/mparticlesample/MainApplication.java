@@ -10,6 +10,12 @@ import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import java.util.List;
 
+// import mParticle
+import com.mparticle.MParticle;
+import com.mparticle.identity.IdentityApiRequest;
+import com.mparticle.react.MParticlePackage;
+import com.mparticle.MParticleOptions;
+
 public class MainApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
@@ -52,6 +58,21 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+
+    // https://docs.mparticle.com/developers/sdk/android/idsync/#create-an-idsync-request
+    IdentityApiRequest identityRequest = IdentityApiRequest.withEmptyUser()
+      .email("email@example.com")
+      .build();
+
+    // https://docs.mparticle.com/developers/sdk/android/initialization/#initialize-the-sdk
+    MParticleOptions mParticleOptions = MParticleOptions.builder(this)
+      .credentials("YOUR-WORKSPACE-KEY-HERE", "YOUR-WORKSPACE-SECRET-HERE")
+      .logLevel(MParticle.LogLevel.VERBOSE)
+      .identify(identityRequest)
+      .build();
+
+    MParticle.start(mParticleOptions);
+
     SoLoader.init(this, /* native exopackage */ false);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.

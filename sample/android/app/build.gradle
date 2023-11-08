@@ -104,6 +104,15 @@ android {
 }
 
 dependencies {
+    // https://docs.mparticle.com/developers/sdk/android/initialization/#add-sdk-dependencies
+    implementation 'com.mparticle:android-core:5+'
+
+    // Required for gathering Android Advertising ID (see below)
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'
+
+    // Recommended to query the Google Play install referrer
+    implementation 'com.android.installreferrer:installreferrer:2.2'
+    
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

@@ -25,8 +25,6 @@
   mParticleOptions.onIdentifyComplete = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
     NSLog(@"Identify complete. userId = %@ error = %@", apiResult.user.userId, error);
   };
-  mParticleOptions.dataPlanId = @"version_1";
-  mParticleOptions.dataPlanVersion = @2;
   
   [[MParticle sharedInstance] startWithOptions:mParticleOptions];
 
