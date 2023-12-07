@@ -12,7 +12,8 @@ const EventType = {
   UserContent: 5,
   UserPreference: 6,
   Social: 7,
-  Other: 8
+  Other: 8,
+  Media: 9
 }
 
 const UserAttributeType = {

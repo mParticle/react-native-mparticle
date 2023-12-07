@@ -835,6 +835,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
                 return MParticle.EventType.UserPreference;
             case 7:
                 return MParticle.EventType.Social;
+            case 8:
+                return MParticle.EventType.Other;
+            case 9:
+                return MParticle.EventType.Media;
             default:
                 return MParticle.EventType.Other;
         }
