@@ -85,11 +85,16 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 
 With recent changes in Swift support for static libraries and React Native's preference for the traditional CocoaPods and static libraries delivery mechanism, we reccomend against setting `use_frameworks!` in your Podfile.
 
-Your import statement can be either of these:
+Your import statement should be this:
 
 ```objective-c
-#import <mParticle-Apple-SDK/mParticle.h>
-#import "mParticle.h"
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
+    #import <mParticle_Apple_SDK/mParticle.h>
+#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
+    #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
+#else
+    #import "mParticle.h"
+#endif
 ```
 
 Next, you'll need to start the SDK:
