@@ -74,6 +74,11 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void setLocation(final android.location.Location location) {
+        MParticle.getInstance().setLocation(location);
+    }
+
+    @ReactMethod
     public void logEvent(final String name, int type, final ReadableMap attributesMap) {
         Map<String, String> attributes = ConvertStringMap(attributesMap);
         MParticle.EventType eventType = ConvertEventType(type);

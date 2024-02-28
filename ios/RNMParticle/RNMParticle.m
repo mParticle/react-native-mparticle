@@ -30,6 +30,11 @@ RCT_EXPORT_METHOD(upload)
     [[MParticle sharedInstance] upload];
 }
 
+RCT_EXPORT_METHOD(setLocation:(CLLocation *)newLocation)
+{
+    [MParticle sharedInstance].location = newLocation;    
+}
+
 RCT_EXPORT_METHOD(setUploadInterval:(NSInteger)uploadInterval)
 {
     [[MParticle sharedInstance] setUploadInterval:uploadInterval];
