@@ -22,10 +22,10 @@ React Native allows developers to use a single code base to deploy features to m
 $ npm install react-native-mparticle --save
 ```
 
-2. **Install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
+2. **Install the native dependencies**.
 
 ```bash
-$ react-native link
+$ npm link react-native
 ```
 
 ## <a name="iOS"></a>iOS
@@ -37,7 +37,8 @@ $ react-native link
 2. **Install the SDK** using CocoaPods:
 
 ```bash
-$ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or later
+$ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 8.19.0 or later
+$ # pod 'mParticle-Apple-SDK', '~> 8.19'
 $ pod install
 ```
 
@@ -82,8 +83,6 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 ```
 
 #### Objective-C Example
-
-With recent changes in Swift support for static libraries and React Native's preference for the traditional CocoaPods and static libraries delivery mechanism, we reccomend against setting `use_frameworks!` in your Podfile.
 
 Your import statement should be this:
 
