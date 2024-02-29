@@ -1,5 +1,6 @@
 package com.mparticle.react;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
@@ -74,8 +75,12 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setLocation(final android.location.Location location) {
-        MParticle.getInstance().setLocation(location);
+    public void setLocation(double latitude, double longitude) {
+        Location newLocation = new Location(""); 
+        newLocation.setLatitude(latitude);
+        newLocation.setLongitude(longitude);
+        MParticle.getInstance().setLocation(newLocation);
+        
     }
 
     @ReactMethod
