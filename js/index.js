@@ -158,6 +158,10 @@ const getSession = (completion) => {
   NativeModules.MParticle.getSession(completion)
 }
 
+const setLocation = (latitude, longitude) => {
+  NativeModules.MParticle.setLocation(latitude, longitude)
+}
+
 // ******** Identity ********
 class User {
   constructor (userId) {
@@ -686,7 +690,8 @@ const MParticle = {
   isKitActive,
   getAttributions,
   logPushRegistration,
-  getSession
+  getSession,
+  setLocation
 }
 
 export default MParticle

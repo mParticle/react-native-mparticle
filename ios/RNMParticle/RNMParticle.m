@@ -30,6 +30,12 @@ RCT_EXPORT_METHOD(upload)
     [[MParticle sharedInstance] upload];
 }
 
+RCT_EXPORT_METHOD(setLocation:(double)latitude longitude:(double)longitude)
+{
+    CLLocation *newLocation = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
+    [MParticle sharedInstance].location = newLocation;    
+}
+
 RCT_EXPORT_METHOD(setUploadInterval:(NSInteger)uploadInterval)
 {
     [[MParticle sharedInstance] setUploadInterval:uploadInterval];
