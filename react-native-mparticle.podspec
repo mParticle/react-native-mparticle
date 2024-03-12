@@ -24,4 +24,5 @@ Pod::Spec.new do |s|
   else
     s.dependency 'React'
   end
+    s.dependency 'mParticle-Apple-SDK', '~> 8.0'
 end

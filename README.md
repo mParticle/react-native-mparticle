@@ -37,9 +37,9 @@ $ npm link react-native
 2. **Install the SDK** using CocoaPods:
 
 ```bash
-$ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 8.19.0 or later
-$ # pod 'mParticle-Apple-SDK', '~> 8.19'
-$ pod install
+$ # Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
+$ # :flipper_configuration => flipper_config,
+$ USE_FRAMEWORKS=dynamic bundle exec pod install
 ```
 
 The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
@@ -125,6 +125,12 @@ Next, you'll need to start the SDK:
 ```
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
+
+4. Remember to start Metro with:
+```bash
+$ npm start
+```
+and build your workspace from xCode.
 
 
 ## <a name="Android"></a>Android
