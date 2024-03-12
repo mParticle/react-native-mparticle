@@ -22,10 +22,10 @@ React Native allows developers to use a single code base to deploy features to m
 $ npm install react-native-mparticle --save
 ```
 
-2. **Install the native dependencies**. You can use `rnpm` (now part of `react-native` core via `link`) to add native dependencies automatically:
+2. **Install the native dependencies**.
 
 ```bash
-$ react-native link
+$ npm link react-native-mparticle
 ```
 
 ## <a name="iOS"></a>iOS
@@ -37,8 +37,12 @@ $ react-native link
 2. **Install the SDK** using CocoaPods:
 
 ```bash
-$ # Update your Podfile to depend on 'mParticle-Apple-SDK' version 7.2.0 or later
-$ pod install
+$ # Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
+$ # :flipper_configuration => flipper_config,
+```
+Then run the following command
+```
+$ USE_FRAMEWORKS=dynamic bundle exec pod install
 ```
 
 The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
@@ -83,13 +87,16 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 
 #### Objective-C Example
 
-With recent changes in Swift support for static libraries and React Native's preference for the traditional CocoaPods and static libraries delivery mechanism, we reccomend against setting `use_frameworks!` in your Podfile.
-
-Your import statement can be either of these:
+Your import statement should be this:
 
 ```objective-c
-#import <mParticle-Apple-SDK/mParticle.h>
-#import "mParticle.h"
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
+    #import <mParticle_Apple_SDK/mParticle.h>
+#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
+    #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
+#else
+    #import "mParticle.h"
+#endif
 ```
 
 Next, you'll need to start the SDK:
@@ -121,6 +128,12 @@ Next, you'll need to start the SDK:
 ```
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
+
+4. Remember to start Metro with:
+```bash
+$ npm start
+```
+and build your workspace from xCode.
 
 
 ## <a name="Android"></a>Android
