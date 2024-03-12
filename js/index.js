@@ -159,8 +159,8 @@ const getSession = (completion) => {
 }
 
 const setLocation = (latitude, longitude) => {
-  NativeModules.MParticle.setLocation(latitude, longitude);
-};
+  NativeModules.MParticle.setLocation(latitude, longitude)
+}
 
 // ******** Identity ********
 class User {
