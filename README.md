@@ -16,16 +16,10 @@ React Native allows developers to use a single code base to deploy features to m
 
 # Installation
 
-1. **Download and install the mParticle React Native library** from npm:
+**Download and install the mParticle React Native library** from npm:
 
 ```bash
 $ npm install react-native-mparticle --save
-```
-
-2. **Install the native dependencies**.
-
-```bash
-$ npm link react-native-mparticle
 ```
 
 ## <a name="iOS"></a>iOS
