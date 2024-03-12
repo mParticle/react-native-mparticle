@@ -25,7 +25,7 @@ $ npm install react-native-mparticle --save
 2. **Install the native dependencies**.
 
 ```bash
-$ npm link react-native
+$ npm link react-native-mparticle
 ```
 
 ## <a name="iOS"></a>iOS
@@ -39,6 +39,9 @@ $ npm link react-native
 ```bash
 $ # Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
 $ # :flipper_configuration => flipper_config,
+```
+Then run the following command
+```
 $ USE_FRAMEWORKS=dynamic bundle exec pod install
 ```
 
