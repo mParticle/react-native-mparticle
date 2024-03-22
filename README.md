@@ -30,14 +30,41 @@ $ npm install react-native-mparticle --save
 
 2. **Install the SDK** using CocoaPods:
 
+The npm install step above will automatically include our react framework and the core iOS framework in yur project. However depending on your app and its other dependecies you must integrate it in 1 of 3 ways
+
+A. Static Libraries are the React Native default but since mParticle iOS contains swift code you need to add an exception for it in the from of a pre-install command in the Podfile.
 ```bash
-$ # Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
-$ # :flipper_configuration => flipper_config,
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name == 'mParticle-Apple-SDK'
+      def pod.build_type;
+        Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
+      end
+    end
+  end
+end
 ```
 Then run the following command
 ```
+bundle exec pod install
+```
+
+B&C. Frameworks are the default for Swift development and while it isn't preferred by React Native it is supported. Additionally you can define whether the frameworks are built staticly or dynamically. 
+
+Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
+```bash
+# :flipper_configuration => flipper_config,
+```
+Then run either of the following commands
+```
+$ USE_FRAMEWORKS=static bundle exec pod install
+```
+or
+```
 $ USE_FRAMEWORKS=dynamic bundle exec pod install
 ```
+
+3. Import and start the mParticle Apple SDK into Swift or Objective-C.
 
 The mParticle SDK is initialized by calling the `startWithOptions` method within the `application:didFinishLaunchingWithOptions:` delegate call.
 
@@ -48,9 +75,6 @@ The `startWithOptions` method requires an options argument containing your key a
 > Note that you must initialize the SDK in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
 
 For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
-
-3. Import and start the mParticle Apple SDK into Swift or Objective-C.
-
 
 #### Swift Example
 
