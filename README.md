@@ -30,7 +30,7 @@ $ npm install react-native-mparticle --save
 
 2. **Install the SDK** using CocoaPods:
 
-Becasue of the install step React Native will automatically include our react framework and the core iOS framework. However depending on your app and its other dependecies you must want to integrate it in 1 of 3 ways
+The npm install step above will automatically include our react framework and the core iOS framework in yur project. However depending on your app and its other dependecies you must integrate it in 1 of 3 ways
 
 A. Static Libraries are the React Native default but since mParticle iOS contains swift code you need to add an exception for it in the from of a pre-install command in the Podfile.
 ```bash
