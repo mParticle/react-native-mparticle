@@ -345,6 +345,11 @@ RCT_EXPORT_METHOD(getCurrentUserWithCompletion:(RCTResponseSenderBlock)completio
     completion(@[[NSNull null], [[[MParticle sharedInstance] identity] currentUser].userId.stringValue]);
 }
 
+RCT_EXPORT_METHOD(getCurrentDeviceApplicationStampWithCompletion:(RCTResponseSenderBlock)completion)
+{
+    completion(@[[NSNull null], [[[MParticle sharedInstance] identity] deviceApplicationStamp]]);
+}
+
 RCT_EXPORT_METHOD(getUserIdentities:(NSString *)userId completion:(RCTResponseSenderBlock)completion)
 {
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
