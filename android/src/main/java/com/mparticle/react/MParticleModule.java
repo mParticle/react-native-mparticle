@@ -684,6 +684,11 @@ public class MParticleModule extends ReactContextBaseJavaModule {
             builder.quantity(quantity);
         }
 
+        if (map.hasKey("variant")) {
+            String variant = map.getString("variant");
+            builder.variant(variant);
+        }
+
         return builder.build();
     }
 
