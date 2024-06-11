@@ -295,6 +295,12 @@ public class MParticleModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getCurrentDeviceApplicationStampWithCompletion(Callback completion) {
+        MParticleUser deviceApplication = MParticle.getInstance().Identity().getDeviceApplicationStamp();        
+        completion.invoke(null, deviceApplication);
+    }
+
+    @ReactMethod
     public void aliasUsers(final ReadableMap readableMap, final Callback completion) {
         IdentityApi identityApi = MParticle.getInstance().Identity();
         ReadableMapKeySetIterator iterator = readableMap.keySetIterator();

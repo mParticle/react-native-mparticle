@@ -305,6 +305,16 @@ class Identity {
     NativeModules.MParticle.aliasUsers(AliasRequest, completion)
   }
 
+  static getCurrentDeviceApplicationStamp (completion) {
+    NativeModules.MParticle.getCurrentDeviceApplicationStampWithCompletion((error, deviceApplicationStamp) => {
+      if (error) {
+        var parsedError = new MParticleError(error);
+        completion(parsedError, undefined);
+        return;
+      }
+      completion(undefined, deviceApplicationStamp);
+    });
+  }
 }
 
 // ******** Commerce ********
