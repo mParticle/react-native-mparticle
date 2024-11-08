@@ -342,6 +342,16 @@ MParticle.Identity.modify(request, (error, userId) => {
 });
 ```
 
+```js
+MParticle.Identity.getCurrentDeviceApplicationStamp((error, deviceApplicationStamp) => {
+    if (error) {
+        console.debug(error); //error is an MParticleError
+    } else {
+        console.debug(deviceApplicationStamp);
+    }
+});
+```
+
 ## Attribution
 ```
 var attributions = MParticle.getAttributions();
