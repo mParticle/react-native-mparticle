@@ -1,23 +1,33 @@
 {
-  "name": "MParticleSample",
+  "name": "mparticle-sample",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "jest"
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "lint": "eslint .",
+    "start": "react-native start",
+    "build": "./build-scripts/override-package.sh"
   },
   "dependencies": {
-    "react": "*",
-    "react-native": "^0.53.3",
-    "react-native-mparticle": "2.5.0"
+    "react": "18.2.0",
+    "react-native": "0.72.6",
+    "react-native-mparticle": "2.7.8"
   },
   "devDependencies": {
-    "babel-jest": "18.0.0",
-    "babel-preset-react-native": "1.9.1",
-    "jest": "18.1.0",
-    "react-test-renderer": "^16.0.0-alpha.12"
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0",
+    "@babel/runtime": "^7.20.0",
+    "@react-native/eslint-config": "^0.72.2",
+    "@react-native/metro-config": "^0.72.11",
+    "@tsconfig/react-native": "^3.0.0",
+    "@types/react": "^18.0.24",
+    "eslint": "^8.19.0",
+    "metro-react-native-babel-preset": "0.76.8",
+    "prettier": "^2.4.1",
+    "typescript": "4.8.4"
   },
-  "jest": {
-    "preset": "react-native"
+  "engines": {
+    "node": ">=16"
   }
 }
