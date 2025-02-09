@@ -349,7 +349,8 @@ RCT_EXPORT_METHOD(aliasUsers:(MPAliasRequest *) aliasRequest completion:(RCTResp
 
 RCT_EXPORT_METHOD(getCurrentUserWithCompletion:(RCTResponseSenderBlock)completion)
 {
-    completion(@[[NSNull null], [[[MParticle sharedInstance] identity] currentUser].userId.stringValue]);
+    MParticleUser *currentUser = [[MParticle sharedInstance] identity].currentUser;
+    completion(@[[NSNull null], currentUser.userId.stringValue, @(currentUser.isLoggedIn)]);
 }
 
 RCT_EXPORT_METHOD(getUserIdentities:(NSString *)userId completion:(RCTResponseSenderBlock)completion)
