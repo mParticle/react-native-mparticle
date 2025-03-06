@@ -287,9 +287,10 @@ public class MParticleModule extends ReactContextBaseJavaModule {
         MParticleUser currentUser = MParticle.getInstance().Identity().getCurrentUser();
         if (currentUser != null) {
             String userID = Long.toString(currentUser.getId());
-            completion.invoke(null, userID);
+            boolean isLoggedIn = currentUser.isLoggedIn;
+            completion.invoke(null, userID, isLoggedIn);
         } else {
-            completion.invoke(null, null);
+            completion.invoke(null, null, false);
         }
 
     }

@@ -248,13 +248,15 @@ class IdentityRequest {
 class Identity {
 
   static getCurrentUser (completion) {
-    NativeModules.MParticle.getCurrentUserWithCompletion((error, userId) => {
+    NativeModules.MParticle.getCurrentUserWithCompletion((error, userId, isLoggedIn) => {
       if (error) {
-        console.log(error.stack)
+        console.log(error.stack);
       }
-      var currentUser = new User(userId)
-      completion(currentUser)
-    })
+      var currentUser = new User(userId);
+      currentUser.isLoggedIn = isLoggedIn || false;
+      completion(currentUser);
+    }
+  );
   }
 
   static identify (IdentityRequest, completion) {
