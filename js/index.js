@@ -164,9 +164,8 @@ const setLocation = (latitude, longitude) => {
 
 // ******** Identity ********
 class User {
-  constructor (userId, isLoggedIn = false) {
-    this.userId = userId;
-    this.isLoggedIn = isLoggedIn;
+  constructor (userId) {
+    this.userId = userId
   }
 
   getMpid () {
@@ -249,15 +248,15 @@ class IdentityRequest {
 class Identity {
 
   static getCurrentUser (completion) {
-    NativeModules.MParticle.getCurrentUserWithCompletion(
-      (error, userId, isLoggedIn) => {
-        if (error) {
-          console.log(error.stack);
-        }
-        var currentUser = new User(userId, isLoggedIn);
-        completion(currentUser);
+    NativeModules.MParticle.getCurrentUserWithCompletion((error, userId, isLoggedIn) => {
+      if (error) {
+        console.log(error.stack);
       }
-    );
+      var currentUser = new User(userId);
+      currentUser.isLoggedIn = isLoggedIn || false;
+      completion(currentUser);
+    }
+  );
   }
 
   static identify (IdentityRequest, completion) {
