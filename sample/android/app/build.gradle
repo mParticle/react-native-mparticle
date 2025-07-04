@@ -164,7 +164,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    implementation "com.mparticle:android-core:5.1337.0-SNAPSHOT"
+    implementation "com.mparticle:android-core:5.70.3-SNAPSHOT"
 
     //
     // And, if you want to include kits, you can do so as follows:
