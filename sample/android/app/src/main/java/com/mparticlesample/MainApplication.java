@@ -34,6 +34,11 @@ public class MainApplication extends Application implements ReactApplication {
             new MParticlePackage()
       );
     }
+
+    @Override
+    protected String getJSMainModuleName() {
+      return "index";
+    }
   };
 
   @Override
@@ -44,6 +49,7 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    SoLoader.init(this, /* native exopackage */ false);
 
     IdentityApiRequest.Builder identityRequest = IdentityApiRequest.withEmptyUser();
 
@@ -54,6 +60,5 @@ public class MainApplication extends Application implements ReactApplication {
       .build();
 
     MParticle.start(options);
-    SoLoader.init(this, /* native exopackage */ false);
   }
 }
