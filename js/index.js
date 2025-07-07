@@ -1,6 +1,7 @@
 'use strict'
 
 import { NativeModules } from 'react-native'
+import { Rokt } from "./rokt";
 
 // ******** Constants ********
 
@@ -672,6 +673,7 @@ const MParticle = {
   MParticleError,
   GDPRConsent,
   CCPAConsent,
+  Rokt,
 
   upload,             // Methods
   setUploadInterval,

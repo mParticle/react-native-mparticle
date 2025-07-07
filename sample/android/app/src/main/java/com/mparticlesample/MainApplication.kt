@@ -46,7 +46,7 @@ class MainApplication : Application(), ReactApplication {
     val identityRequest = IdentityApiRequest.withEmptyUser()
 
     val options = MParticleOptions.builder(this)
-      .credentials("us2-6b01f2ccf503974ab3457b0a45ea79d0","0Oi35M9sfcYl3j9qNshQ-gFDp9n7e9f8ZDYskgDU38wfWsjm-HlGoLbqFtdO6HnE")
+      .credentials("REPLACE ME","REPLACE ME")
       .logLevel(MParticle.LogLevel.VERBOSE)
       .identify(identityRequest.build())
       .build()

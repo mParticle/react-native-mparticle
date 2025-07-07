@@ -2868,7 +2868,7 @@ __metadata:
     prettier: 2.8.8
     react: 18.3.1
     react-native: 0.76.9
-    react-native-mparticle: "file:../react-native-mparticle-2.7.13.tgz"
+    react-native-mparticle: "file:../react-native-mparticle-v2.7.13.tgz"
     react-test-renderer: 18.3.1
     typescript: 5.0.4
   languageName: unknown
@@ -7933,13 +7933,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mparticle@file:../react-native-mparticle-2.7.13.tgz::locator=MParticleSample%40workspace%3A.":
+"react-native-mparticle@file:../react-native-mparticle-v2.7.13.tgz::locator=MParticleSample%40workspace%3A.":
   version: 2.7.13
-  resolution: "react-native-mparticle@file:../react-native-mparticle-2.7.13.tgz::locator=MParticleSample%40workspace%3A."
+  resolution: "react-native-mparticle@file:../react-native-mparticle-v2.7.13.tgz::locator=MParticleSample%40workspace%3A."
   peerDependencies:
     react: ">= 16.0.0-alpha.12"
     react-native: ">= 0.45.0"
-  checksum: 2c536af078b3ca3192f362865eb4275e9684c296434f1ea269bda811cf80de71595bb60f16add32d1221ca51ceff26fdf9bc20a9a321dbd836b797dab52c9d29
+  checksum: 935d776e7ea8cd534e33130b0b0cccda59a5fc889c2fbf06b9cb973d4c4274964052a1e989005cb82c6ac3d788f3ea0d9a9649b04d96d1e14bc90fd5da4a4f86
   languageName: node
   linkType: hard
 

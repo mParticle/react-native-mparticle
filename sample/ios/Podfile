@@ -10,7 +10,7 @@ prepare_react_native_project!
 
 pre_install do |installer|
   installer.pod_targets.each do |pod|
-    if pod.name == 'mParticle-Apple-SDK'
+    if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget'
       def pod.build_type;
         Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
       end
@@ -32,6 +32,7 @@ target 'MParticleSample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+  pod 'mParticle-Rokt'
 
   target 'MParticleSampleTests' do
     inherit! :complete

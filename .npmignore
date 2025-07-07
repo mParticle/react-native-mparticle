@@ -52,5 +52,17 @@ yarn-error.log*
 *.dylib
 *.dll
 
-# Add this line to your .npmignore file
+# Development files
 package-lock.json
+yarn.lock
+tsconfig.json
+release.sh
+
+# TypeScript source files (compiled to lib/)
+js/
+
+# Development and test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

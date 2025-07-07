@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "18.3.1",
     "react-native": "0.76.9",
-    "react-native-mparticle": "file:../react-native-mparticle-2.7.13.tgz"
+    "react-native-mparticle": "file:../react-native-mparticle-v2.7.13.tgz"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -5,6 +5,7 @@ import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
+import com.mparticle.react.rokt.MPRoktModule;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +18,7 @@ public class MParticlePackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
 
         modules.add(new MParticleModule(reactContext));
+        modules.add(new MPRoktModule(reactContext));
 
         return modules;
     }

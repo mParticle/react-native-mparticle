@@ -5,8 +5,12 @@
   "license": "Apache-2.0",
   "repository": "mParticle/react-native-mparticle",
   "version": "2.7.13",
-  "main": "js/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf lib",
+    "prepare": "yarn clean && yarn build",
     "test": "./node_modules/standard/bin/cmd.js",
     "fix": "./node_modules/standard/bin/cmd.js --fix"
   },
@@ -21,6 +25,9 @@
     "react-native": ">= 0.45.0"
   },
   "devDependencies": {
-    "standard": "^8.6.0"
+    "standard": "^8.6.0",
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.70.0",
+    "typescript": "5.0.4"
   }
 }

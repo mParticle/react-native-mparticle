@@ -12,7 +12,8 @@ import {
   View,
   Button
 } from 'react-native';
-import MParticle from 'react-native-mparticle'
+import MParticle from 'react-native-mparticle';
+import {RoktConfigBuilder} from "react-native-mparticle/lib/rokt";
 
 
 export default class MParticleSample extends Component {
@@ -39,7 +40,7 @@ export default class MParticleSample extends Component {
       }
       var previousUser = new MParticle.User(previousUserId);
       previousUser.getFirstSeen((firstSeen) => {
-        previousUser.getLastSeen((lastSeen) => {  
+        previousUser.getLastSeen((lastSeen) => {
           var aliasRequest = new MParticle.AliasRequest()
             .sourceMpid(previousUser.getMpid())
             .destinationMpid(userId)
@@ -64,8 +65,8 @@ export default class MParticleSample extends Component {
             console.log("Alias 2 result: " + success);
           });
         })
-      }) 
-      
+      })
+
       var user = new MParticle.User(userId);
       console.debug("User Attributes = " + user.userAttributes);
       MParticle.Identity.logout({}, (error, userId) => {
@@ -91,7 +92,7 @@ export default class MParticleSample extends Component {
           return {isShowingText: !previousState.isShowingText}
         })
         MParticle.Identity.getCurrentUser((currentUser) => {
-          currentUser.setUserTag('regular');
+          //currentUser.setUserTag('regular');
         });
         var request = new MParticle.IdentityRequest();
         request.email = 'testing1@gmail.com';
@@ -149,6 +150,23 @@ export default class MParticleSample extends Component {
     })
   }
 
+    _roktSelectPlacements() {
+        const attributes = {
+            "email": "android-user@example.com",
+            "platform": "android",
+            "userId": "android-67890",
+            "deviceType": "mobile",
+        }
+        const config = new RoktConfigBuilder()
+            .withColorMode('light')
+            .build();
+        MParticle.Rokt.selectPlacements('pizzahutlayout', attributes, null, config, null).then((result) => {
+            console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
+        }).catch((error) => {
+            console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
+        })
+    }
+
   render() {
     let display = this.state.isShowingText ? 'Sending Event' : ' '
     let optedOut = this.state.optedOut ? 'true' : 'false'
@@ -191,6 +209,8 @@ export default class MParticleSample extends Component {
         <Button
           onPress={() => {this._incrementAttribute()}}
           title="Increment Attribute"/>
+          <Text style={styles.instructions}>ROKT</Text>
+          <Button title="ROKT Test" onPress={() => {this._roktSelectPlacements()}}/>
       </View>
     );
   }

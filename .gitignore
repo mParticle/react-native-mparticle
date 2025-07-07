@@ -79,3 +79,6 @@ build
 .gradle
 local.properties
 package-lock.json
+
+# TypeScript build output
+lib/
