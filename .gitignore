@@ -82,3 +82,6 @@ package-lock.json
 
 # TypeScript build output
 lib/
+
+# Development package
+*.tgz

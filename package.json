@@ -11,6 +11,8 @@
     "build": "tsc",
     "clean": "rm -rf lib",
     "prepare": "yarn clean && yarn build",
+    "dev:pack": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz",
+    "dev:link": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz && cd sample && yarn install && cd ..",
     "test": "./node_modules/standard/bin/cmd.js",
     "fix": "./node_modules/standard/bin/cmd.js --fix"
   },
