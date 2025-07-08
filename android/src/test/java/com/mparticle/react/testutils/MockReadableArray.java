@@ -32,6 +32,11 @@ public class MockReadableArray implements ReadableArray {
     }
 
     @Override
+    public long getLong(int index) {
+        return 0;
+    }
+
+    @Override
     public String getString(int index) {
         return null;
     }
@@ -49,5 +54,15 @@ public class MockReadableArray implements ReadableArray {
     @Override
     public ReadableType getType(int index) {
         return null;
+    }
+
+    @Override
+    public com.facebook.react.bridge.Dynamic getDynamic(int index) {
+        return null;
+    }
+
+    @Override
+    public java.util.ArrayList<Object> toArrayList() {
+        return new java.util.ArrayList<>();
     }
 }

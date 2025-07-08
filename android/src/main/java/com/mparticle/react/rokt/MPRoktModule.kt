@@ -1,13 +1,10 @@
 package com.mparticle.react.rokt
 
-import com.facebook.common.logging.FLog
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.util.RCTLog
 import com.mparticle.MParticle
-import com.mparticle.internal.KitManager
 import com.mparticle.rokt.CacheConfig
 import com.mparticle.rokt.RoktConfig
 
