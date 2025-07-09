@@ -11,15 +11,16 @@ import {
     Text,
     View,
     Button,
-    Platform
+    Platform, findNodeHandle, ScrollView
 } from 'react-native';
 import MParticle from 'react-native-mparticle';
-import {RoktConfigBuilder} from "react-native-mparticle/lib/rokt";
 
+const { RoktConfigBuilder, RoktLayoutView } = MParticle;
 
 export default class MParticleSample extends Component {
     constructor(props) {
         super(props);
+        this.placeholder1 = React.createRef();
         this.state = {isShowingText: true,
             optedOut: true,
             attributionResults: "{value: no attributionResults}",
@@ -173,7 +174,10 @@ export default class MParticleSample extends Component {
         const config = new RoktConfigBuilder()
             .withColorMode('light')
             .build();
-        MParticle.Rokt.selectPlacements('pizzahutlayout', attributes, null, config, null).then((result) => {
+        const placeholderMap = {
+            'Location1': findNodeHandle(this.placeholder1.current),
+        }
+        MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, placeholderMap, config, null).then((result) => {
             console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
         }).catch((error) => {
             console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
@@ -186,7 +190,7 @@ export default class MParticleSample extends Component {
         let optAction = this.state.optedOut ? 'In' : 'Out'
         let kitActive = this.state.isKitActive ? 'true' : 'false'
         return (
-            <View style={styles.container}>
+            <ScrollView contentContainerStyle={styles.container}>
                 <Text style={styles.welcome}>
                     Welcome to React Native! {display}
                 </Text>
@@ -224,16 +228,17 @@ export default class MParticleSample extends Component {
                     title="Increment Attribute"/>
                 <Text style={styles.instructions}>ROKT</Text>
                 <Button title="ROKT Test" onPress={() => {this._roktSelectPlacements()}}/>
-            </View>
+                <RoktLayoutView
+                    ref={this.placeholder1}
+                    placeholderName="Location1" />
+            </ScrollView>
         );
     }
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        flexGrow: 1,
         backgroundColor: '#F5FCFF',
     },
     welcome: {

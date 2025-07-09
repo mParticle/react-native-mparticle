@@ -1,7 +1,12 @@
 'use strict'
 
 import { NativeModules } from 'react-native'
-import { Rokt } from "./rokt";
+import {
+  Rokt,
+  RoktConfigBuilder,
+  CacheConfig,
+} from './rokt/rokt'
+import RoktLayoutView from './rokt/rokt-layout-view'
 
 // ******** Constants ********
 
@@ -674,6 +679,9 @@ const MParticle = {
   GDPRConsent,
   CCPAConsent,
   Rokt,
+  RoktConfigBuilder,
+  CacheConfig,
+  RoktLayoutView,
 
   upload,             // Methods
   setUploadInterval,

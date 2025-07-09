@@ -5,14 +5,14 @@
   "license": "Apache-2.0",
   "repository": "mParticle/react-native-mparticle",
   "version": "2.7.13",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "js/index.js",
+  "types": "js/index.d.ts",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf lib",
     "prepare": "yarn clean && yarn build",
     "dev:pack": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz",
-    "dev:link": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz && cd sample && yarn install && cd ..",
+    "dev:link": "./dev-link.sh",
     "test": "./node_modules/standard/bin/cmd.js",
     "fix": "./node_modules/standard/bin/cmd.js --fix"
   },
@@ -31,5 +31,16 @@
     "@types/react": "^18.0.0",
     "@types/react-native": "^0.70.0",
     "typescript": "5.0.4"
+  },
+  "codegenConfig": {
+    "name": "RoktLayoutView",
+    "type": "all",
+    "jsSrcsDir": "lib/",
+    "android": {
+      "javaPackageName": "com.mparticle.react.rokt"
+    },
+    "ios": {
+      "swiftModuleName": "RoktLayoutView"
+    }
   }
 }

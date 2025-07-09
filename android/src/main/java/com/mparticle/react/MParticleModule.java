@@ -50,6 +50,7 @@ import javax.annotation.Nullable;
 public class MParticleModule extends ReactContextBaseJavaModule {
 
 
+    public static final String MODULE_NAME = "MParticle";
     private final static String LOG_TAG = "MParticleModule";
 
     ReactApplicationContext reactContext;
@@ -61,7 +62,7 @@ public class MParticleModule extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return "MParticle";
+        return MODULE_NAME;
     }
 
     @ReactMethod

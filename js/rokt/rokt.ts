@@ -18,8 +18,6 @@ export abstract class Rokt {
         roktConfig?: IRoktConfig,
         fontFilesMap?: Record<string, string>
     ): Promise<void> {
-        console.debug('selectPlacement called ', identifier, attributes, placeholders, roktConfig);
-        console.debug("Module: ", NativeModules.MPRokt);
         NativeModules.MPRokt.selectPlacements(identifier, attributes, placeholders, roktConfig, fontFilesMap);
     }
 }

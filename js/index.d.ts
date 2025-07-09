@@ -1,4 +1,11 @@
-import { Rokt } from './rokt';
+import {
+    Rokt,
+    RoktConfigBuilder,
+    CacheConfig,
+    IRoktConfig,
+    ColorMode,
+} from './rokt/rokt';
+import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
 
 // ******** Types ********
 export interface UserAttributes {
@@ -319,7 +326,7 @@ export declare class MParticleError {
 }
 
 // Export Rokt functionality
-export { Rokt };
+export { Rokt, RoktConfigBuilder, CacheConfig, IRoktConfig, ColorMode, RoktLayoutView, RoktLayoutViewProps };
 
 // Default export
 declare const _default: {
@@ -362,6 +369,9 @@ declare const _default: {
   Event: typeof Event;
   MParticleError: typeof MParticleError;
   Rokt: typeof Rokt;
+  RoktConfigBuilder: typeof RoktConfigBuilder;
+  CacheConfig: typeof CacheConfig;
+  RoktLayoutView: typeof RoktLayoutView;
 };
 
-export default _default; 
+export default _default;

@@ -58,9 +58,6 @@ yarn.lock
 tsconfig.json
 release.sh
 
-# TypeScript source files (compiled to lib/)
-js/
-
 # Development and test files
 **/*.test.ts
 **/*.test.tsx
