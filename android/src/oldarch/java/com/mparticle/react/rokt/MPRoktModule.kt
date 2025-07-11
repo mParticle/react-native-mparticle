@@ -1,0 +1,74 @@
+package com.mparticle.react.rokt
+
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.uimanager.NativeViewHierarchyManager
+import com.facebook.react.uimanager.UIManagerModule
+import com.mparticle.MParticle
+import com.mparticle.WrapperSdk
+import com.mparticle.rokt.RoktEmbeddedView
+import java.lang.ref.WeakReference
+
+class MPRoktModule(
+    private val reactContext: ReactApplicationContext,
+) : ReactContextBaseJavaModule(reactContext) {
+    init {
+        MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
+    }
+
+    private val impl = MPRoktModuleImpl(reactContext)
+
+    override fun getName(): String = impl.getName()
+
+    @ReactMethod
+    fun selectPlacements(
+        identifier: String,
+        attributes: ReadableMap?,
+        placeholders: ReadableMap?,
+        roktConfig: ReadableMap?,
+        fontFilesMap: ReadableMap?,
+    ) {
+        if (identifier.isBlank()) {
+            impl.logDebug("selectPlacements failed. identifier cannot be empty")
+            return
+        }
+        val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)
+        MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
+            impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
+        }
+
+        val config = roktConfig?.let { impl.buildRoktConfig(it) }
+        uiManager?.addUIBlock { nativeViewHierarchyManager ->
+            MParticle.getInstance()?.Rokt()?.selectPlacements(
+                identifier = identifier,
+                attributes = impl.readableMapToMapOfStrings(attributes),
+                callbacks = impl.createRoktCallback(),
+                embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
+                fontTypefaces = null, // TODO
+                config = config,
+            )
+        }
+    }
+
+    private fun safeUnwrapPlaceholders(
+        placeholders: ReadableMap?,
+        nativeViewHierarchyManager: NativeViewHierarchyManager,
+    ): Map<String, WeakReference<RoktEmbeddedView>> {
+        val placeholderMap: MutableMap<String, WeakReference<RoktEmbeddedView>> = HashMap()
+
+        if (placeholders != null) {
+            placeholderMap.putAll(
+                placeholders
+                    .toHashMap()
+                    .filterValues { value -> value is Double }
+                    .mapValues { pair -> (pair.value as Double).toInt() }
+                    .mapValues { pair -> nativeViewHierarchyManager.resolveView(pair.value) as? RoktEmbeddedView }
+                    .filterValues { value -> value != null }
+                    .mapValues { WeakReference(it.value as RoktEmbeddedView) },
+            )
+        }
+        return placeholderMap
+    }
+}

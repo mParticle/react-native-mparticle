@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.platforms = { :ios => ios_platform, :tvos => "9.2" }
 
   s.source       = { :git => "https://github.com/mParticle/react-native-mparticle.git", :tag => "#{s.version}" }
-  s.source_files  = "ios/**/*.{h,m}"
+  s.source_files  = "ios/**/*.{h,m,mm,swift}"
   
   if defined?(install_modules_dependencies()) != nil
     install_modules_dependencies(s);

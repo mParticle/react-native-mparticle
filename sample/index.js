@@ -1,1 +1,262 @@
-../js/index.js
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ * @flow
+ */
+
+import React, { Component } from 'react';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Platform, findNodeHandle, ScrollView
+} from 'react-native';
+import MParticle from 'react-native-mparticle';
+
+const { RoktConfigBuilder, RoktLayoutView } = MParticle;
+
+export default class MParticleSample extends Component {
+    constructor(props) {
+        super(props);
+        this.placeholder1 = React.createRef();
+        this.state = {isShowingText: true,
+            optedOut: true,
+            attributionResults: "{value: no attributionResults}",
+            session: '',
+            isKitActive: true};
+
+        this._toggleOptOut = this._toggleOptOut.bind(this)
+        this._getAttributionResults = this._getAttributionResults.bind(this)
+        this._isKitActive = this._isKitActive.bind(this)
+        this.render = this.render.bind(this)
+
+        // Example Login
+        var request = new MParticle.IdentityRequest();
+        request.email = 'testing1@gmail.com';
+        request.customerId = "123"
+        MParticle.Identity.login(request, (error, userId, previousUserId) => {
+            if (error) {
+                console.debug(error);
+            }
+
+            // Only create alias request if there's a previous user
+            if (previousUserId) {
+                var previousUser = new MParticle.User(previousUserId);
+                previousUser.getFirstSeen((firstSeen) => {
+                    previousUser.getLastSeen((lastSeen) => {
+                        var aliasRequest = new MParticle.AliasRequest()
+                            .sourceMpid(previousUser.getMpid())
+                            .destinationMpid(userId)
+                            .startTime(firstSeen - 1000)
+                            .endTime(lastSeen - 1000)
+                        console.log("AliasRequest = " + JSON.stringify(aliasRequest));
+                        MParticle.Identity.aliasUsers(aliasRequest, (success, error) => {
+                            if (error) {
+                                console.log("Alias error = " + error);
+                            }
+                            console.log("Alias result: " + success);
+                        });
+
+                        var aliasRequest2 = new MParticle.AliasRequest()
+                            .sourceMpid(previousUser.getMpid())
+                            .destinationMpid(userId)
+                        console.log("AliasRequest2 = " + JSON.stringify(aliasRequest2));
+                        MParticle.Identity.aliasUsers(aliasRequest2, (success, error) => {
+                            if (error) {
+                                console.log("Alias 2 error = " + error);
+                            }
+                            console.log("Alias 2 result: " + success);
+                        });
+                    })
+                })
+            } else {
+                console.log("No previous user found, skipping alias request");
+            }
+
+            var user = new MParticle.User(userId);
+            console.debug("User Attributes = " + user.userAttributes);
+            MParticle.Identity.logout({}, (error, userId) => {
+                if (error) {
+                    console.debug("Logout error" + error);
+                }
+                var request = new MParticle.IdentityRequest();
+                request.email = 'testing2@gmail.com';
+                request.customerId = '456'
+                MParticle.Identity.modify(request, (error) => {
+                    if (error) {
+                        console.debug("Modify error = " + error)
+                    }
+                });
+            });
+        });
+
+        var i = 0;
+        // Toggle the state every few seconds, 10 times
+        var intervalId = setInterval(() => {
+            MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value', 'Test Boolean': true, 'Test Int': 1235, 'Test Double': 123.123 })
+            this.setState((previousState) => {
+                return {isShowingText: !previousState.isShowingText}
+            })
+            MParticle.Identity.getCurrentUser((currentUser) => {
+                //currentUser.setUserTag('regular');
+            });
+            var request = new MParticle.IdentityRequest();
+            request.email = 'testing1@gmail.com';
+            request.customerId = "vlknasdlknv"
+            request.setUserIdentity('12345', MParticle.UserIdentityType.Alias);
+
+            const product = new MParticle.Product('Test product for cart', '1234', 19.99)
+            const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
+            const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
+
+            MParticle.logCommerceEvent(event)
+            MParticle.logPushRegistration("afslibvnoewtibnsgb", "vdasvadsdsav");
+            console.debug("interval")
+            i++;
+            if (i >= 10) {
+                clearInterval(intervalId);
+            }
+        }, 5000);
+    }
+
+    componentDidMount() {
+        MParticle.getSession(session => this.setState({ session }))
+    }
+
+    _toggleOptOut() {
+        MParticle.getOptOut((optedOut) => {
+            MParticle.setOptOut(!optedOut)
+            console.debug("setOptout" + optedOut)
+            this.setState((previousState) => {
+                console.debug("returning state")
+                return { optedOut: !optedOut };
+            })
+        })
+    }
+
+    _getAttributionResults() {
+        MParticle.getAttributions((_attributionResults) => {
+            this.setState((previousState) => {
+                return {attributionResults: _attributionResults}
+            })
+        })
+    }
+
+    _isKitActive() {
+        MParticle.isKitActive(80, (active) => {
+            this.setState((previousState) => {
+                return {isKitActive: active}
+            })
+        })
+    }
+
+    _incrementAttribute() {
+        MParticle.Identity.getCurrentUser((currentUser) => {
+            currentUser.incrementUserAttribute("incrementedAttribute", 1)
+        })
+    }
+
+    _roktSelectPlacements() {
+        // Platform-specific attributes
+        const iosAttributes = {
+            "email": "ios-user@example.com",
+            "platform": "ios",
+            "userId": "ios-54321",
+            "deviceType": "mobile",
+        };
+
+        const androidAttributes = {
+            "email": "android-user@example.com",
+            "platform": "android",
+            "userId": "android-67890",
+            "deviceType": "mobile",
+        };
+
+        // Select attributes based on platform
+        const attributes = Platform.OS === 'ios' ? iosAttributes : androidAttributes;
+        console.log(`Platform detected: ${Platform.OS}, using ${Platform.OS === 'ios' ? 'iOS' : 'Android'} attributes:`, attributes);
+        const config = new RoktConfigBuilder()
+            .withColorMode('light')
+            .build();
+        const placeholderMap = {
+            'Location1': findNodeHandle(this.placeholder1.current),
+        }
+        MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, placeholderMap, config, null).then((result) => {
+            console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
+        }).catch((error) => {
+            console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
+        })
+    }
+
+    render() {
+        let display = this.state.isShowingText ? 'Sending Event' : ' '
+        let optedOut = this.state.optedOut ? 'true' : 'false'
+        let optAction = this.state.optedOut ? 'In' : 'Out'
+        let kitActive = this.state.isKitActive ? 'true' : 'false'
+        return (
+            <ScrollView contentContainerStyle={styles.container}>
+                <Text style={styles.welcome}>
+                    Welcome to React Native! {display}
+                </Text>
+                <Text style={styles.welcome}>
+                    Opted Out = {optedOut}
+                </Text>
+                <Button
+                    onPress={() => {this._toggleOptOut()}}
+                    title={'Opt ' + optAction}/>
+                <Text>
+                    Session = {JSON.stringify(this.state.session)}
+                </Text>
+                <Text>
+                    Attributes = {JSON.stringify(this.state.attributionResults)}
+                </Text>
+                <Button
+                    onPress={() => {this._getAttributionResults()}}
+                    title="Get Attribution Results"/>
+                <Text>
+                    KitActive = {kitActive} (should switch to false)
+                </Text>
+                <Button
+                    onPress={() => {this._isKitActive()}}
+                    title="Check Kit Active"/>
+                <Text style={styles.instructions}>
+                    To get started, edit index.js
+                </Text>
+                <Text style={styles.instructions}>
+                    Press Cmd+R to reload,{'\n'}
+                    Cmd+D or shake for dev menu
+                </Text>
+
+                <Button
+                    onPress={() => {this._incrementAttribute()}}
+                    title="Increment Attribute"/>
+                <Text style={styles.instructions}>ROKT</Text>
+                <Button title="ROKT Test" onPress={() => {this._roktSelectPlacements()}}/>
+                <RoktLayoutView
+                    ref={this.placeholder1}
+                    placeholderName="Location1" />
+            </ScrollView>
+        );
+    }
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flexGrow: 1,
+        backgroundColor: '#F5FCFF',
+    },
+    welcome: {
+        fontSize: 20,
+        textAlign: 'center',
+        margin: 10,
+    },
+    instructions: {
+        textAlign: 'center',
+        color: '#333333',
+        marginBottom: 5,
+    },
+});
+
+AppRegistry.registerComponent('MParticleSample', () => MParticleSample);
