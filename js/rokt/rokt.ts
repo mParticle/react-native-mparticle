@@ -1,4 +1,7 @@
-import {NativeModules} from "react-native";
+import type { Spec } from '../specs/rokt/NativeMPRokt';
+import NativeMPRokt from '../specs/rokt/NativeMPRokt';
+
+const MPRoktModule: Spec = NativeMPRokt;
 
 export abstract class Rokt {
     /**
@@ -18,7 +21,7 @@ export abstract class Rokt {
         roktConfig?: IRoktConfig,
         fontFilesMap?: Record<string, string>
     ): Promise<void> {
-        NativeModules.MPRokt.selectPlacements(identifier, attributes, placeholders, roktConfig, fontFilesMap);
+        MPRoktModule.selectPlacements(identifier, attributes, placeholders, roktConfig, fontFilesMap);
     }
 }
 
@@ -70,6 +73,8 @@ export class RoktConfigBuilder implements Partial<IRoktConfig> {
     }
 }
 
+// For RoktEventManager, we'll need to keep using NativeModules since it's not in the spec
+import { NativeModules } from 'react-native';
 const { RoktEventManager } = NativeModules;
 
 export { RoktEventManager };

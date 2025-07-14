@@ -44,14 +44,16 @@ def supportsNamespace() {
 apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-//if (isNewArchitectureEnabled()) {
-//    apply plugin: 'com.facebook.react'
-//}
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
 
 android {
     if (supportsNamespace()) {
         namespace 'com.mparticle.react'
-        buildFeatures.buildConfig = true
+        buildFeatures {
+            buildConfig = true
+        }
         sourceSets {
             main {
                 manifest.srcFile "src/main/AndroidManifestNew.xml"
@@ -65,15 +67,15 @@ android {
         targetSdkVersion 33
         versionCode 2
         versionName "2.0.0"
-        //buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
     }
     sourceSets {
         main {
-            //if (isNewArchitectureEnabled()) {
-            //    java.srcDirs += ['src/newarch/java']
-            //} else {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += ['src/newarch/java']
+            } else {
                 java.srcDirs += ['src/oldarch/java']
-            //}
+            }
         }
     }
 
