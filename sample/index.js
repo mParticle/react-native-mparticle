@@ -6,16 +6,18 @@
 
 import React, { Component } from 'react';
 import {
-    AppRegistry,
-    StyleSheet,
-    Text,
-    View,
-    Button,
-    Platform, findNodeHandle, ScrollView
+  AppRegistry,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  Platform, findNodeHandle, ScrollView, NativeEventEmitter,
 } from 'react-native';
-import MParticle from 'react-native-mparticle';
+import MParticle, {RoktEventManager} from 'react-native-mparticle';
 
 const { RoktConfigBuilder, RoktLayoutView } = MParticle;
+
+const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
 
 export default class MParticleSample extends Component {
     constructor(props) {
@@ -123,6 +125,31 @@ export default class MParticleSample extends Component {
 
     componentDidMount() {
         MParticle.getSession(session => this.setState({ session }))
+        if (eventManagerEmitter) {
+          // Save subscriptions so we can remove them later
+          this.roktCallbackListener = eventManagerEmitter.addListener(
+            'RoktCallback',
+            data => {
+              console.log('roktCallback received: ' + data.callbackValue);
+            },
+          );
+
+          this.roktEventsListener = eventManagerEmitter.addListener('RoktEvents', data => {
+            console.log(`*** ROKT EVENT *** ${JSON.stringify(data)}`);
+          });
+        } else {
+          console.warn('RoktEventManager not available, skipping event listeners');
+        }
+    }
+
+    componentWillUnmount() {
+        // Remove event listeners to avoid duplicate subscriptions
+        if (this.roktCallbackListener) {
+            this.roktCallbackListener.remove();
+        }
+        if (this.roktEventsListener) {
+            this.roktEventsListener.remove();
+        }
     }
 
     _toggleOptOut() {
@@ -158,7 +185,19 @@ export default class MParticleSample extends Component {
         })
     }
 
-    _roktSelectPlacements() {
+    _roktSelectOverlayPlacements() {
+      this._roktSelectPlacements('MSDKOverlayLayout')
+    }
+
+    _roktSelectBottomSheetPlacements() {
+      this._roktSelectPlacements('MSDKBottomSheetLayout')
+    }
+
+    _roktSelectEmbeddedPlacements() {
+      this._roktSelectPlacements('MSDKEmbeddedLayout')
+    }
+
+    _roktSelectPlacements(identifier) {
         // Platform-specific attributes
         const iosAttributes = {
             "email": "ios-user@example.com",
@@ -183,7 +222,7 @@ export default class MParticleSample extends Component {
         const placeholderMap = {
             'Location1': findNodeHandle(this.placeholder1.current),
         }
-        MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, placeholderMap, config, null).then((result) => {
+        MParticle.Rokt.selectPlacements(identifier, attributes, placeholderMap, config, null).then((result) => {
             console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
         }).catch((error) => {
             console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
@@ -233,7 +272,9 @@ export default class MParticleSample extends Component {
                     onPress={() => {this._incrementAttribute()}}
                     title="Increment Attribute"/>
                 <Text style={styles.instructions}>ROKT</Text>
-                <Button title="ROKT Test" onPress={() => {this._roktSelectPlacements()}}/>
+                <Button title="ROKT Embedded" onPress={() => {this._roktSelectEmbeddedPlacements()}}/>
+                <Button title="ROKT Overlay" onPress={() => {this._roktSelectOverlayPlacements()}}/>
+                <Button title="ROKT BottomSheet" onPress={() => {this._roktSelectBottomSheetPlacements()}}/>
                 <RoktLayoutView
                     ref={this.placeholder1}
                     placeholderName="Location1" />

@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Mock for react-native-mparticle
  * This mock provides a simple API that mimics the essential functionality
@@ -9,11 +8,11 @@ class User {
   constructor(userId) {
     this.userId = userId;
   }
-  
+
   getMpid() {
     return this.userId;
   }
-  
+
   setUserAttribute() {}
   getUserAttributes(callback) {
     callback({ testAttribute: 'testValue' });
@@ -37,12 +36,12 @@ class IdentityRequest {
     this.email = email;
     return this;
   }
-  
+
   setCustomerID(customerId) {
     this.customerId = customerId;
     return this;
   }
-  
+
   setUserIdentity(userIdentity, identityType) {
     this[identityType] = userIdentity;
     return this;
@@ -54,23 +53,23 @@ class Identity {
     var currentUser = new User('mockUserId123');
     completion(currentUser);
   }
-  
+
   static login(request, completion) {
     completion(null, 'mockUserId123', 'mockPreviousUserId456');
   }
-  
+
   static logout(request, completion) {
     completion(null, 'mockUserId123');
   }
-  
+
   static identify(request, completion) {
     completion(null, 'mockUserId123', 'mockPreviousUserId456');
   }
-  
+
   static modify(request, completion) {
     completion(null, 'mockUserId123', 'mockPreviousUserId456');
   }
-  
+
   static aliasUsers(request, completion) {
     completion(true, null);
   }
@@ -102,17 +101,17 @@ class AliasRequest {
     this.sourceMpid = mpid;
     return this;
   }
-  
+
   destinationMpid(mpid) {
     this.destinationMpid = mpid;
     return this;
   }
-  
+
   startTime(time) {
     this.startTime = time;
     return this;
   }
-  
+
   endTime(time) {
     this.endTime = time;
     return this;
@@ -121,8 +120,25 @@ class AliasRequest {
 
 // Mock Rokt
 const Rokt = {
-  selectPlacements: () => Promise.resolve()
+  selectPlacements: () => Promise.resolve(),
 };
+
+// Rokt mocks
+class RoktConfigBuilder {
+  withColorMode(mode) {
+    return this;
+  }
+
+  build() {
+    return {};
+  }
+}
+
+// Simple passthrough React component placeholder
+const RoktLayoutView = () => null;
+
+// Event manager stub (can be used with NativeEventEmitter)
+const RoktEventManager = {};
 
 // Constants
 const EventType = {
@@ -134,20 +150,20 @@ const EventType = {
   UserPreference: 6,
   Social: 7,
   Other: 8,
-  Media: 9
+  Media: 9,
 };
 
 const UserIdentityType = {
   Email: 7,
   CustomerId: 1,
-  Alias: 8
+  Alias: 8,
 };
 
 const ProductActionType = {
   AddToCart: 1,
   RemoveFromCart: 2,
   Checkout: 3,
-  Purchase: 7
+  Purchase: 7,
 };
 
 // Main mock object
@@ -160,13 +176,15 @@ const MParticle = {
   TransactionAttributes,
   CommerceEvent,
   AliasRequest,
+  RoktConfigBuilder,
+  RoktLayoutView,
   Rokt,
-  
+
   // Constants
   EventType,
   UserIdentityType,
   ProductActionType,
-  
+
   // Methods
   logEvent: () => {},
   logCommerceEvent: () => {},
@@ -178,7 +196,8 @@ const MParticle = {
   getAttributions: (callback) => callback({ attributionResults: 'mock results' }),
   upload: () => {},
   setUploadInterval: () => {},
-  setLocation: () => {}
+  setLocation: () => {},
 };
 
-module.exports = MParticle; 
+module.exports = MParticle;
+module.exports.RoktEventManager = RoktEventManager;

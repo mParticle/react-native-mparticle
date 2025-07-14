@@ -4,7 +4,8 @@ import { NativeModules } from 'react-native'
 import {
   Rokt,
   RoktConfigBuilder,
-  CacheConfig
+  CacheConfig,
+  RoktEventManager
 } from './rokt/rokt'
 import RoktLayoutView from './rokt/rokt-layout-view'
 
@@ -681,6 +682,7 @@ const MParticle = {
   Rokt,
   RoktConfigBuilder,
   CacheConfig,
+  RoktEventManager,
   RoktLayoutView,
 
   upload,             // Methods
@@ -705,3 +707,6 @@ const MParticle = {
 }
 
 export default MParticle
+
+// Expose RoktEventManager utilities as named exports for convenience
+export { RoktEventManager }

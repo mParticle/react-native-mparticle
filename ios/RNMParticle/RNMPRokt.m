@@ -77,7 +77,6 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
 
         [self subscribeViewEvents:identifer];
 
-        // TODO: Add placeholders and fontFilesMap
         [[[MParticle sharedInstance] rokt] selectPlacements:identifer
                                                  attributes:finalAttributes
                                               embeddedViews:nativePlaceholders

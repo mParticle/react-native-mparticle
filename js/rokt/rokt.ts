@@ -70,4 +70,8 @@ export class RoktConfigBuilder implements Partial<IRoktConfig> {
     }
 }
 
+const { RoktEventManager } = NativeModules;
+
+export { RoktEventManager };
+
 export type ColorMode = "light" | "dark" | "system";

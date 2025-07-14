@@ -4,6 +4,7 @@ import {
     CacheConfig,
     IRoktConfig,
     ColorMode,
+    RoktEventManager,
 } from './rokt/rokt';
 import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
 
@@ -326,7 +327,7 @@ export declare class MParticleError {
 }
 
 // Export Rokt functionality
-export { Rokt, RoktConfigBuilder, CacheConfig, IRoktConfig, ColorMode, RoktLayoutView, RoktLayoutViewProps };
+export { Rokt, RoktConfigBuilder, RoktEventManager, CacheConfig, IRoktConfig, ColorMode, RoktLayoutView, RoktLayoutViewProps };
 
 // Default export
 declare const _default: {

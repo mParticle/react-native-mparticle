@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		DBDF24DC1E007EB1000F3D73 /* RNMParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDF24DB1E007EB1000F3D73 /* RNMParticle.m */; };
 		DBDF24DD1E007EB1000F3D73 /* RNMParticle.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBDF24DA1E007EB1000F3D73 /* RNMParticle.h */; };
+		DBDF24DE1E007EB1000F3D74 /* RoktEventManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDF24DD1E007EB1000F3D74 /* RoktEventManager.m */; };
+		DBDF24DF1E007EB1000F3D74 /* RoktEventManager.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBDF24DC1E007EB1000F3D74 /* RoktEventManager.h */; };
+		DBDF24E01E007EB1000F3D75 /* RNMPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDF24DE1E007EB1000F3D75 /* RNMPRokt.m */; };
+		DBDF24E11E007EB1000F3D75 /* RNMPRokt.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBDF24DD1E007EB1000F3D75 /* RNMPRokt.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +32,10 @@
 		DBDF24D71E007EB1000F3D73 /* libRNMParticle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNMParticle.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBDF24DA1E007EB1000F3D73 /* RNMParticle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNMParticle.h; sourceTree = "<group>"; };
 		DBDF24DB1E007EB1000F3D73 /* RNMParticle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNMParticle.m; sourceTree = "<group>"; };
+		DBDF24DC1E007EB1000F3D74 /* RoktEventManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RoktEventManager.h; sourceTree = "<group>"; };
+		DBDF24DD1E007EB1000F3D74 /* RoktEventManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RoktEventManager.m; sourceTree = "<group>"; };
+		DBDF24DD1E007EB1000F3D75 /* RNMPRokt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNMPRokt.h; sourceTree = "<group>"; };
+		DBDF24DE1E007EB1000F3D75 /* RNMPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNMPRokt.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +70,10 @@
 			children = (
 				DBDF24DA1E007EB1000F3D73 /* RNMParticle.h */,
 				DBDF24DB1E007EB1000F3D73 /* RNMParticle.m */,
+				DBDF24DC1E007EB1000F3D74 /* RoktEventManager.h */,
+				DBDF24DD1E007EB1000F3D74 /* RoktEventManager.m */,
+				DBDF24DD1E007EB1000F3D75 /* RNMPRokt.h */,
+				DBDF24DE1E007EB1000F3D75 /* RNMPRokt.m */,
 			);
 			path = RNMParticle;
 			sourceTree = "<group>";
@@ -124,6 +136,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBDF24DC1E007EB1000F3D73 /* RNMParticle.m in Sources */,
+				DBDF24DE1E007EB1000F3D74 /* RoktEventManager.m in Sources */,
+				DBDF24E01E007EB1000F3D75 /* RNMPRokt.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
