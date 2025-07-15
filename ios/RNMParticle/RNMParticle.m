@@ -4,7 +4,7 @@
 #elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
     #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #else
-    #import "mParticle.h"
+    #import <mParticle_Apple_SDK/Include/mParticle.h>
 #endif
 #if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>)
     #import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
@@ -25,7 +25,7 @@
 RCT_EXTERN void RCTRegisterModule(Class);
 
 + (NSString *)moduleName {
-    return @"MParticle";
+    return @"RNMParticle";
 }
 
 + (void)load {

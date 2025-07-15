@@ -33,7 +33,7 @@ class MParticleModule(private val reactContext: ReactApplicationContext) :
     NativeMParticleSpec(reactContext) {
 
     companion object {
-        const val MODULE_NAME = "MParticle"
+        const val MODULE_NAME = "RNMParticle"
         private const val LOG_TAG = "MParticleModule"
     }
 

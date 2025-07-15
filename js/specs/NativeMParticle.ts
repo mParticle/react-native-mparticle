@@ -156,4 +156,4 @@ export interface Spec extends TurboModule {
     aliasUsers(aliasRequest: AliasRequest, callback: () => void): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('MParticle');
+export default TurboModuleRegistry.getEnforcing<Spec>('RNMParticle');

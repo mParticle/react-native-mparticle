@@ -34,7 +34,7 @@
     "typescript": "5.0.4"
   },
   "codegenConfig": {
-    "name": "MParticle",
+    "name": "RNMParticle",
     "type": "all",
     "jsSrcsDir": "js/specs",
     "android": {

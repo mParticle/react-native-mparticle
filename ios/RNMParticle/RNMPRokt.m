@@ -5,7 +5,7 @@
 #elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
     #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #else
-    #import "mParticle.h"
+    #import <mParticle_Apple_SDK/Include/mParticle.h>
 #endif
 #if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>)
     #import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
@@ -39,6 +39,17 @@ RCT_EXTERN void RCTRegisterModule(Class);
 
 + (void)load {
     RCTRegisterModule(self);
+}
+
+- (dispatch_queue_t)methodQueue
+{
+    return self.bridge.uiManager.methodQueue;
+}
+
+- (void)setMethodQueue:(dispatch_queue_t)methodQueue
+{
+    // No-op setter to satisfy TurboModule requirements
+    // We always return the UI manager's method queue
 }
 
 RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSDictionary * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
