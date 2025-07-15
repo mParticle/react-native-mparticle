@@ -1,14 +1,11 @@
 package com.mparticle.react.rokt
 
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.UiThreadUtil
-import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerHelper
-import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
 import com.mparticle.WrapperSdk
 import com.mparticle.react.NativeMPRoktSpec

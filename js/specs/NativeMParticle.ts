@@ -137,7 +137,7 @@ export interface Spec extends TurboModule {
     setLocation(latitude: number, longitude: number): void;
 
     // User Methods
-    setUserAttribute(mpid: string, key: string, value: Object): void;
+    setUserAttribute(mpid: string, key: string, value: string): void;
     setUserAttributeArray(mpid: string, key: string, value: Array<string>): void;
     getUserAttributes(mpid: string, callback: (error: CallbackError | null, result: UserAttributes | null) => void): void;
     setUserTag(mpid: string, tag: string): void;

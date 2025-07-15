@@ -1,4 +1,3 @@
-import { NativeModules } from 'react-native';
 import {
     Rokt,
     RoktConfigBuilder,
@@ -7,8 +6,9 @@ import {
 } from './rokt/rokt';
 import RoktLayoutView from './rokt/rokt-layout-view';
 import type { Spec } from './specs/NativeMParticle';
+import NativeMParticle from './specs/NativeMParticle';
 
-const MParticleModule: Spec = NativeModules.MParticle;
+const MParticleModule: Spec = NativeMParticle;
 
 // ******** Types ********
 export interface UserAttributes {
@@ -241,7 +241,7 @@ class User {
         return this.userId;
     }
 
-    setUserAttribute(key: string, value: string | number | boolean | string[]) {
+    setUserAttribute(key: string, value: string) {
         if (Array.isArray(value)) {
             MParticleModule.setUserAttributeArray(this.userId, key, value);
         } else {
