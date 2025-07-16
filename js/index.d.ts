@@ -1,10 +1,4 @@
-import {
-    Rokt,
-    RoktConfigBuilder,
-    CacheConfig,
-    IRoktConfig,
-    ColorMode,
-} from './rokt/rokt';
+import { Rokt, CacheConfig, IRoktConfig, ColorMode } from './rokt/rokt';
 import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
 
 // ******** Types ********
@@ -57,16 +51,16 @@ export declare const EventType: {
 };
 
 export declare const UserAttributeType: {
-  readonly FirstName: "$FirstName";
-  readonly LastName: "$LastName";
-  readonly Address: "$Address";
-  readonly State: "$State";
-  readonly City: "$City";
-  readonly Zipcode: "$Zip";
-  readonly Country: "$Country";
-  readonly Age: "$Age";
-  readonly Gender: "$Gender";
-  readonly MobileNumber: "$Mobile";
+  readonly FirstName: '$FirstName';
+  readonly LastName: '$LastName';
+  readonly Address: '$Address';
+  readonly State: '$State';
+  readonly City: '$City';
+  readonly Zipcode: '$Zip';
+  readonly Country: '$Country';
+  readonly Age: '$Age';
+  readonly Gender: '$Gender';
+  readonly MobileNumber: '$Mobile';
 };
 
 export declare const UserIdentityType: {
@@ -126,22 +120,52 @@ export declare const ATTAuthStatus: {
 // ******** Main API ********
 export declare const upload: () => void;
 export declare const setUploadInterval: (uploadInterval: number) => void;
-export declare const logEvent: (eventName: string, type?: number, attributes?: CustomAttributes | null) => void;
+export declare const logEvent: (
+  eventName: string,
+  type?: number,
+  attributes?: CustomAttributes | null
+) => void;
 export declare const logMPEvent: (event: Event) => void;
 export declare const logCommerceEvent: (commerceEvent: CommerceEvent) => void;
-export declare const logScreenEvent: (screenName: string, attributes?: CustomAttributes | null, shouldUploadEvent?: boolean) => void;
+export declare const logScreenEvent: (
+  screenName: string,
+  attributes?: CustomAttributes | null,
+  shouldUploadEvent?: boolean
+) => void;
 export declare const setATTStatus: (status: number) => void;
-export declare const setATTStatusWithCustomTimestamp: (status: number, timestamp: number) => void;
+export declare const setATTStatusWithCustomTimestamp: (
+  status: number,
+  timestamp: number
+) => void;
 export declare const setOptOut: (optOut: boolean) => void;
-export declare const getOptOut: (completion: CompletionCallback<boolean>) => void;
-export declare const addGDPRConsentState: (newConsentState: GDPRConsent, purpose: string) => void;
-export declare const removeGDPRConsentStateWithPurpose: (purpose: string) => void;
-export declare const setCCPAConsentState: (newConsentState: CCPAConsent) => void;
+export declare const getOptOut: (
+  completion: CompletionCallback<boolean>
+) => void;
+export declare const addGDPRConsentState: (
+  newConsentState: GDPRConsent,
+  purpose: string
+) => void;
+export declare const removeGDPRConsentStateWithPurpose: (
+  purpose: string
+) => void;
+export declare const setCCPAConsentState: (
+  newConsentState: CCPAConsent
+) => void;
 export declare const removeCCPAConsentState: () => void;
-export declare const isKitActive: (kitId: number, completion: CompletionCallback<boolean>) => void;
-export declare const getAttributions: (completion: CompletionCallback<AttributionResult>) => void;
-export declare const logPushRegistration: (registrationField1: string, registrationField2: string) => void;
-export declare const getSession: (completion: CompletionCallback<SessionInfo>) => void;
+export declare const isKitActive: (
+  kitId: number,
+  completion: CompletionCallback<boolean>
+) => void;
+export declare const getAttributions: (
+  completion: CompletionCallback<AttributionResult>
+) => void;
+export declare const logPushRegistration: (
+  registrationField1: string,
+  registrationField2: string
+) => void;
+export declare const getSession: (
+  completion: CompletionCallback<SessionInfo>
+) => void;
 export declare const setLocation: (latitude: number, longitude: number) => void;
 
 // ******** Identity ********
@@ -149,7 +173,10 @@ export declare class User {
   readonly userId: string;
   constructor(userId: string);
   getMpid(): string;
-  setUserAttribute(key: string, value: string | string[] | number | boolean): void;
+  setUserAttribute(
+    key: string,
+    value: string | string[] | number | boolean
+  ): void;
   setUserAttributeArray(key: string, value: string[]): void;
   getUserAttributes(completion: CompletionCallback<UserAttributes>): void;
   setUserTag(value: string): void;
@@ -170,11 +197,26 @@ export declare class IdentityRequest {
 
 export declare class Identity {
   static getCurrentUser(completion: CompletionCallback<User>): void;
-  static identify(identityRequest: IdentityRequest, completion: IdentityCallback): void;
-  static login(identityRequest: IdentityRequest, completion: IdentityCallback): void;
-  static logout(identityRequest: IdentityRequest, completion: IdentityCallback): void;
-  static modify(identityRequest: IdentityRequest, completion: IdentityCallback): void;
-  static aliasUsers(aliasRequest: AliasRequest, completion: CompletionCallback<void>): void;
+  static identify(
+    identityRequest: IdentityRequest,
+    completion: IdentityCallback
+  ): void;
+  static login(
+    identityRequest: IdentityRequest,
+    completion: IdentityCallback
+  ): void;
+  static logout(
+    identityRequest: IdentityRequest,
+    completion: IdentityCallback
+  ): void;
+  static modify(
+    identityRequest: IdentityRequest,
+    completion: IdentityCallback
+  ): void;
+  static aliasUsers(
+    aliasRequest: AliasRequest,
+    completion: CompletionCallback<void>
+  ): void;
 }
 
 // ******** Commerce ********
@@ -240,7 +282,13 @@ export declare class GDPRConsent {
   timestamp?: number;
   location?: string;
   hardwareId?: string;
-  constructor(consented?: boolean, doc?: string, timestamp?: number, location?: string, hardwareId?: string);
+  constructor(
+    consented?: boolean,
+    doc?: string,
+    timestamp?: number,
+    location?: string,
+    hardwareId?: string
+  );
   setConsented(consented: boolean): this;
   setDocument(doc: string): this;
   setTimestamp(timestamp: number): this;
@@ -254,7 +302,13 @@ export declare class CCPAConsent {
   timestamp?: number;
   location?: string;
   hardwareId?: string;
-  constructor(consented?: boolean, doc?: string, timestamp?: number, location?: string, hardwareId?: string);
+  constructor(
+    consented?: boolean,
+    doc?: string,
+    timestamp?: number,
+    location?: string,
+    hardwareId?: string
+  );
   setConsented(consented: boolean): this;
   setDocument(doc: string): this;
   setTimestamp(timestamp: number): this;
@@ -278,8 +332,15 @@ export declare class CommerceEvent {
   checkoutStep?: number;
   nonInteractive?: boolean;
   shouldUploadEvent?: boolean;
-  static createProductActionEvent(productActionType: number, products: Product[], transactionAttributes?: TransactionAttributes): CommerceEvent;
-  static createPromotionEvent(promotionActionType: number, promotions: Promotion[]): CommerceEvent;
+  static createProductActionEvent(
+    productActionType: number,
+    products: Product[],
+    transactionAttributes?: TransactionAttributes
+  ): CommerceEvent;
+  static createPromotionEvent(
+    promotionActionType: number,
+    promotions: Promotion[]
+  ): CommerceEvent;
   static createImpressionEvent(impressions: Impression[]): CommerceEvent;
   setTransactionAttributes(transactionAttributes: TransactionAttributes): this;
   setProductActionType(productActionType: number): this;
@@ -326,7 +387,14 @@ export declare class MParticleError {
 }
 
 // Export Rokt functionality
-export { Rokt, RoktConfigBuilder, CacheConfig, IRoktConfig, ColorMode, RoktLayoutView, RoktLayoutViewProps };
+export {
+  Rokt,
+  CacheConfig,
+  IRoktConfig,
+  ColorMode,
+  RoktLayoutView,
+  RoktLayoutViewProps,
+};
 
 // Default export
 declare const _default: {
@@ -369,7 +437,6 @@ declare const _default: {
   Event: typeof Event;
   MParticleError: typeof MParticleError;
   Rokt: typeof Rokt;
-  RoktConfigBuilder: typeof RoktConfigBuilder;
   CacheConfig: typeof CacheConfig;
   RoktLayoutView: typeof RoktLayoutView;
 };

@@ -26,6 +26,17 @@ export abstract class Rokt {
       fontFilesMap
     );
   }
+
+  static createRoktConfig(colorMode?: ColorMode, cacheConfig?: CacheConfig) {
+    return new RoktConfig(colorMode ?? 'system', cacheConfig);
+  }
+
+  static createCacheConfig(
+    cacheDurationInSeconds: number,
+    cacheAttributes: Record<string, string>
+  ) {
+    return new CacheConfig(cacheDurationInSeconds, cacheAttributes);
+  }
 }
 
 // Define the interface that matches the native module for cleaner code
@@ -49,29 +60,12 @@ export class CacheConfig {
 }
 
 class RoktConfig implements IRoktConfig {
-  constructor(roktConfig: RoktConfig) {
-    Object.assign(this, roktConfig);
-  }
-}
+  public readonly colorMode: ColorMode;
+  public readonly cacheConfig?: CacheConfig;
 
-export class RoktConfigBuilder implements Partial<IRoktConfig> {
-  readonly colorMode?: ColorMode;
-  readonly cacheConfig?: CacheConfig;
-
-  public withColorMode(
-    value: ColorMode
-  ): this & Pick<IRoktConfig, 'colorMode'> {
-    return Object.assign(this, { colorMode: value });
-  }
-
-  public withCacheConfig(
-    value: CacheConfig
-  ): this & Pick<IRoktConfig, 'cacheConfig'> {
-    return Object.assign(this, { cacheConfig: value });
-  }
-
-  public build(this: IRoktConfig) {
-    return new RoktConfig(this);
+  constructor(colorMode: ColorMode, cacheConfig?: CacheConfig) {
+    this.colorMode = colorMode;
+    this.cacheConfig = cacheConfig;
   }
 }
 
