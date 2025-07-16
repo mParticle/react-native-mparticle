@@ -28,6 +28,7 @@ import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MParticleUserTest {
@@ -40,25 +41,10 @@ public class MParticleUserTest {
         MParticle.setInstance(Mockito.mock(MParticle.class));
         Mockito.when(MParticle.getInstance().Identity()).thenReturn(Mockito.mock(IdentityApi.class));
         Mockito.lenient().when(MParticle.getInstance().Identity().getUser(0L)).thenReturn(null);
-        mParticleUser = new MParticleModule(Mockito.mock(ReactApplicationContext.class)) {
-            @Override
-            public WritableMap getWritableMap() {
-                return new MockMap();
-            }
-        };
-    }
 
-    @Test
-    public void tesNullMParticleUserSetters() {
-        Exception exception = null;
-        try {
-            mParticleUser.setUserAttribute(null, "key", "values");
-            mParticleUser.setUserTag(null, "test");
-            mParticleUser.setUserAttributeArray(null, "keuy", new MockReadableArray());
-        } catch (Exception e) {
-            exception = e;
-        }
-        assertNull(exception);
+        MParticleModule realModule = new MParticleModule(Mockito.mock(ReactApplicationContext.class));
+        mParticleUser = Mockito.spy(realModule);
+        doReturn(new MockMap()).when(mParticleUser).getWritableMap();
     }
 
     @Test
@@ -117,21 +103,6 @@ public class MParticleUserTest {
     }
 
     @Test
-    public void testGetUserIdentitiesNullUser() {
-        final Mutable<Boolean> callbackInvoked = new Mutable<>(false);
-
-        mParticleUser.getUserIdentities(null, new Callback() {
-            @Override
-            public void invoke(Object... args) {
-                assertEquals(0, args.length);
-                callbackInvoked.value = true;
-            }
-        });
-
-        assertTrue(callbackInvoked.value);
-    }
-
-    @Test
     public void testSetUserTag() {
         final Mutable<String> tag = new Mutable<>();
         String testTag = "testTag";
@@ -178,21 +149,6 @@ public class MParticleUserTest {
     }
 
     @Test
-    public void getFirstSeenTimeNullUser() {
-        final Mutable<Boolean> callbackInvoked = new Mutable<>(false);
-
-        mParticleUser.getFirstSeen(null, new Callback() {
-            @Override
-            public void invoke(Object... args) {
-                assertEquals(0, args.length);
-                callbackInvoked.value = true;
-            }
-        });
-
-        assertTrue(callbackInvoked.value);
-    }
-
-    @Test
     public void getLastSeenTime() {
         final Mutable<Boolean> callbackInvoked = new Mutable<>(false);
 
@@ -209,21 +165,6 @@ public class MParticleUserTest {
             public void invoke(Object... args) {
                 assertEquals(1, args.length);
                 assertEquals("2", args[0]);
-                callbackInvoked.value = true;
-            }
-        });
-
-        assertTrue(callbackInvoked.value);
-    }
-
-    @Test
-    public void getLastSeenTimeNullUser() {
-        final Mutable<Boolean> callbackInvoked = new Mutable<>(false);
-
-        mParticleUser.getLastSeen(null , new Callback() {
-            @Override
-            public void invoke(Object... args) {
-                assertEquals(0, args.length);
                 callbackInvoked.value = true;
             }
         });

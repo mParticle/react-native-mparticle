@@ -112,7 +112,7 @@ class MParticleModule(private val reactContext: ReactApplicationContext) :
         value?.let {
             val list = mutableListOf<String>()
             for (i in 0 until it.size()) {
-                list.add(it.getString(i))
+                it.getString(i)?.let { element -> list.add(element) }
             }
 
             val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
