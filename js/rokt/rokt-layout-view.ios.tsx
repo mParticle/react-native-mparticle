@@ -7,9 +7,8 @@ import {
   ViewProps,
   NativeModule,
   UIManager,
-} from "react-native";
-import React, { Component } from "react";
-import RoktNativeLayoutComponent from "./RoktNativeLayoutComponent";
+} from 'react-native';
+import React, { Component } from 'react';
 
 const RoktEventManager = NativeModules.RoktEventManager as NativeModule;
 
@@ -56,8 +55,8 @@ const isNewArchitecture = (() => {
   // This is a safer approach that works in RN 0.80+
   const hasFabricUIManager =
     UIManager &&
-    typeof UIManager.hasViewManagerConfig === "function" &&
-    UIManager.hasViewManagerConfig("RCTView");
+    typeof UIManager.hasViewManagerConfig === 'function' &&
+    UIManager.hasViewManagerConfig('RCTView');
 
   if (hasFabricUIManager) {
     return true;
@@ -76,15 +75,15 @@ if (isNewArchitecture) {
   try {
     // Try to import the new architecture component
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const NativeComponent = require("./RoktNativeLayoutComponent") as {
+    const NativeComponent = require('./RoktNativeLayoutComponent') as {
       default: HostComponent<RoktNativeLayoutProps>;
     };
     WidgetNativeComponent = NativeComponent.default;
   } catch (error) {
-    WidgetNativeComponent = requireNativeComponent("RoktNativeLayout");
+    WidgetNativeComponent = requireNativeComponent('RoktNativeLayout');
   }
 } else {
-  WidgetNativeComponent = requireNativeComponent("RoktNativeLayout");
+  WidgetNativeComponent = requireNativeComponent('RoktNativeLayout');
 }
 
 const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
@@ -94,12 +93,12 @@ export class RoktLayoutView extends Component<
   RoktLayoutViewState
 > {
   subscription = eventManagerEmitter.addListener(
-    "LayoutHeightChanges",
+    'LayoutHeightChanges',
     (widgetChanges: WidgetChangeEvent) => {
       if (widgetChanges.selectedPlacement == this.state.placeholderName) {
         this.setState({ height: parseInt(widgetChanges.height) });
       }
-    },
+    }
   );
 
   constructor(props: RoktLayoutViewProps) {
@@ -117,7 +116,8 @@ export class RoktLayoutView extends Component<
 
   override render() {
     // Cast to React.ComponentType to make it compatible with JSX
-    const RoktComponent = RoktNativeLayoutComponent as React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const RoktComponent = WidgetNativeComponent as React.ComponentType<any>;
     return (
       <RoktComponent
         style={[styles.widget, { height: this.state.height }]}
@@ -129,10 +129,10 @@ export class RoktLayoutView extends Component<
         }}
         onLayoutMarginChanged={(event: MarginChangedEvent) => {
           this.setState({
-            marginTop: parseInt(event.marginTop || "0"),
-            marginRight: parseInt(event.marginRight || "0"),
-            marginLeft: parseInt(event.marginLeft || "0"),
-            marginBottom: parseInt(event.marginBottom || "0"),
+            marginTop: parseInt(event.marginTop || '0'),
+            marginRight: parseInt(event.marginRight || '0'),
+            marginLeft: parseInt(event.marginLeft || '0'),
+            marginBottom: parseInt(event.marginBottom || '0'),
           });
         }}
       />
@@ -147,8 +147,8 @@ export class RoktLayoutView extends Component<
 const styles = StyleSheet.create({
   widget: {
     flex: 1,
-    backgroundColor: "transparent",
-    overflow: "hidden",
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
 });
 

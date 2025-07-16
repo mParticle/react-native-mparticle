@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import React, { Component } from "react";
-import RoktNativeLayoutComponent from "./RoktNativeLayoutComponent";
+import { StyleSheet } from 'react-native';
+import React, { Component } from 'react';
+import RoktNativeLayoutComponent from './RoktNativeLayoutComponent';
 
 /**
  * PUBLIC API: Props that users of RoktLayoutView can set
@@ -43,7 +43,7 @@ interface MarginChangedEvent {
 const styles = StyleSheet.create({
   widget: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
 });
 
@@ -88,10 +88,10 @@ export class RoktLayoutView extends Component<
       const { marginTop, marginLeft, marginRight, marginBottom } =
         event.nativeEvent;
       this.setState({
-        marginTop: parseInt(marginTop || "0"),
-        marginLeft: parseInt(marginLeft || "0"),
-        marginRight: parseInt(marginRight || "0"),
-        marginBottom: parseInt(marginBottom || "0"),
+        marginTop: parseInt(marginTop || '0'),
+        marginLeft: parseInt(marginLeft || '0'),
+        marginRight: parseInt(marginRight || '0'),
+        marginBottom: parseInt(marginBottom || '0'),
       });
     }
   };
@@ -103,7 +103,9 @@ export class RoktLayoutView extends Component<
 
       // Return the native component with the props
       // Cast to React.ComponentType to make it compatible with JSX
-      const RoktComponent = RoktNativeLayoutComponent as React.ComponentType<any>;
+      const RoktComponent =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        RoktNativeLayoutComponent as React.ComponentType<any>;
       return (
         <RoktComponent
           placeholderName={placeholderName}
@@ -122,7 +124,7 @@ export class RoktLayoutView extends Component<
         />
       );
     } catch (error) {
-      console.error("[ROKT] Error rendering RoktEmbeddedView:", error);
+      console.error('[ROKT] Error rendering RoktEmbeddedView:', error);
       return null;
     }
   }

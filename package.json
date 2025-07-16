@@ -13,13 +13,9 @@
     "prepare": "yarn clean && yarn build",
     "dev:pack": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz",
     "dev:link": "./dev-link.sh",
-    "test": "./node_modules/standard/bin/cmd.js",
-    "fix": "./node_modules/standard/bin/cmd.js --fix"
-  },
-  "standard": {
-    "ignore": [
-      "/sample"
-    ]
+    "lint": "eslint js/**/*.{js,ts,tsx} --fix",
+    "format": "prettier --write js/**/*.{js,ts,tsx}",
+    "test": "npm run lint"
   },
   "dependencies": {},
   "peerDependencies": {
@@ -27,7 +23,12 @@
     "react-native": ">= 0.45.0"
   },
   "devDependencies": {
-    "standard": "^8.6.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.8",
     "@types/react": "^18.0.0",
     "@types/react-native": "^0.70.0",
     "typescript": "5.0.4"

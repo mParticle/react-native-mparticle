@@ -1,6 +1,6 @@
-import type { HostComponent, ViewProps } from "react-native";
-import type { DirectEventHandler } from "react-native/Libraries/Types/CodegenTypes";
-import codegenNativeComponent from "react-native/Libraries/Utilities/codegenNativeComponent";
+import type { HostComponent, ViewProps } from 'react-native';
+import type { DirectEventHandler } from 'react-native/Libraries/Types/CodegenTypes';
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 // Event types - these define the data structure passed from native to JS
 type HeightChangedEvent = {
@@ -25,5 +25,5 @@ export interface NativeProps extends ViewProps {
 }
 
 export default codegenNativeComponent<NativeProps>(
-  "RoktNativeLayout",
+  'RoktNativeLayout'
 ) as HostComponent<NativeProps>;
