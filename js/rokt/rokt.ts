@@ -13,7 +13,7 @@ export abstract class Rokt {
    */
   static async selectPlacements(
     identifier: string,
-    attributes?: Record<string, string>,
+    attributes: Record<string, string>,
     placeholders?: Record<string, number | null>,
     roktConfig?: IRoktConfig,
     fontFilesMap?: Record<string, string>
