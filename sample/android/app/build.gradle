@@ -110,8 +110,8 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation("com.mparticle:android-core:5.70.3-SNAPSHOT")
-    implementation("com.mparticle:android-rokt-kit:5.70.2")
+    implementation("com.mparticle:android-core:5.71.0")
+    implementation("com.mparticle:android-rokt-kit:5.71.0")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
