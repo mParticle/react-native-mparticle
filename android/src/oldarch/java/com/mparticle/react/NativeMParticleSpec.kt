@@ -10,7 +10,7 @@ abstract class NativeMParticleSpec(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
     companion object {
-        private const val MODULE_NAME = "MPRokt"
+        private const val MODULE_NAME = "RNMParticle"
     }
 
     override fun getName(): String {

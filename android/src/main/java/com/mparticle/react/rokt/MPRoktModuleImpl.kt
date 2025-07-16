@@ -249,6 +249,6 @@ class MPRoktModuleImpl(
 
     companion object {
         const val MAX_LISTENERS = 5
-        const val MODULE_NAME = "MPRokt"
+        const val MODULE_NAME = "RNMPRokt"
     }
 }

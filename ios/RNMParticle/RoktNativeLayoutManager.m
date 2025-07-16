@@ -2,10 +2,10 @@
 #import <React/RCTViewManager.h>
 #import <mParticle_Apple_SDK/MPRokt.h>
 
-@interface RoktNativeWidgetManager : RCTViewManager
+@interface RoktNativeLayoutManager : RCTViewManager
 @end
 
-@implementation RoktNativeWidgetManager
+@implementation RoktNativeLayoutManager
 
 RCT_EXPORT_MODULE(RoktNativeLayout)
 

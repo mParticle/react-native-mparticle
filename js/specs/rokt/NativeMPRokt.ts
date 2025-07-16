@@ -23,4 +23,4 @@ export interface Spec extends TurboModule {
     ): void;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('MPRokt');
+export default TurboModuleRegistry.getEnforcing<Spec>('RNMPRokt');
