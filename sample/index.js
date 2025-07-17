@@ -177,7 +177,8 @@ export default class MParticleSample extends Component {
         // Select attributes based on platform
         const attributes = Platform.OS === 'ios' ? iosAttributes : androidAttributes;
         console.log(`Platform detected: ${Platform.OS}, using ${Platform.OS === 'ios' ? 'iOS' : 'Android'} attributes:`, attributes);
-        const config = MParticle.Rokt.createRoktConfig('system')
+        const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);
+        const config = MParticle.Rokt.createRoktConfig('system', cacheConfig);
         const placeholderMap = {
             'Location1': findNodeHandle(this.placeholder1.current),
         }
