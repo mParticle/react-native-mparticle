@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import MParticle from 'react-native-mparticle';
 
-const { RoktConfigBuilder, RoktLayoutView } = MParticle;
+const { RoktLayoutView } = MParticle;
 
 export default class MParticleSample extends Component {
     constructor(props) {

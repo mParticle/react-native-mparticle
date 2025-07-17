@@ -2,10 +2,10 @@ import { NativeModules } from 'react-native';
 
 export abstract class Rokt {
   /**
-   * Selects placements with a [identifier], optional [attributes], optional [placeholders], optional [roktConfig], and optional [fontFilePathMap].
+   * Selects placements with a [identifier], [attributes], optional [placeholders], optional [roktConfig], and optional [fontFilePathMap].
    *
    * @param {string} identifier - The page identifier for the placement.
-   * @param {Record<string, string>} [attributes] - Optional attributes to be associated with the placement.
+   * @param {Record<string, string>} attributes - Attributes to be associated with the placement.
    * @param {Record<string, number | null>} [placeholders] - Optional placeholders for dynamic content.
    * @param {IRoktConfig} [roktConfig] - Optional configuration settings for Rokt.
    * @param {Record<string, string>} [fontFilesMap] - Optional mapping of font files.

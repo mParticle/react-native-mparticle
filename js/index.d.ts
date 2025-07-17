@@ -23,12 +23,6 @@ export interface AttributionResult {
   [key: string]: any;
 }
 
-export interface SessionInfo {
-  sessionId: string;
-  sessionUuid: string;
-  sessionStartTime: number;
-}
-
 export type CompletionCallback<T> = (result: T) => void;
 export type ErrorCallback = (error: MParticleError | null) => void;
 export type IdentityCallback = (
@@ -164,7 +158,7 @@ export declare const logPushRegistration: (
   registrationField2: string
 ) => void;
 export declare const getSession: (
-  completion: CompletionCallback<SessionInfo>
+  completion: CompletionCallback<string>
 ) => void;
 export declare const setLocation: (latitude: number, longitude: number) => void;
 
@@ -192,6 +186,9 @@ export declare class IdentityRequest {
   setEmail(email: string): this;
   setCustomerID(customerId: string): this;
   setUserIdentity(userIdentity: string, identityType: number): this;
+  /**
+   * @deprecated This method is deprecated and will be removed in a future version.
+   */
   setOnUserAlias(onUserAlias: any): void;
 }
 
