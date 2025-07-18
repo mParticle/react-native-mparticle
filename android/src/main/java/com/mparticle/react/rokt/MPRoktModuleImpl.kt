@@ -1,7 +1,6 @@
 package com.mparticle.react.rokt
 
 import android.app.Activity
-import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -26,7 +25,6 @@ class MPRoktModuleImpl(
     private val reactContext: ReactApplicationContext,
 ) {
     private var roktEventHandler: MpRoktEventCallback? = null
-    private val debug = false
 
     private val eventSubscriptions = mutableMapOf<String, Job?>()
     private val listeners: MutableMap<Long, MpRoktEventCallback> =
@@ -94,12 +92,6 @@ class MPRoktModuleImpl(
     fun readableMapToMapOfStrings(attributes: ReadableMap?): Map<String, String> =
         attributes?.toHashMap()?.filter { it.value is String }?.mapValues { it.value as String }
             ?: emptyMap()
-
-    fun logDebug(message: String) {
-        if (debug) {
-            Log.d("Rokt", message)
-        }
-    }
 
     fun String.toColorMode(): RoktConfig.ColorMode =
         when (this) {

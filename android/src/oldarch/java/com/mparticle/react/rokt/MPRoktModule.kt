@@ -31,7 +31,6 @@ class MPRoktModule(
         fontFilesMap: ReadableMap?,
     ) {
         if (identifier.isBlank()) {
-            impl.logDebug("selectPlacements failed. identifier cannot be empty")
             return
         }
         val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)

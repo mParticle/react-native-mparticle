@@ -103,6 +103,7 @@ repositories {
 
 ktlint {
     outputToConsole = true
+    verbose = true
 }
 
 dependencies {
