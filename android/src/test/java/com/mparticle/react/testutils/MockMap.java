@@ -1,10 +1,13 @@
 package com.mparticle.react.testutils;
 
+import androidx.annotation.NonNull;
+
+import com.facebook.react.bridge.Dynamic;
+import com.facebook.react.bridge.DynamicFromObject;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
-import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
 import org.json.JSONException;
@@ -62,6 +65,11 @@ public class MockMap implements WritableMap {
     }
 
     @Override
+    public long getLong(String name) {
+        return (long) map.get(name);
+    }
+
+    @Override
     public String getString(String name) {
         return (String) map.get(name);
     }
@@ -106,6 +114,11 @@ public class MockMap implements WritableMap {
     }
 
     @Override
+    public java.util.HashMap<String, Object> toHashMap() {
+        return new java.util.HashMap<>(map);
+    }
+
+    @Override
     public void putNull(String key) {
         map.put(key, null);
     }
@@ -126,17 +139,22 @@ public class MockMap implements WritableMap {
     }
 
     @Override
+    public void putLong(String key, long value) {
+        map.put(key, value);
+    }
+
+    @Override
     public void putString(String key, String value) {
         map.put(key, value);
     }
 
     @Override
-    public void putArray(String key, WritableArray value) {
+    public void putArray(String key, ReadableArray value) {
         map.put(key, value);
     }
 
     @Override
-    public void putMap(String key, WritableMap value) {
+    public void putMap(String key, ReadableMap value) {
         map.put(key, value);
     }
 
@@ -145,6 +163,22 @@ public class MockMap implements WritableMap {
         throw new RuntimeException("Not Implemented");
     }
 
+    @Override
+    public WritableMap copy() {
+        return new MockMap(new java.util.HashMap<>(map));
+    }
+
+    @NonNull
+    @Override
+    public Iterator<Map.Entry<String, Object>> getEntryIterator() {
+        return map.entrySet().iterator();
+    }
+
+    @NonNull
+    @Override
+    public Dynamic getDynamic(@NonNull String s) {
+        return new DynamicFromObject(map.get(s));
+    }
 
     class MockReadableMapKeySetIterator implements ReadableMapKeySetIterator {
         List<String> keys;
