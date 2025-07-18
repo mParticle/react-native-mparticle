@@ -1,4 +1,10 @@
-import { Rokt, CacheConfig, IRoktConfig, ColorMode } from './rokt/rokt';
+import {
+  Rokt,
+  CacheConfig,
+  IRoktConfig,
+  ColorMode,
+  RoktEventManager,
+} from './rokt/rokt';
 import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
 
 // ******** Types ********
@@ -391,6 +397,7 @@ export {
   ColorMode,
   RoktLayoutView,
   RoktLayoutViewProps,
+  RoktEventManager,
 };
 
 // Default export
@@ -436,6 +443,7 @@ declare const _default: {
   Rokt: typeof Rokt;
   CacheConfig: typeof CacheConfig;
   RoktLayoutView: typeof RoktLayoutView;
+  RoktEventManager: typeof RoktEventManager;
 };
 
 export default _default;
