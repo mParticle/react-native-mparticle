@@ -323,10 +323,8 @@ class MParticleModule(
         }
 
         if (startTime == null && endTime == null) {
-            var sourceUser: MParticleUser? = null
-            var destinationUser: MParticleUser? = null
-            sourceMpid?.let { sourceUser = identityApi.getUser(it) }
-            destinationMpid?.let { destinationUser = identityApi.getUser(it) }
+            val sourceUser: MParticleUser? = sourceMpid?.let { identityApi.getUser(it) }
+            val destinationUser: MParticleUser? = destinationMpid?.let { identityApi.getUser(it) }
 
             if (sourceUser != null && destinationUser != null) {
                 val request = AliasRequest.builder(sourceUser, destinationUser).build()
@@ -603,7 +601,7 @@ class MParticleModule(
                 val transactionAttributes = convertTransactionAttributes(transactionAttributesMap)
 
                 builder = CommerceEvent.Builder(productAction, product)
-                transactionAttributes?.let { builder.transactionAttributes(it) }
+                transactionAttributes?.let { builder?.transactionAttributes(it) }
 
                 for (i in 1 until productsArray.size()) {
                     val nextProductMap = productsArray.getMap(i)
