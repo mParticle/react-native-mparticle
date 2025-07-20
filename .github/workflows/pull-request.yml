@@ -6,14 +6,24 @@ on:
   workflow_call:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+  id-token: write
+
 jobs:
     js-tests:
       name: "JS Tests"
-      runs-on: macOS-latest
+      runs-on: ubuntu-latest
       steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-      - uses: actions/setup-node@master
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: 18
           cache: yarn
@@ -38,24 +48,113 @@ jobs:
             run: ./gradlew test
 
     android-lint:
-      name: "Android Unit Tests"
+      name: "Android Lint"
       runs-on: ubuntu-latest
       steps:
         - name: "Checkout"
           uses: actions/checkout@v4
-        - name: "Run Android Unit Tests"
+        - name: "Run Android lint"
           working-directory: android
           run: ./gradlew lint
 
     android-kotlin-lint:
-      name: "Android Unit Tests"
+      name: "Android kotlin lint"
       runs-on: ubuntu-latest
       steps:
         - name: "Checkout"
           uses: actions/checkout@v4
-        - name: "Run Android Unit Tests"
+        - name: "Run Android kotlin lint"
           working-directory: android
           run: ./gradlew ktlintCheck
+
+    android-sample-app:
+      name: Android Sample App
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - uses: actions/setup-node@v4.4.0
+          with:
+            node-version: 18
+            cache: yarn
+            cache-dependency-path: yarn.lock
+
+        - name: Install node modules
+          run: yarn install
+
+        - name: Build package
+          run: yarn dev:pack
+
+        - name: Install sample app dependencies
+          working-directory: sample
+          run: |
+            rm -f yarn.lock
+            yarn install
+
+        - name: Run Android sample app
+          working-directory: sample/android
+          run: ./gradlew assembleDebug
+
+    ios-sample-app:
+      name: iOS Sample App
+      runs-on: macos-15
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - uses: actions/setup-node@v4.4.0
+          with:
+            node-version: 18
+            cache: yarn
+            cache-dependency-path: yarn.lock
+
+        - name: Set up Xcode
+          uses: maxim-lobanov/setup-xcode@v1.6.0
+          with:
+            xcode-version: 16.3
+
+        - name: Install node modules
+          run: yarn install
+
+        - name: Build package
+          run: yarn dev:pack
+
+        - name: Install sample app dependencies
+          working-directory: sample
+          run: |
+            rm -f yarn.lock
+            yarn install
+
+        - name: Install Ruby dependencies
+          working-directory: sample
+          run: bundle install
+
+        - name: Build iOS sample app
+          working-directory: sample/ios
+          run: |
+            bundle exec pod install
+            set -o pipefail && xcodebuild -workspace MParticleSample.xcworkspace \
+            -configuration Debug \
+            -scheme MParticleSample \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath ios/build \
+            -UseModernBuildSystem=YES \
+            build | bundle exec xcpretty -k
+
+    pr-notify:
+      if: >
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.draft == false
+      needs:
+        - android-unit-tests
+        - android-lint
+        - android-kotlin-lint
+        - android-sample-app
+        - ios-sample-app
+        - js-tests
+      name: Notify GChat
+      uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
+      secrets:
+        gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}
 
     automerge-dependabot:
       name: "Save PR Number for Dependabot Automerge"
