@@ -1,24 +1,14 @@
+/* eslint-env node */
 module.exports = {
-  root: true,
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'prettier'
+    'plugin:prettier/recommended',
   ],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   rules: {
-    'object-curly-spacing': ['error', 'always'],
-    'prettier/prettier': 'error',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
-  },
-  env: {
-    node: true,
-    es6: true
-  },
-  parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: 'module'
+    '@typescript-eslint/no-explicit-any': 'off', // Disable the no-explicit-any rule
   },
   ignorePatterns: [
     'lib/',
@@ -26,6 +16,14 @@ module.exports = {
     'android/',
     'ios/',
     '*.min.js',
-    'node_modules/'
-  ]
-}; 
+    'node_modules/',
+  ],
+  env: {
+    node: true,
+    es6: true,
+  },
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
+  },
+};
