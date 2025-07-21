@@ -2,16 +2,21 @@
 #import <React/RCTViewManager.h>
 #import <mParticle_Apple_SDK/MPRokt.h>
 
-@interface RoktNativeWidgetManager : RCTViewManager
+@interface RoktLayoutViewManager : RCTViewManager
 @end
 
-@implementation RoktNativeWidgetManager
+@implementation RoktLayoutViewManager
 
-RCT_EXPORT_MODULE(RoktNativeLayout)
+RCT_EXPORT_MODULE(RoktLegacyLayout)
 
 - (UIView *)view
 {
   return [[MPRoktEmbeddedView alloc] init];
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
 }
 
 @end

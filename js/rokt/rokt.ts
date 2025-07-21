@@ -1,4 +1,8 @@
 import { NativeModules } from 'react-native';
+import { getNativeModule } from '../utils/architecture';
+import type { Spec as NativeMPRoktInterface } from '../codegenSpecs/rokt/NativeMPRokt';
+
+const MPRokt = getNativeModule<NativeMPRoktInterface>('MPRokt', 'MPRokt');
 
 export abstract class Rokt {
   /**
@@ -18,7 +22,7 @@ export abstract class Rokt {
     roktConfig?: IRoktConfig,
     fontFilesMap?: Record<string, string>
   ): Promise<void> {
-    NativeModules.MPRokt.selectPlacements(
+    MPRokt.selectPlacements(
       identifier,
       attributes,
       placeholders,

@@ -7,6 +7,7 @@
   "version": "2.7.13",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "react-native": "js/index",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf lib",
@@ -34,14 +35,11 @@
     "typescript": "5.0.4"
   },
   "codegenConfig": {
-    "name": "RoktLayoutView",
+    "name": "RNMParticle",
     "type": "all",
-    "jsSrcsDir": "lib/",
+    "jsSrcsDir": "js/codegenSpecs",
     "android": {
-      "javaPackageName": "com.mparticle.react.rokt"
-    },
-    "ios": {
-      "swiftModuleName": "RoktLayoutView"
+      "javaPackageName": "com.mparticle.react"
     }
   }
 }

@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import React, { Component } from 'react';
-import RoktNativeLayoutComponent from './RoktNativeLayoutComponent';
+import RoktNativeLayoutComponent from '../codegenSpecs/rokt/RoktLayoutNativeComponent';
 
 /**
  * PUBLIC API: Props that users of RoktLayoutView can set

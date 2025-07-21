@@ -1,11 +1,26 @@
 'use strict';
 
-import { NativeModules } from 'react-native';
-import { Rokt, CacheConfig, IRoktConfig, ColorMode } from './rokt/rokt';
+import { Platform } from 'react-native';
+import {
+  Rokt,
+  CacheConfig,
+  IRoktConfig,
+  ColorMode,
+  RoktEventManager,
+} from './rokt/rokt';
 import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
+import type {
+  Spec as NativeMParticleInterface,
+  CallbackError,
+  UserAttributes as NativeUserAttributes,
+} from './codegenSpecs/NativeMParticle';
+import { getNativeModule } from './utils/architecture';
+
+const MParticleModule: NativeMParticleInterface =
+  getNativeModule<NativeMParticleInterface>('RNMParticle', 'MParticle');
 
 // ******** Types ********
-export interface UserAttributes {
+export interface UserAttributes extends NativeUserAttributes {
   [key: string]: string | string[] | number | boolean;
 }
 
@@ -121,11 +136,11 @@ export const ATTAuthStatus = {
 // ******** Main API ********
 
 export const upload = (): void => {
-  NativeModules.MParticle.upload();
+  MParticleModule.upload();
 };
 
 export const setUploadInterval = (uploadInterval: number): void => {
-  NativeModules.MParticle.setUploadInterval(uploadInterval);
+  MParticleModule.setUploadInterval(uploadInterval);
 };
 
 export const logEvent = (
@@ -133,15 +148,15 @@ export const logEvent = (
   type: number = EventType.Other,
   attributes: CustomAttributes | null = null
 ): void => {
-  NativeModules.MParticle.logEvent(eventName, type, attributes);
+  MParticleModule.logEvent(eventName, type, attributes);
 };
 
 export const logMPEvent = (event: Event): void => {
-  NativeModules.MParticle.logMPEvent(event);
+  MParticleModule.logMPEvent(event);
 };
 
 export const logCommerceEvent = (commerceEvent: CommerceEvent): void => {
-  NativeModules.MParticle.logCommerceEvent(commerceEvent);
+  MParticleModule.logCommerceEvent(commerceEvent);
 };
 
 export const logScreenEvent = (
@@ -149,17 +164,13 @@ export const logScreenEvent = (
   attributes: CustomAttributes | null = null,
   shouldUploadEvent = true
 ): void => {
-  NativeModules.MParticle.logScreenEvent(
-    screenName,
-    attributes,
-    shouldUploadEvent
-  );
+  MParticleModule.logScreenEvent(screenName, attributes, shouldUploadEvent);
 };
 
 // ATT Status methods - iOS only, will be no-op on Android
 export const setATTStatus = (status: number): void => {
-  if (NativeModules.MParticle.setATTStatus) {
-    NativeModules.MParticle.setATTStatus(status);
+  if (Platform.OS === 'ios') {
+    MParticleModule.setATTStatus(status);
   }
 };
 
@@ -167,69 +178,66 @@ export const setATTStatusWithCustomTimestamp = (
   status: number,
   timestamp: number
 ): void => {
-  if (NativeModules.MParticle.setATTStatus) {
-    NativeModules.MParticle.setATTStatus(status, timestamp);
+  if (Platform.OS === 'ios') {
+    MParticleModule.setATTStatusWithCustomTimestamp(status, timestamp);
   }
 };
 
 export const setOptOut = (optOut: boolean): void => {
-  NativeModules.MParticle.setOptOut(optOut);
+  MParticleModule.setOptOut(optOut);
 };
 
 export const getOptOut = (completion: CompletionCallback<boolean>): void => {
-  NativeModules.MParticle.getOptOut(completion);
+  MParticleModule.getOptOut(completion);
 };
 
 export const addGDPRConsentState = (
   newConsentState: GDPRConsent,
   purpose: string
 ): void => {
-  NativeModules.MParticle.addGDPRConsentState(newConsentState, purpose);
+  MParticleModule.addGDPRConsentState(newConsentState, purpose);
 };
 
 export const removeGDPRConsentStateWithPurpose = (purpose: string): void => {
-  NativeModules.MParticle.removeGDPRConsentStateWithPurpose(purpose);
+  MParticleModule.removeGDPRConsentStateWithPurpose(purpose);
 };
 
 export const setCCPAConsentState = (newConsentState: CCPAConsent): void => {
-  NativeModules.MParticle.setCCPAConsentState(newConsentState);
+  MParticleModule.setCCPAConsentState(newConsentState);
 };
 
 export const removeCCPAConsentState = (): void => {
-  NativeModules.MParticle.removeCCPAConsentState();
+  MParticleModule.removeCCPAConsentState();
 };
 
 export const isKitActive = (
   kitId: number,
   completion: CompletionCallback<boolean>
 ): void => {
-  NativeModules.MParticle.isKitActive(kitId, completion);
+  MParticleModule.isKitActive(kitId, completion);
 };
 
 export const getAttributions = (
   completion: CompletionCallback<AttributionResult>
 ): void => {
-  NativeModules.MParticle.getAttributions(completion);
+  MParticleModule.getAttributions(completion);
 };
 
 export const logPushRegistration = (
   registrationField1: string,
   registrationField2: string
 ): void => {
-  NativeModules.MParticle.logPushRegistration(
-    registrationField1,
-    registrationField2
-  );
+  MParticleModule.logPushRegistration(registrationField1, registrationField2);
 };
 
 export const getSession = (
   completion: CompletionCallback<string | null>
 ): void => {
-  NativeModules.MParticle.getSession(completion);
+  MParticleModule.getSession(completion);
 };
 
 export const setLocation = (latitude: number, longitude: number): void => {
-  NativeModules.MParticle.setLocation(latitude, longitude);
+  MParticleModule.setLocation(latitude, longitude);
 };
 
 // ******** Identity ********
@@ -249,58 +257,58 @@ export class User {
     value: string | string[] | number | boolean
   ): void {
     if (value && value.constructor === Array) {
-      NativeModules.MParticle.setUserAttributeArray(this.userId, key, value);
+      MParticleModule.setUserAttributeArray(this.userId, key, value);
     } else {
-      NativeModules.MParticle.setUserAttribute(this.userId, key, value);
+      MParticleModule.setUserAttribute(this.userId, key, value.toString());
     }
   }
 
   setUserAttributeArray(key: string, value: string[]): void {
-    NativeModules.MParticle.setUserAttributeArray(this.userId, key, value);
+    MParticleModule.setUserAttributeArray(this.userId, key, value);
   }
 
   getUserAttributes(completion: CompletionCallback<UserAttributes>): void {
-    NativeModules.MParticle.getUserAttributes(
+    MParticleModule.getUserAttributes(
       this.userId,
-      (error: any, userAttributes: UserAttributes) => {
-        if (error) {
-          console.log(error.stack);
+      (error: CallbackError | null, result: NativeUserAttributes | null) => {
+        if (error?.message) {
+          console.log(error.message);
         }
-        completion(userAttributes);
+        completion((result as UserAttributes) || {});
       }
     );
   }
 
   setUserTag(value: string): void {
-    NativeModules.MParticle.setUserTag(this.userId, value);
+    MParticleModule.setUserTag(this.userId, value);
   }
 
   incrementUserAttribute(key: string, value: number): void {
-    NativeModules.MParticle.incrementUserAttribute(this.userId, key, value);
+    MParticleModule.incrementUserAttribute(this.userId, key, value);
   }
 
   removeUserAttribute(key: string): void {
-    NativeModules.MParticle.removeUserAttribute(this.userId, key);
+    MParticleModule.removeUserAttribute(this.userId, key);
   }
 
   getUserIdentities(completion: CompletionCallback<UserIdentities>): void {
-    NativeModules.MParticle.getUserIdentities(
+    MParticleModule.getUserIdentities(
       this.userId,
-      (error: any, userIdentities: UserIdentities) => {
-        if (error) {
-          console.log(error.stack);
+      (error: CallbackError | null, result: UserIdentities | null) => {
+        if (error?.message) {
+          console.log(error.message);
         }
-        completion(userIdentities);
+        completion(result || {});
       }
     );
   }
 
   getFirstSeen(completion: CompletionCallback<string>): void {
-    NativeModules.MParticle.getFirstSeen(this.userId, completion);
+    MParticleModule.getFirstSeen(this.userId, completion);
   }
 
   getLastSeen(completion: CompletionCallback<string>): void {
-    NativeModules.MParticle.getLastSeen(this.userId, completion);
+    MParticleModule.getLastSeen(this.userId, completion);
   }
 }
 
@@ -339,12 +347,12 @@ export class IdentityRequest {
 
 export class Identity {
   static getCurrentUser(completion: CompletionCallback<User>): void {
-    NativeModules.MParticle.getCurrentUserWithCompletion(
-      (error: any, userId: string) => {
+    MParticleModule.getCurrentUserWithCompletion(
+      (error: CallbackError | null, userId: string | null) => {
         if (error) {
-          console.log(error.stack);
+          console.log(error.message);
         }
-        const currentUser = new User(userId);
+        const currentUser = new User(userId || '');
         completion(currentUser);
       }
     );
@@ -354,9 +362,13 @@ export class Identity {
     identityRequest: IdentityRequest,
     completion: IdentityCallback
   ): void {
-    NativeModules.MParticle.identify(
+    MParticleModule.identify(
       identityRequest,
-      (error: any, userId: string, previousUserId?: string) => {
+      (
+        error: CallbackError | null,
+        userId: string | null,
+        previousUserId: string | null
+      ) => {
         if (error == null || error === undefined) {
           completion(error, userId, previousUserId);
         } else {
@@ -371,9 +383,13 @@ export class Identity {
     identityRequest: IdentityRequest,
     completion: IdentityCallback
   ): void {
-    NativeModules.MParticle.login(
+    MParticleModule.login(
       identityRequest,
-      (error: any, userId: string, previousUserId: string) => {
+      (
+        error: CallbackError | null,
+        userId: string | null,
+        previousUserId: string | null
+      ) => {
         if (error == null || error === undefined) {
           completion(error, userId, previousUserId);
         } else {
@@ -388,9 +404,13 @@ export class Identity {
     identityRequest: IdentityRequest,
     completion: IdentityCallback
   ): void {
-    NativeModules.MParticle.logout(
+    MParticleModule.logout(
       identityRequest,
-      (error: any, userId: string, previousUserId?: string) => {
+      (
+        error: CallbackError | null,
+        userId: string | null,
+        previousUserId: string | null
+      ) => {
         if (error == null || error === undefined) {
           completion(error, userId, previousUserId);
         } else {
@@ -405,9 +425,13 @@ export class Identity {
     identityRequest: IdentityRequest,
     completion: IdentityCallback
   ): void {
-    NativeModules.MParticle.modify(
+    MParticleModule.modify(
       identityRequest,
-      (error: any, userId: string, previousUserId?: string) => {
+      (
+        error: CallbackError | null,
+        userId: string | null,
+        previousUserId: string | null
+      ) => {
         if (error == null || error === undefined) {
           completion(error, userId, previousUserId);
         } else {
@@ -422,9 +446,15 @@ export class Identity {
     aliasRequest: AliasRequest,
     completion: CompletionCallback<boolean>
   ): void {
-    NativeModules.MParticle.aliasUsers(aliasRequest, (success: boolean) => {
-      completion(success);
-    });
+    MParticleModule.aliasUsers(
+      aliasRequest as any,
+      (success: boolean, message?: string) => {
+        if (message) {
+          console.log(message);
+        }
+        completion(success);
+      }
+    );
   }
 }
 
@@ -841,8 +871,8 @@ export class MParticleError {
   readonly mpid?: string;
   readonly errors?: string;
 
-  constructor(errorResponse: MParticleErrorResponse) {
-    this.httpCode = errorResponse.httpCode;
+  constructor(errorResponse: CallbackError | MParticleErrorResponse) {
+    this.httpCode = errorResponse.httpCode || 0;
     this.responseCode = errorResponse.responseCode;
     // Handle platform differences in error messages
     this.message =
@@ -850,7 +880,7 @@ export class MParticleError {
     this.mpid = errorResponse.mpid;
     this.errors = errorResponse.errors;
     // For backward compatibility with type definitions
-    this.code = errorResponse.responseCode || errorResponse.httpCode;
+    this.code = errorResponse.responseCode || errorResponse.httpCode || 0;
   }
 }
 
@@ -883,6 +913,7 @@ const MParticle = {
   CCPAConsent,
   Rokt,
   CacheConfig,
+  RoktEventManager,
   RoktLayoutView,
 
   upload, // Methods

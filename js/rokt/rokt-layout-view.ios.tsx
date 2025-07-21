@@ -9,6 +9,8 @@ import {
   UIManager,
 } from 'react-native';
 import React, { Component } from 'react';
+import { isNewArchitecture } from '../utils/architecture';
+import RoktLayoutNativeComponent from '../codegenSpecs/rokt/RoktLayoutNativeComponent';
 
 const RoktEventManager = NativeModules.RoktEventManager as NativeModule;
 
@@ -48,43 +50,12 @@ interface RoktNativeLayoutProps extends ViewProps {
   onLayoutMarginChanged?: (event: MarginChangedEvent) => void;
 }
 
-// Architecture detection - Updated for RN 0.80+ compatibility
-// In RN 0.80+, check for Fabric renderer using a more reliable method
-const isNewArchitecture = (() => {
-  // Check if Fabric renderer is enabled by looking at UIManager properties
-  // This is a safer approach that works in RN 0.80+
-  const hasFabricUIManager =
-    UIManager &&
-    typeof UIManager.hasViewManagerConfig === 'function' &&
-    UIManager.hasViewManagerConfig('RCTView');
-
-  if (hasFabricUIManager) {
-    return true;
-  }
-
-  // Fallback: check TurboModule presence (less reliable in 0.80+)
-  const turboModuleCheck =
-    (NativeModules as { RNRoktWidget?: unknown }).RNRoktWidget == null;
-  return turboModuleCheck;
-})();
-
-// Conditional component loading based on architecture
-let WidgetNativeComponent: HostComponent<RoktNativeLayoutProps>;
-
-if (isNewArchitecture) {
-  try {
-    // Try to import the new architecture component
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const NativeComponent = require('./RoktNativeLayoutComponent') as {
-      default: HostComponent<RoktNativeLayoutProps>;
-    };
-    WidgetNativeComponent = NativeComponent.default;
-  } catch (error) {
-    WidgetNativeComponent = requireNativeComponent('RoktNativeLayout');
-  }
-} else {
-  WidgetNativeComponent = requireNativeComponent('RoktNativeLayout');
-}
+// Use the appropriate component based on architecture
+const LayoutNativeComponent = (
+  isNewArchitecture
+    ? RoktLayoutNativeComponent
+    : requireNativeComponent<RoktNativeLayoutProps>('RoktLegacyLayout')
+) as any;
 
 const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
 
@@ -115,11 +86,8 @@ export class RoktLayoutView extends Component<
   }
 
   override render() {
-    // Cast to React.ComponentType to make it compatible with JSX
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const RoktComponent = WidgetNativeComponent as React.ComponentType<any>;
     return (
-      <RoktComponent
+      <LayoutNativeComponent
         style={[styles.widget, { height: this.state.height }]}
         placeholderName={this.state.placeholderName}
         onLayoutHeightChanged={(event: HeightChangedEvent) => {

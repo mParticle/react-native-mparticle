@@ -187,37 +187,48 @@ export default class MParticleSample extends Component {
         })
     }
 
-    _roktSelectPlacements() {
-        // Platform-specific attributes
-        const iosAttributes = {
-            "email": "ios-user@example.com",
-            "platform": "ios",
-            "userId": "ios-54321",
-            "deviceType": "mobile",
-        };
-
-        const androidAttributes = {
-            "email": "android-user@example.com",
-            "platform": "android",
-            "userId": "android-67890",
-            "deviceType": "mobile",
-        };
-
-        // Select attributes based on platform
-        const attributes = Platform.OS === 'ios' ? iosAttributes : androidAttributes;
-        console.log(`Platform detected: ${Platform.OS}, using ${Platform.OS === 'ios' ? 'iOS' : 'Android'} attributes:`, attributes);
-        const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);
-        const config = MParticle.Rokt.createRoktConfig('system', cacheConfig);
-        const placeholderMap = {
-            'Location1': findNodeHandle(this.placeholder1.current),
-        }
-        MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, placeholderMap, config, null).then((result) => {
-            console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
-        }).catch((error) => {
-            console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
-        })
+    _roktSelectOverlayPlacements() {
+      this._roktSelectPlacements('MSDKOverlayLayout')
     }
 
+    _roktSelectBottomSheetPlacements() {
+      this._roktSelectPlacements('MSDKBottomSheetLayout')
+    }
+
+    _roktSelectEmbeddedPlacements() {
+      this._roktSelectPlacements('MSDKEmbeddedLayout')
+    }
+
+    _roktSelectPlacements(identifier) {
+      // Platform-specific attributes
+      const iosAttributes = {
+        "email": "ios-user@example.com",
+        "platform": "ios",
+        "userId": "ios-54321",
+        "deviceType": "mobile",
+      };
+
+      const androidAttributes = {
+        "email": "android-user@example.com",
+        "platform": "android",
+        "userId": "android-67890",
+        "deviceType": "mobile",
+      };
+
+      // Select attributes based on platform
+      const attributes = Platform.OS === 'ios' ? iosAttributes : androidAttributes;
+      console.log(`Platform detected: ${Platform.OS}, using ${Platform.OS === 'ios' ? 'iOS' : 'Android'} attributes:`, attributes);
+      const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);
+      const config = MParticle.Rokt.createRoktConfig('system', cacheConfig);
+      const placeholderMap = {
+        'Location1': findNodeHandle(this.placeholder1.current),
+      }
+      MParticle.Rokt.selectPlacements(identifier, attributes, placeholderMap, config, null).then((result) => {
+        console.debug("Rokt selectPlacements result: " + JSON.stringify(result))
+      }).catch((error) => {
+        console.debug("Rokt selectPlacements error: " + JSON.stringify(error))
+      })
+    }
     render() {
         let display = this.state.isShowingText ? 'Sending Event' : ' '
         let optedOut = this.state.optedOut ? 'true' : 'false'
@@ -261,10 +272,12 @@ export default class MParticleSample extends Component {
                     onPress={() => {this._incrementAttribute()}}
                     title="Increment Attribute"/>
                 <Text style={styles.instructions}>ROKT</Text>
-                <Button title="ROKT Test" onPress={() => {this._roktSelectPlacements()}}/>
+                <Button title="ROKT Embedded" onPress={() => {this._roktSelectEmbeddedPlacements()}}/>
+                <Button title="ROKT Overlay" onPress={() => {this._roktSelectOverlayPlacements()}}/>
+                <Button title="ROKT BottomSheet" onPress={() => {this._roktSelectBottomSheetPlacements()}}/>
                 <RoktLayoutView
-                    ref={this.placeholder1}
-                    placeholderName="Location1" />
+                  ref={this.placeholder1}
+                  placeholderName="Location1" />
             </ScrollView>
         );
     }
