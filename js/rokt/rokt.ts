@@ -68,5 +68,8 @@ class RoktConfig implements IRoktConfig {
     this.cacheConfig = cacheConfig;
   }
 }
+const { RoktEventManager } = NativeModules;
+
+export { RoktEventManager };
 
 export type ColorMode = 'light' | 'dark' | 'system';

@@ -6,16 +6,20 @@
 
 import React, { Component } from 'react';
 import {
-    AppRegistry,
-    StyleSheet,
-    Text,
-    View,
-    Button,
-    Platform, findNodeHandle, ScrollView
+  AppRegistry,
+  StyleSheet,
+  Text,
+  Button,
+  Platform,
+  findNodeHandle,
+  ScrollView,
+  NativeEventEmitter,
 } from 'react-native';
 import MParticle from 'react-native-mparticle';
 
 const { RoktLayoutView } = MParticle;
+
+const eventManagerEmitter = new NativeEventEmitter(MParticle.RoktEventManager);
 
 export default class MParticleSample extends Component {
     constructor(props) {
@@ -123,6 +127,31 @@ export default class MParticleSample extends Component {
 
     componentDidMount() {
         MParticle.getSession(session => this.setState({ session }))
+        if (eventManagerEmitter) {
+            // Save subscriptions so we can remove them later
+            this.roktCallbackListener = eventManagerEmitter.addListener(
+                'RoktCallback',
+                data => {
+                    console.log('roktCallback received: ' + data.callbackValue);
+                },
+            );
+
+            this.roktEventsListener = eventManagerEmitter.addListener('RoktEvents', data => {
+                console.log(`*** ROKT EVENT *** ${JSON.stringify(data)}`);
+            });
+        } else {
+            console.warn('RoktEventManager not available, skipping event listeners');
+        }
+    }
+
+    componentWillUnmount() {
+        // Remove event listeners to avoid duplicate subscriptions
+        if (this.roktCallbackListener) {
+            this.roktCallbackListener.remove();
+        }
+        if (this.roktEventsListener) {
+            this.roktEventsListener.remove();
+        }
     }
 
     _toggleOptOut() {
