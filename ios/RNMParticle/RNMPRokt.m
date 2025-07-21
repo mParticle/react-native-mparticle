@@ -34,7 +34,7 @@
 RCT_EXTERN void RCTRegisterModule(Class);
 
 + (NSString *)moduleName {
-    return @"MPRokt";
+    return @"RNMPRokt";
 }
 
 + (void)load {

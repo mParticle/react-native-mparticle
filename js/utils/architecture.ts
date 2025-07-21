@@ -8,16 +8,12 @@ export const isNewArchitecture = global.__turboModuleProxy != null;
 
 /**
  * Gets the native module for both old and new architectures
- * @param turboModuleName The name of the module in new architecture
- * @param legacyModuleName The name of the module in old architecture
+ * @param moduleName The name of the module
  * @returns The native module
  */
-export function getNativeModule<T extends TurboModule>(
-  turboModuleName: string,
-  legacyModuleName: string
-): T {
+export function getNativeModule<T extends TurboModule>(moduleName: string): T {
   if (isNewArchitecture) {
-    return TurboModuleRegistry.getEnforcing<T>(turboModuleName);
+    return TurboModuleRegistry.getEnforcing<T>(moduleName);
   }
-  return NativeModules[legacyModuleName] as T;
+  return NativeModules[moduleName] as T;
 }

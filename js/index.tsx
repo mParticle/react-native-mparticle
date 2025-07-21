@@ -17,7 +17,7 @@ import type {
 import { getNativeModule } from './utils/architecture';
 
 const MParticleModule: NativeMParticleInterface =
-  getNativeModule<NativeMParticleInterface>('RNMParticle', 'MParticle');
+  getNativeModule<NativeMParticleInterface>('RNMParticle');
 
 // ******** Types ********
 export interface UserAttributes extends NativeUserAttributes {
