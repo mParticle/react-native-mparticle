@@ -43,8 +43,7 @@ class MParticlePackage : TurboReactPackage() {
                     false, // needsEagerInit
                     true, // hasConstants
                     false, // isCxxModule
-                    // BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-                    false, // isTurboModule
+                    BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, // isTurboModule
                 ),
             )
             moduleInfos.put(
@@ -56,8 +55,7 @@ class MParticlePackage : TurboReactPackage() {
                     false, // needsEagerInit
                     true, // hasConstants
                     false, // isCxxModule
-                    // BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-                    false, // isTurboModule
+                    BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, // isTurboModule
                 ),
             )
             moduleInfos.toMap()

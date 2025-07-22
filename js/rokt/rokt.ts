@@ -2,7 +2,7 @@ import { NativeModules } from 'react-native';
 import { getNativeModule } from '../utils/architecture';
 import type { Spec as NativeMPRoktInterface } from '../codegenSpecs/rokt/NativeMPRokt';
 
-const MPRokt = getNativeModule<NativeMPRoktInterface>('MPRokt', 'MPRokt');
+const MPRokt = getNativeModule<NativeMPRoktInterface>('RNMPRokt');
 
 export abstract class Rokt {
   /**

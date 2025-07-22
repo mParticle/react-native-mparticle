@@ -5,7 +5,6 @@ import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Callback
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -29,49 +28,48 @@ import com.mparticle.identity.IdentityApiRequest
 import com.mparticle.identity.IdentityHttpResponse
 import com.mparticle.identity.MParticleUser
 import com.mparticle.internal.Logger
-import javax.annotation.Nullable
 
 class MParticleModule(
-    reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+    private val reactContext: ReactApplicationContext,
+) : NativeMParticleSpec(reactContext) {
     companion object {
-        const val MODULE_NAME = "MParticle"
+        const val MODULE_NAME = "RNMParticle"
         private const val LOG_TAG = "MParticleModule"
     }
 
     override fun getName(): String = MODULE_NAME
 
     @ReactMethod
-    fun upload() {
+    override fun upload() {
         MParticle.getInstance()?.upload()
     }
 
     @ReactMethod
-    fun setUploadInterval(uploadInterval: Int) {
-        MParticle.getInstance()?.setUpdateInterval(uploadInterval)
+    override fun setUploadInterval(uploadInterval: Double) {
+        MParticle.getInstance()?.setUpdateInterval(uploadInterval.toInt())
     }
 
     @ReactMethod
-    fun setLocation(
+    override fun setLocation(
         latitude: Double,
         longitude: Double,
     ) {
         val newLocation =
             Location("").apply {
-                this.latitude = latitude
-                this.longitude = longitude
+                setLatitude(latitude)
+                setLongitude(longitude)
             }
         MParticle.getInstance()?.setLocation(newLocation)
     }
 
     @ReactMethod
-    fun logEvent(
-        name: String,
-        type: Int,
-        attributesMap: ReadableMap?,
+    override fun logEvent(
+        eventName: String,
+        eventType: Double,
+        attributes: ReadableMap?,
     ) {
-        val attributes = convertStringMap(attributesMap)
-        val eventType = convertEventType(type)
+        val attributes = convertStringMap(attributes)
+        val eventType = convertEventType(eventType.toInt())
 
         val event =
             MPEvent
@@ -82,72 +80,83 @@ class MParticleModule(
     }
 
     @ReactMethod
-    fun logMPEvent(attributesMap: ReadableMap?) {
-        val event = convertMPEvent(attributesMap)
-        if (event != null) {
-            MParticle.getInstance()?.logEvent(event)
+    override fun logMPEvent(event: ReadableMap?) {
+        val convertedEvent = convertMPEvent(event)
+        if (convertedEvent != null) {
+            MParticle.getInstance()?.logEvent(convertedEvent)
         }
     }
 
     @ReactMethod
-    fun logCommerceEvent(map: ReadableMap?) {
-        if (map != null) {
-            val commerceEvent = convertCommerceEvent(map)
-            if (commerceEvent != null) {
-                MParticle.getInstance()?.logEvent(commerceEvent)
+    override fun logCommerceEvent(commerceEvent: ReadableMap?) {
+        commerceEvent?.let {
+            val convertedCommerceEvent = convertCommerceEvent(it)
+            if (convertedCommerceEvent != null) {
+                MParticle.getInstance()?.logEvent(convertedCommerceEvent)
             }
         }
     }
 
     @ReactMethod
-    fun logScreenEvent(
-        eventName: String,
-        attributesMap: ReadableMap?,
+    override fun logScreenEvent(
+        screenName: String,
+        attributes: ReadableMap?,
         shouldUploadEvent: Boolean,
     ) {
-        val attributes = convertStringMap(attributesMap)
-        MParticle.getInstance()?.logScreen(eventName, attributes, shouldUploadEvent)
+        val convertedAttributes = convertStringMap(attributes)
+        MParticle.getInstance()?.logScreen(screenName, convertedAttributes, shouldUploadEvent)
+    }
+
+    override fun setATTStatus(status: Double) {
+        // Not implemented
+    }
+
+    override fun setATTStatusWithCustomTimestamp(
+        status: Double,
+        timestamp: Double,
+    ) {
+        // Not implemented
     }
 
     @ReactMethod
-    fun setUserAttribute(
-        userId: String,
-        userAttribute: String,
+    override fun setUserAttribute(
+        mpid: String,
+        key: String,
         value: String,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
-        selectedUser?.setUserAttribute(userAttribute, value)
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
+        selectedUser?.setUserAttribute(key, value)
     }
 
     @ReactMethod
-    fun setUserAttributeArray(
-        userId: String,
+    override fun setUserAttributeArray(
+        mpid: String,
         key: String,
-        values: ReadableArray?,
+        value: ReadableArray?,
     ) {
-        if (values != null) {
+        value?.let {
             val list = mutableListOf<String>()
-            for (i in 0 until values.size()) {
-                values.getString(i)?.let { list.add(it) }
+            for (i in 0 until it.size()) {
+                it.getString(i)?.let { element -> list.add(element) }
             }
 
-            val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+            val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
             selectedUser?.setUserAttributeList(key, list)
         }
     }
 
     @ReactMethod
-    fun getUserAttributes(
-        userId: String,
-        completion: Callback,
+    override fun getUserAttributes(
+        mpid: String,
+        callback: Callback,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         if (selectedUser != null) {
             selectedUser.getUserAttributes(
                 object : UserAttributeListener {
                     override fun onUserAttributesReceived(
-                        userAttributes: MutableMap<String, String>?,
-                        userAttributeLists: MutableMap<String, MutableList<String>>?,
+                        userAttributes: Map<String, String>?,
+                        userAttributeLists: Map<String, List<String>>?,
                         mpid: Long?,
                     ) {
                         val resultMap = WritableNativeMap()
@@ -165,143 +174,148 @@ class MParticleModule(
                                 resultMap.putArray(key, resultArray)
                             }
                         }
-                        completion.invoke(null, resultMap)
+                        callback.invoke(null, resultMap)
                     }
                 },
             )
         } else {
-            completion.invoke()
+            callback.invoke()
         }
     }
 
     @ReactMethod
-    fun setUserTag(
-        userId: String,
+    override fun setUserTag(
+        mpid: String,
         tag: String,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         selectedUser?.setUserTag(tag)
     }
 
     @ReactMethod
-    fun removeUserAttribute(
-        userId: String,
+    override fun removeUserAttribute(
+        mpid: String,
         key: String,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         selectedUser?.removeUserAttribute(key)
     }
 
     @ReactMethod
-    fun incrementUserAttribute(
-        userId: String,
+    override fun incrementUserAttribute(
+        mpid: String,
         key: String,
-        value: Int,
+        value: Double,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         selectedUser?.incrementUserAttribute(key, value)
     }
 
     @ReactMethod
-    fun identify(
-        requestMap: ReadableMap?,
-        completion: Callback,
+    override fun identify(
+        identityRequest: ReadableMap?,
+        callback: Callback,
     ) {
-        val request = convertIdentityAPIRequest(requestMap)
+        val request = convertIdentityAPIRequest(identityRequest)
 
         MParticle
             .getInstance()
             ?.Identity()
             ?.identify(request)
             ?.addFailureListener { identityHttpResponse ->
-                completion.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
+                callback.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
             }?.addSuccessListener { identityApiResult ->
                 val user = identityApiResult.user
                 val userID = user.id.toString()
-                completion.invoke(null, userID)
+                callback.invoke(null, userID)
             }
     }
 
     @ReactMethod
-    fun login(
-        requestMap: ReadableMap?,
-        completion: Callback,
+    override fun login(
+        identityRequest: ReadableMap?,
+        callback: Callback,
     ) {
-        val request = convertIdentityAPIRequest(requestMap)
+        val request = convertIdentityAPIRequest(identityRequest)
 
         MParticle
             .getInstance()
             ?.Identity()
             ?.login(request)
             ?.addFailureListener { identityHttpResponse ->
-                completion.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
+                callback.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
             }?.addSuccessListener { identityApiResult ->
                 val user = identityApiResult.user
                 val userId = user.id.toString()
                 val previousUser = identityApiResult.previousUser
                 val previousUserId = previousUser?.id?.toString()
-                completion.invoke(null, userId, previousUserId)
+                callback.invoke(null, userId, previousUserId)
             }
     }
 
     @ReactMethod
-    fun logout(
-        requestMap: ReadableMap?,
-        completion: Callback,
+    override fun logout(
+        identityRequest: ReadableMap?,
+        callback: Callback,
     ) {
-        val request = convertIdentityAPIRequest(requestMap)
+        val request = convertIdentityAPIRequest(identityRequest)
 
         MParticle
             .getInstance()
             ?.Identity()
             ?.logout(request)
             ?.addFailureListener { identityHttpResponse ->
-                completion.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
+                callback.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
             }?.addSuccessListener { identityApiResult ->
                 val user = identityApiResult.user
                 val userID = user.id.toString()
-                completion.invoke(null, userID)
+                callback.invoke(null, userID)
             }
     }
 
     @ReactMethod
-    fun modify(
-        requestMap: ReadableMap?,
-        completion: Callback,
+    override fun modify(
+        identityRequest: ReadableMap?,
+        callback: Callback,
     ) {
-        val request = convertIdentityAPIRequest(requestMap)
+        val request = convertIdentityAPIRequest(identityRequest)
 
         MParticle
             .getInstance()
             ?.Identity()
             ?.modify(request)
             ?.addFailureListener { identityHttpResponse ->
-                completion.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
+                callback.invoke(convertIdentityHttpResponse(identityHttpResponse), null)
             }?.addSuccessListener { identityApiResult ->
                 val user = identityApiResult.user
                 val userID = user.id.toString()
-                completion.invoke(null, userID)
+                callback.invoke(null, userID)
             }
     }
 
     @ReactMethod
-    fun getCurrentUserWithCompletion(completion: Callback) {
+    override fun getCurrentUserWithCompletion(callback: Callback) {
         val currentUser = MParticle.getInstance()?.Identity()?.currentUser
         if (currentUser != null) {
             val userID = currentUser.id.toString()
-            completion.invoke(null, userID)
+            callback.invoke(null, userID)
         } else {
-            completion.invoke(null, null)
+            callback.invoke(null, null)
         }
     }
 
     @ReactMethod
-    fun aliasUsers(
-        readableMap: ReadableMap?,
-        completion: Callback,
+    override fun aliasUsers(
+        aliasRequest: ReadableMap?,
+        callback: Callback,
     ) {
-        val identityApi = MParticle.getInstance()?.Identity() ?: return
-        val iterator = readableMap?.keySetIterator() ?: return
+        val identityApi = MParticle.getInstance()?.Identity()
+        if (identityApi == null || aliasRequest == null) {
+            callback.invoke(false, "MParticle not initialized")
+            return
+        }
+
+        val iterator = aliasRequest.keySetIterator()
         var destinationMpid: Long? = null
         var sourceMpid: Long? = null
         var startTime: Long? = null
@@ -309,29 +323,37 @@ class MParticleModule(
 
         while (iterator.hasNextKey()) {
             try {
-                when (iterator.nextKey()) {
-                    "destinationMpid" -> destinationMpid = Utils.getLong(readableMap, "destinationMpid", false)
-                    "sourceMpid" -> sourceMpid = Utils.getLong(readableMap, "sourceMpid", false)
-                    "startTime" -> startTime = Utils.getLong(readableMap, "startTime", true)
-                    "endTime" -> endTime = Utils.getLong(readableMap, "endTime", true)
+                when (val key = iterator.nextKey()) {
+                    "destinationMpid" ->
+                        destinationMpid =
+                            Utils.getLong(aliasRequest, "destinationMpid", false)
+
+                    "sourceMpid" -> sourceMpid = Utils.getLong(aliasRequest, "sourceMpid", false)
+                    "startTime" -> startTime = Utils.getLong(aliasRequest, "startTime", true)
+                    "endTime" -> endTime = Utils.getLong(aliasRequest, "endTime", true)
                 }
             } catch (ex: NumberFormatException) {
                 Logger.error(ex.message)
-                completion.invoke(false, ex.message)
+                callback.invoke(false, ex.message)
                 return
             }
         }
 
         if (startTime == null && endTime == null) {
-            val sourceUser: MParticleUser? = sourceMpid?.let { identityApi.getUser(it) }
-            val destinationUser: MParticleUser? = destinationMpid?.let { identityApi.getUser(it) }
+            var sourceUser: MParticleUser? = null
+            var destinationUser: MParticleUser? = null
+            sourceMpid?.let { sourceUser = identityApi.getUser(it) }
+            destinationMpid?.let { destinationUser = identityApi.getUser(it) }
 
             if (sourceUser != null && destinationUser != null) {
-                val request = AliasRequest.builder(sourceUser, destinationUser).build()
+                val request = AliasRequest.builder(sourceUser!!, destinationUser!!).build()
                 val success = MParticle.getInstance()?.Identity()?.aliasUsers(request) ?: false
-                completion.invoke(success)
+                callback.invoke(success)
             } else {
-                completion.invoke(false, "MParticleUser could not be found for provided sourceMpid and destinationMpid")
+                callback.invoke(
+                    false,
+                    "MParticleUser could not be found for provided sourceMpid and destinationMpid",
+                )
             }
         } else {
             val request =
@@ -343,62 +365,62 @@ class MParticleModule(
                     .endTime(endTime ?: 0)
                     .build()
             val success = identityApi.aliasUsers(request)
-            completion.invoke(success)
+            callback.invoke(success)
         }
     }
 
     @ReactMethod
-    fun getSession(completion: Callback) {
+    override fun getSession(callback: Callback) {
         val session = MParticle.getInstance()?.currentSession
         if (session != null) {
             val sessionId = session.sessionUUID
-            completion.invoke(sessionId)
+            callback.invoke(sessionId)
         } else {
-            completion.invoke()
+            callback.invoke()
         }
     }
 
     @ReactMethod
-    fun getUserIdentities(
-        userId: String,
-        completion: Callback,
+    override fun getUserIdentities(
+        mpid: String,
+        callback: Callback,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         if (selectedUser != null) {
-            completion.invoke(null, convertToUserIdentities(selectedUser.userIdentities))
+            callback.invoke(null, convertToUserIdentities(selectedUser.userIdentities))
         } else {
-            completion.invoke()
+            callback.invoke()
         }
     }
 
     @ReactMethod
-    fun getFirstSeen(
-        userId: String,
-        completion: Callback,
+    override fun getFirstSeen(
+        mpid: String,
+        callback: Callback,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(Utils.parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(Utils.parseMpid(mpid))
         if (selectedUser != null) {
-            completion.invoke(selectedUser.firstSeenTime.toString())
+            callback.invoke(selectedUser.firstSeenTime.toString())
         } else {
-            completion.invoke()
+            callback.invoke()
         }
     }
 
     @ReactMethod
-    fun getLastSeen(
-        userId: String,
-        completion: Callback,
+    override fun getLastSeen(
+        mpid: String,
+        callback: Callback,
     ) {
-        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(Utils.parseMpid(userId))
+        val selectedUser = MParticle.getInstance()?.Identity()?.getUser(Utils.parseMpid(mpid))
         if (selectedUser != null) {
-            completion.invoke(selectedUser.lastSeenTime.toString())
+            callback.invoke(selectedUser.lastSeenTime.toString())
         } else {
-            completion.invoke()
+            callback.invoke()
         }
     }
 
     @ReactMethod
-    fun getAttributions(completion: Callback) {
+    override fun getAttributions(callback: Callback) {
         val attributionResultMap = MParticle.getInstance()?.attributionResults
         val map = Arguments.createMap()
         attributionResultMap?.let { resultMap ->
@@ -412,52 +434,52 @@ class MParticleModule(
                 map.putMap(key.toString(), attributeMap)
             }
         }
-        completion.invoke(map)
+        callback.invoke(map)
     }
 
     @ReactMethod
-    fun setOptOut(optOut: Boolean) {
+    override fun setOptOut(optOut: Boolean) {
         MParticle.getInstance()?.setOptOut(optOut)
     }
 
     @ReactMethod
-    fun getOptOut(completion: Callback) {
+    override fun getOptOut(callback: Callback) {
         val optedOut = MParticle.getInstance()?.optOut ?: false
-        completion.invoke(optedOut)
+        callback.invoke(optedOut)
     }
 
     @ReactMethod
-    fun isKitActive(
-        kitId: Int,
-        completion: Callback,
+    override fun isKitActive(
+        kitId: Double,
+        callback: Callback,
     ) {
-        val isActive = MParticle.getInstance()?.isKitActive(kitId) ?: false
-        completion.invoke(isActive)
+        val isActive = MParticle.getInstance()?.isKitActive(kitId.toInt()) ?: false
+        callback.invoke(isActive)
     }
 
     @ReactMethod
-    fun logPushRegistration(
-        instanceId: String?,
+    override fun logPushRegistration(
+        token: String?,
         senderId: String?,
     ) {
-        if (!instanceId.isNullOrEmpty() && !senderId.isNullOrEmpty()) {
-            MParticle.getInstance()?.logPushRegistration(instanceId, senderId)
+        if (!token.isNullOrEmpty() && !senderId.isNullOrEmpty()) {
+            MParticle.getInstance()?.logPushRegistration(token, senderId)
         }
     }
 
     @ReactMethod
-    fun addGDPRConsentState(
-        map: ReadableMap?,
+    override fun addGDPRConsentState(
+        consent: ReadableMap?,
         purpose: String,
     ) {
         val currentUser = MParticle.getInstance()?.Identity()?.currentUser
-        if (currentUser != null) {
-            val consent = convertToGDPRConsent(map)
-            if (consent != null) {
+        if (currentUser != null && consent != null) {
+            val gDPRConsent = convertToGDPRConsent(consent)
+            if (gDPRConsent != null) {
                 val consentState =
                     ConsentState
                         .withConsentState(currentUser.consentState)
-                        .addGDPRConsentState(purpose, consent)
+                        .addGDPRConsentState(purpose, gDPRConsent)
                         .build()
                 currentUser.setConsentState(consentState)
                 Logger.info("GDPRConsentState added, \n\t\"purpose\": $purpose\n$consentState")
@@ -468,7 +490,7 @@ class MParticleModule(
     }
 
     @ReactMethod
-    fun removeGDPRConsentStateWithPurpose(purpose: String) {
+    override fun removeGDPRConsentStateWithPurpose(purpose: String) {
         val currentUser = MParticle.getInstance()?.Identity()?.currentUser
         if (currentUser != null) {
             val consentState =
@@ -481,15 +503,15 @@ class MParticleModule(
     }
 
     @ReactMethod
-    fun setCCPAConsentState(map: ReadableMap?) {
+    override fun setCCPAConsentState(consent: ReadableMap?) {
         val currentUser = MParticle.getInstance()?.Identity()?.currentUser
-        if (currentUser != null) {
-            val consent = convertToCCPAConsent(map)
-            if (consent != null) {
+        if (currentUser != null && consent != null) {
+            val cCPAConsent = convertToCCPAConsent(consent)
+            if (cCPAConsent != null) {
                 val consentState =
                     ConsentState
                         .withConsentState(currentUser.consentState)
-                        .setCCPAConsentState(consent)
+                        .setCCPAConsentState(cCPAConsent)
                         .build()
                 currentUser.setConsentState(consentState)
                 Logger.info("CCPAConsentState added, \n$consentState")
@@ -500,7 +522,7 @@ class MParticleModule(
     }
 
     @ReactMethod
-    fun removeCCPAConsentState() {
+    override fun removeCCPAConsentState() {
         val currentUser = MParticle.getInstance()?.Identity()?.currentUser
         if (currentUser != null) {
             val consentState =
@@ -525,11 +547,10 @@ class MParticleModule(
         if (map?.hasKey("name") == true && map.hasKey("type")) {
             val name = map.getString("name") ?: return null
             val type = map.getInt("type")
-
             val builder = MPEvent.Builder(name, convertEventType(type))
 
             if (map.hasKey("category")) {
-                builder.category(map.getString("category"))
+                map.getString("category")?.let { builder.category(it) }
             }
 
             if (map.hasKey("duration")) {
@@ -545,8 +566,10 @@ class MParticleModule(
             if (map.hasKey("customFlags")) {
                 val customFlagsMap = map.getMap("customFlags")
                 val customFlags = convertStringMap(customFlagsMap)
-                for ((key, value) in customFlags) {
-                    builder.addCustomFlag(key, value)
+                if (customFlags != null) {
+                    for ((key, value) in customFlags) {
+                        builder.addCustomFlag(key, value)
+                    }
                 }
             }
 
@@ -588,100 +611,102 @@ class MParticleModule(
             return null
         }
 
-        var builder: CommerceEvent.Builder?
+        val builder =
+            when {
+                isProductAction -> {
+                    val productActionInt = map.getInt("productActionType")
+                    val productAction = convertProductActionType(productActionInt)
+                    val productsArray = map.getArray("products") ?: return null
+                    val productMap = productsArray.getMap(0)
+                    val product = convertProduct(productMap) ?: return null
+                    val transactionAttributesMap = map.getMap("transactionAttributes")
+                    val transactionAttributes = convertTransactionAttributes(transactionAttributesMap)
+                    val builder =
+                        transactionAttributes?.let {
+                            CommerceEvent.Builder(productAction, product).transactionAttributes(it)
+                        }
 
-        when {
-            isProductAction -> {
-                val productActionInt = map.getInt("productActionType")
-                val productAction = convertProductActionType(productActionInt)
-                val productsArray = map.getArray("products") ?: return null
-                val productMap = productsArray.getMap(0)
-                val product = convertProduct(productMap) ?: return null
-                val transactionAttributesMap = map.getMap("transactionAttributes")
-                val transactionAttributes = convertTransactionAttributes(transactionAttributesMap)
-
-                builder = CommerceEvent.Builder(productAction, product)
-                transactionAttributes?.let { builder?.transactionAttributes(it) }
-
-                for (i in 1 until productsArray.size()) {
-                    val nextProductMap = productsArray.getMap(i)
-                    val nextProduct = convertProduct(nextProductMap)
-                    if (nextProduct != null) {
-                        builder.addProduct(nextProduct)
+                    for (i in 1 until productsArray.size()) {
+                        val nextProductMap = productsArray.getMap(i)
+                        val nextProduct = convertProduct(nextProductMap)
+                        if (nextProduct != null) {
+                            builder?.addProduct(nextProduct)
+                        }
                     }
+                    builder
                 }
-            }
-            isPromotion -> {
-                val promotionActionTypeInt = map.getInt("promotionActionType")
-                val promotionAction = convertPromotionActionType(promotionActionTypeInt)
-                val promotionsReadableArray = map.getArray("promotions") ?: return null
-                val promotionMap = promotionsReadableArray.getMap(0)
-                val promotion = convertPromotion(promotionMap)
-                builder = CommerceEvent.Builder(promotionAction, promotion)
 
-                for (i in 1 until promotionsReadableArray.size()) {
-                    val nextPromotionMap = promotionsReadableArray.getMap(i)
-                    val nextPromotion = convertPromotion(nextPromotionMap)
-                    builder.addPromotion(nextPromotion)
-                }
-            }
-            else -> {
-                val impressionsArray = map.getArray("impressions") ?: return null
-                val impressionMap = impressionsArray.getMap(0)
-                val impression = convertImpression(impressionMap) ?: return null
-                builder = CommerceEvent.Builder(impression)
+                isPromotion -> {
+                    val promotionActionTypeInt = map.getInt("promotionActionType")
+                    val promotionAction = convertPromotionActionType(promotionActionTypeInt)
+                    val promotionsReadableArray = map.getArray("promotions") ?: return null
+                    val promotionMap = promotionsReadableArray.getMap(0)
+                    val promotion = convertPromotion(promotionMap) ?: return null
+                    val builder = CommerceEvent.Builder(promotionAction, promotion)
 
-                for (i in 1 until impressionsArray.size()) {
-                    val nextImpressionMap = impressionsArray.getMap(i)
-                    val nextImpression = convertImpression(nextImpressionMap)
-                    if (nextImpression != null) {
-                        builder.addImpression(nextImpression)
+                    for (i in 1 until promotionsReadableArray.size()) {
+                        val nextPromotionMap = promotionsReadableArray.getMap(i)
+                        val nextPromotion = convertPromotion(nextPromotionMap)
+                        if (nextPromotion != null) {
+                            builder.addPromotion(nextPromotion)
+                        }
                     }
+                    builder
+                }
+
+                else -> {
+                    val impressionsArray = map.getArray("impressions") ?: return null
+                    val impressionMap = impressionsArray.getMap(0)
+                    val impression = convertImpression(impressionMap) ?: return null
+                    val builder = CommerceEvent.Builder(impression)
+
+                    for (i in 1 until impressionsArray.size()) {
+                        val nextImpressionMap = impressionsArray.getMap(i)
+                        val nextImpression = convertImpression(nextImpressionMap)
+                        if (nextImpression != null) {
+                            builder.addImpression(nextImpression)
+                        }
+                    }
+                    builder
                 }
             }
+
+        if (map.hasKey("shouldUploadEvent")) {
+            builder?.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
+        }
+        if (map.hasKey("customAttributes")) {
+            builder?.customAttributes(convertStringMap(map.getMap("customAttributes")))
+        }
+        if (map.hasKey("currency")) {
+            map.getString("currency")?.let { builder?.currency(it) }
+        }
+        if (map.hasKey("checkoutStep")) {
+            builder?.checkoutStep(map.getInt("checkoutStep"))
+        }
+        if (map.hasKey("checkoutOptions")) {
+            map.getString("checkoutOptions")?.let { builder?.checkoutOptions(it) }
         }
 
-        return builder.let { b ->
-            if (map.hasKey("shouldUploadEvent")) {
-                b.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
-            }
-            if (map.hasKey("customAttributes")) {
-                b.customAttributes(convertStringMap(map.getMap("customAttributes")))
-            }
-            if (map.hasKey("currency")) {
-                b.currency(map.getString("currency"))
-            }
-            if (map.hasKey("checkoutStep")) {
-                b.checkoutStep(map.getInt("checkoutStep"))
-            }
-            if (map.hasKey("checkoutOptions")) {
-                b.checkoutOptions(map.getString("checkoutOptions"))
-            }
-            b.build()
-        }
+        return builder?.build()
     }
 
     private fun convertProduct(map: ReadableMap?): Product? {
         if (map == null) return null
-
         val name = map.getString("name") ?: return null
         val sku = map.getString("sku") ?: return null
         val unitPrice = map.getDouble("price")
         val builder = Product.Builder(name, sku, unitPrice)
 
         if (map.hasKey("brand")) {
-            val brand = map.getString("brand")
-            builder.brand(brand)
+            map.getString("brand")?.let { builder.brand(it) }
         }
 
         if (map.hasKey("category")) {
-            val category = map.getString("category")
-            builder.category(category)
+            map.getString("category")?.let { builder.category(it) }
         }
 
         if (map.hasKey("couponCode")) {
-            val couponCode = map.getString("couponCode")
-            builder.couponCode(couponCode)
+            map.getString("couponCode")?.let { builder.couponCode(it) }
         }
 
         if (map.hasKey("customAttributes")) {
@@ -691,18 +716,15 @@ class MParticleModule(
         }
 
         if (map.hasKey("position")) {
-            val position = map.getInt("position")
-            builder.position(position)
+            builder.position(map.getInt("position"))
         }
 
         if (map.hasKey("quantity")) {
-            val quantity = map.getDouble("quantity")
-            builder.quantity(quantity)
+            builder.quantity(map.getDouble("quantity"))
         }
 
         if (map.hasKey("variant")) {
-            val variant = map.getString("variant")
-            builder.variant(variant)
+            map.getString("variant")?.let { builder.variant(it) }
         }
 
         return builder.build()
@@ -717,7 +739,7 @@ class MParticleModule(
         val transactionAttributes = TransactionAttributes(transactionId)
 
         if (map.hasKey("affiliation")) {
-            transactionAttributes.affiliation = map.getString("affiliation")
+            map.getString("affiliation")?.let { transactionAttributes.affiliation = it }
         }
 
         if (map.hasKey("revenue")) {
@@ -733,31 +755,30 @@ class MParticleModule(
         }
 
         if (map.hasKey("couponCode")) {
-            transactionAttributes.couponCode = map.getString("couponCode")
+            map.getString("couponCode")?.let { transactionAttributes.couponCode = it }
         }
 
         return transactionAttributes
     }
 
-    private fun convertPromotion(map: ReadableMap?): Promotion {
+    private fun convertPromotion(map: ReadableMap?): Promotion? {
+        if (map == null) return null
         val promotion = Promotion()
 
-        map?.let { m ->
-            if (m.hasKey("id")) {
-                promotion.id = m.getString("id")
-            }
+        if (map.hasKey("id")) {
+            map.getString("id")?.let { promotion.id = it }
+        }
 
-            if (m.hasKey("name")) {
-                promotion.name = m.getString("name")
-            }
+        if (map.hasKey("name")) {
+            map.getString("name")?.let { promotion.name = it }
+        }
 
-            if (m.hasKey("creative")) {
-                promotion.creative = m.getString("creative")
-            }
+        if (map.hasKey("creative")) {
+            map.getString("creative")?.let { promotion.creative = it }
+        }
 
-            if (m.hasKey("position")) {
-                promotion.position = m.getString("position")
-            }
+        if (map.hasKey("position")) {
+            map.getString("position")?.let { promotion.position = it }
         }
 
         return promotion
@@ -765,7 +786,6 @@ class MParticleModule(
 
     private fun convertImpression(map: ReadableMap?): Impression? {
         if (map == null) return null
-
         val listName = map.getString("impressionListName") ?: return null
         val productsArray = map.getArray("products") ?: return null
         val productMap = productsArray.getMap(0)
@@ -783,52 +803,51 @@ class MParticleModule(
         return impression
     }
 
-    private fun convertStringMap(readableMap: ReadableMap?): Map<String, String> {
-        val map = mutableMapOf<String, String>()
+    private fun convertStringMap(readableMap: ReadableMap?): Map<String, String>? {
+        if (readableMap == null) return null
 
-        readableMap?.let { rm ->
-            val iterator = rm.keySetIterator()
-            while (iterator.hasNextKey()) {
-                val key = iterator.nextKey()
-                when (rm.getType(key)) {
-                    ReadableType.Null -> map[key] = ""
-                    ReadableType.Boolean -> map[key] = rm.getBoolean(key).toString()
-                    ReadableType.Number -> {
+        val map = mutableMapOf<String, String>()
+        val iterator = readableMap.keySetIterator()
+        while (iterator.hasNextKey()) {
+            val key = iterator.nextKey()
+            when (readableMap.getType(key)) {
+                ReadableType.Null -> map[key] = ""
+                ReadableType.Boolean -> map[key] = readableMap.getBoolean(key).toString()
+                ReadableType.Number -> {
+                    try {
+                        map[key] = readableMap.getInt(key).toString()
+                    } catch (e: Exception) {
                         try {
-                            map[key] = rm.getInt(key).toString()
-                        } catch (_: Exception) {
-                            try {
-                                map[key] = rm.getDouble(key).toString()
-                            } catch (_: Exception) {
-                                Logger.warning("Unable to parse value for \"$key\"")
-                            }
+                            map[key] = readableMap.getDouble(key).toString()
+                        } catch (ex: Exception) {
+                            Logger.warning("Unable to parse value for \"$key\"")
                         }
                     }
-                    ReadableType.String -> map[key] = rm.getString(key) ?: ""
-                    ReadableType.Map -> Logger.warning("Maps are not supported Attribute value types")
-                    ReadableType.Array -> Logger.warning("Lists are not supported Attribute value types")
                 }
+
+                ReadableType.String -> map[key] = readableMap.getString(key) ?: ""
+                ReadableType.Map -> Logger.warning("Maps are not supported Attribute value types")
+                ReadableType.Array -> Logger.warning("Lists are not supported Attribute value types")
             }
         }
-
         return map
     }
 
     private fun convertUserIdentities(readableMap: ReadableMap?): Map<MParticle.IdentityType, String> {
         val map = mutableMapOf<MParticle.IdentityType, String>()
-        readableMap?.let { rm ->
-            val iterator = rm.keySetIterator()
+        if (readableMap != null) {
+            val iterator = readableMap.keySetIterator()
             while (iterator.hasNextKey()) {
                 val key = iterator.nextKey()
                 val identity =
                     when (key) {
                         "email" -> MParticle.IdentityType.Email
                         "customerId" -> MParticle.IdentityType.CustomerId
-                        else -> MParticle.IdentityType.parseInt(key.toIntOrNull() ?: 0)
+                        else -> MParticle.IdentityType.parseInt(key.toInt())
                     }
-                identity.let { identityType ->
-                    rm.getString(key)?.let { value ->
-                        map[identityType] = value
+                identity.let {
+                    readableMap.getString(key)?.let { value ->
+                        map[it] = value
                     }
                 }
             }
@@ -881,21 +900,18 @@ class MParticleModule(
     private fun parseMpid(longString: String): Long =
         try {
             longString.toLong()
-        } catch (_: NumberFormatException) {
+        } catch (ex: NumberFormatException) {
             0L
         }
 
-    @Nullable
-    private fun convertToGDPRConsent(map: ReadableMap?): GDPRConsent? {
-        if (map == null) return null
-
-        val consented: Boolean =
+    private fun convertToGDPRConsent(map: ReadableMap): GDPRConsent? {
+        val consented =
             try {
                 when (map.getType("consented")) {
                     ReadableType.Boolean -> map.getBoolean("consented")
                     else -> map.getString("consented")?.toBoolean() ?: false
                 }
-            } catch (_: Exception) {
+            } catch (ex: Exception) {
                 Logger.error("failed to convert \"consented\" value to a Boolean, unable to process addGDPRConsentState")
                 return null
             }
@@ -903,40 +919,34 @@ class MParticleModule(
         val builder = GDPRConsent.builder(consented)
 
         if (map.hasKey("document")) {
-            val document = map.getString("document")
-            builder.document(document)
+            map.getString("document")?.let { builder.document(it) }
         }
         if (map.hasKey("hardwareId")) {
-            val hardwareId = map.getString("hardwareId")
-            builder.hardwareId(hardwareId)
+            map.getString("hardwareId")?.let { builder.hardwareId(it) }
         }
         if (map.hasKey("location")) {
-            val location = map.getString("location")
-            builder.location(location)
+            map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
             try {
                 val timestampString = map.getString("timestamp")
                 val timestamp = timestampString?.toLong()
                 timestamp?.let { builder.timestamp(it) }
-            } catch (_: Exception) {
+            } catch (ex: Exception) {
                 Logger.warning("failed to convert \"timestamp\" value to Long")
             }
         }
         return builder.build()
     }
 
-    @Nullable
-    private fun convertToCCPAConsent(map: ReadableMap?): CCPAConsent? {
-        if (map == null) return null
-
-        val consented: Boolean =
+    private fun convertToCCPAConsent(map: ReadableMap): CCPAConsent? {
+        val consented =
             try {
                 when (map.getType("consented")) {
                     ReadableType.Boolean -> map.getBoolean("consented")
                     else -> map.getString("consented")?.toBoolean() ?: false
                 }
-            } catch (_: Exception) {
+            } catch (ex: Exception) {
                 Logger.error("failed to convert \"consented\" value to a Boolean, unable to process addCCPAConsentState")
                 return null
             }
@@ -944,23 +954,20 @@ class MParticleModule(
         val builder = CCPAConsent.builder(consented)
 
         if (map.hasKey("document")) {
-            val document = map.getString("document")
-            builder.document(document)
+            map.getString("document")?.let { builder.document(it) }
         }
         if (map.hasKey("hardwareId")) {
-            val hardwareId = map.getString("hardwareId")
-            builder.hardwareId(hardwareId)
+            map.getString("hardwareId")?.let { builder.hardwareId(it) }
         }
         if (map.hasKey("location")) {
-            val location = map.getString("location")
-            builder.location(location)
+            map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
             try {
                 val timestampString = map.getString("timestamp")
                 val timestamp = timestampString?.toLong()
                 timestamp?.let { builder.timestamp(it) }
-            } catch (_: Exception) {
+            } catch (ex: Exception) {
                 Logger.warning("failed to convert \"timestamp\" value to Long")
             }
         }
