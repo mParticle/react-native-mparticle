@@ -7,6 +7,7 @@ import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
 import com.mparticle.WrapperSdk
+import com.mparticle.internal.Logger
 import com.mparticle.react.NativeMPRoktSpec
 import com.mparticle.rokt.RoktEmbeddedView
 import java.lang.ref.WeakReference
@@ -31,6 +32,7 @@ class MPRoktModule(
         fontFilesMap: ReadableMap?,
     ) {
         if (identifier.isBlank()) {
+            Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
         val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)

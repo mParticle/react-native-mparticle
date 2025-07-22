@@ -1,6 +1,5 @@
 package com.mparticle.react.rokt
 
-import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
@@ -11,6 +10,7 @@ import com.mparticle.MParticle
 import com.mparticle.WrapperSdk
 import com.mparticle.react.NativeMPRoktSpec
 import com.mparticle.rokt.RoktEmbeddedView
+import com.mparticle.internal.Logger
 import java.lang.ref.WeakReference
 import java.util.concurrent.CountDownLatch
 
@@ -19,10 +19,6 @@ class MPRoktModule(
 ) : NativeMPRoktSpec(reactContext) {
     init {
         MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
-    }
-
-    companion object {
-        private const val TAG = "MPRoktModule"
     }
 
     private val impl = MPRoktModuleImpl(reactContext)
@@ -38,7 +34,7 @@ class MPRoktModule(
         fontFilesMap: ReadableMap?,
     ) {
         if (identifier.isBlank()) {
-            Log.w(TAG, "selectPlacements failed. identifier cannot be empty")
+            Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
         MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
@@ -85,7 +81,7 @@ class MPRoktModule(
                                         placeholders.getDouble(key).toInt()
 
                                     else -> {
-                                        Log.w(TAG, "Invalid view tag for key: $key")
+                                        Logger.warning("Invalid view tag for key: $key")
                                         continue
                                     }
                                 }
@@ -94,7 +90,7 @@ class MPRoktModule(
                             val uiManager =
                                 UIManagerHelper.getUIManagerForReactTag(reactContext, reactTag)
                             if (uiManager == null) {
-                                Log.w(TAG, "UIManager not found for tag: $reactTag")
+                                Logger.warning("UIManager not found for tag: $reactTag")
                                 continue
                             }
 
@@ -102,12 +98,12 @@ class MPRoktModule(
                             val view = uiManager.resolveView(reactTag)
                             if (view is RoktEmbeddedView) {
                                 placeholdersMap[key] = WeakReference(view)
-                                Log.d(TAG, "Successfully found Widget for key: $key with tag: $reactTag")
+                                Logger.debug("Successfully found Widget for key: $key with tag: $reactTag")
                             } else {
-                                Log.w(TAG, "View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
+                                Logger.warning("View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
                             }
                         } catch (e: Exception) {
-                            Log.w(TAG, "Error processing placeholder for key $key: ${e.message}")
+                            Logger.warning("Error processing placeholder for key $key: ${e.message}")
                             e.printStackTrace()
                         }
                     }
@@ -120,7 +116,7 @@ class MPRoktModule(
                 // Wait for UI thread to finish processing
                 latch.await()
             } catch (e: InterruptedException) {
-                Log.w(TAG, "Interrupted while waiting for UI thread: ${e.message}")
+                Logger.warning("Interrupted while waiting for UI thread: ${e.message}")
             }
         }
 
