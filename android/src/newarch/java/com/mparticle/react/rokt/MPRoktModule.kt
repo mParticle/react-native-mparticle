@@ -104,7 +104,6 @@ class MPRoktModule(
                             }
                         } catch (e: Exception) {
                             Logger.warning("Error processing placeholder for key $key: ${e.message}")
-                            e.printStackTrace()
                         }
                     }
                 } finally {
