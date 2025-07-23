@@ -3,10 +3,8 @@ import {
   StyleSheet,
   NativeEventEmitter,
   NativeModules,
-  HostComponent,
   ViewProps,
   NativeModule,
-  UIManager,
 } from 'react-native';
 import React, { Component } from 'react';
 import { isFabricEnabled } from '../utils/architecture';
