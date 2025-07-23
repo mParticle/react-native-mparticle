@@ -61,15 +61,15 @@ RCT_EXTERN void RCTRegisterModule(Class);
 // New Architecture Implementation
 - (void)selectPlacements:(NSString *)identifer
               attributes:(NSDictionary *)attributes
-            placeholders:(NSDictionary * _Nullable)placeholders
+            placeholders:(NSDictionary *)placeholders
                roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
-            fontFilesMap:(NSDictionary * _Nullable)fontFilesMap
+            fontFilesMap:(NSDictionary *)fontFilesMap
 {
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
 
     // Convert JS struct to NSDictionary for internal use
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
-    if (roktConfig.cacheConfig().has_value()) {
+    if (&roktConfig != nullptr && roktConfig.cacheConfig().has_value()) {
         NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
         auto cacheConfig = roktConfig.cacheConfig().value();
         if (cacheConfig.cacheDurationInSeconds().has_value()) {
