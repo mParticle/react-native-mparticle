@@ -9,7 +9,7 @@ import {
   UIManager,
 } from 'react-native';
 import React, { Component } from 'react';
-import { isNewArchitecture } from '../utils/architecture';
+import { isFabricEnabled } from '../utils/architecture';
 import RoktLayoutNativeComponent from '../codegenSpecs/rokt/RoktLayoutNativeComponent';
 
 const RoktEventManager = NativeModules.RoktEventManager as NativeModule;
@@ -52,7 +52,7 @@ interface RoktNativeLayoutProps extends ViewProps {
 
 // Use the appropriate component based on architecture
 const LayoutNativeComponent = (
-  isNewArchitecture
+  isFabricEnabled
     ? RoktLayoutNativeComponent
     : requireNativeComponent<RoktNativeLayoutProps>('RoktLegacyLayout')
 ) as any;
