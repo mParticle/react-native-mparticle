@@ -4,17 +4,21 @@ sample/
 # Android build artifacts and libs
 android/libs/
 android/build/
+android/src/test/
 android/.gradle/
 android/local.properties
+android/.idea/
+android/.kotlin/
+android/gradlew
+android/gradlew.bat
+android/gradle.properties
+android/gradle/
 
 # iOS build artifacts
 ios/build/
-ios/Pods/
-ios/Podfile.lock
-
-# Build directories
-build/
-dist/
+ios/RNMParticle.xcodeproj/xcuserdata/
+ios/RNMParticle.xcodeproj/xcshareddata/
+ios/RNMParticle.xcodeproj/project.xcworkspace/
 
 # Dependencies
 node_modules/
@@ -22,6 +26,7 @@ node_modules/
 # IDE files
 .idea/
 .vscode/
+.trunk/
 *.iml
 *.iws
 
@@ -32,6 +37,7 @@ Thumbs.db
 # Git
 .git/
 .github/
+.gitignore
 
 # Logs
 *.log
@@ -47,19 +53,14 @@ yarn-error.log*
 
 # Heavy binary files
 *.jar
-*.aar
-*.so
-*.dylib
-*.dll
 
 # Development files
 package-lock.json
 yarn.lock
 tsconfig.json
 release.sh
-
-# Development and test files
-**/*.test.ts
-**/*.test.tsx
-**/*.spec.ts
-**/*.spec.tsx
+dev-link.sh
+.prettierrc.js
+.eslintrc.js
+metro.config.js
+ONBOARDING.md

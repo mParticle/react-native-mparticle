@@ -5,7 +5,7 @@
 #elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
     #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #else
-    #import "mParticle.h"
+    #import <mParticle_Apple_SDK/Include/mParticle.h>
 #endif
 #if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>)
     #import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
@@ -20,6 +20,11 @@
 #import <React/RCTUIManager.h>
 #import <React/RCTBridge.h>
 #import "RoktEventManager.h"
+
+#ifdef RCT_NEW_ARCH_ENABLED
+#import "RoktNativeLayoutComponentView.h"
+#import <RNMParticle/RNMParticle.h>
+#endif // RCT_NEW_ARCH_ENABLED
 
 @interface RNMPRokt ()
 
@@ -52,15 +57,43 @@ RCT_EXTERN void RCTRegisterModule(Class);
     // We always return the UI manager's method queue
 }
 
+#ifdef RCT_NEW_ARCH_ENABLED
+// New Architecture Implementation
+- (void)selectPlacements:(NSString *)identifer
+              attributes:(NSDictionary *)attributes
+            placeholders:(NSDictionary *)placeholders
+               roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
+            fontFilesMap:(NSDictionary *)fontFilesMap
+{
+    NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
+
+    // Convert JS struct to NSDictionary for internal use
+    NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
+    if (&roktConfig != nullptr && roktConfig.cacheConfig().has_value()) {
+        NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
+        auto cacheConfig = roktConfig.cacheConfig().value();
+        if (cacheConfig.cacheDurationInSeconds().has_value()) {
+            cacheConfigDict[@"cacheDurationInSeconds"] = @(cacheConfig.cacheDurationInSeconds().value());
+        }
+        if (cacheConfig.cacheAttributes()) {
+            cacheConfigDict[@"cacheAttributes"] = cacheConfig.cacheAttributes();
+        }
+        roktConfigDict[@"cacheConfig"] = cacheConfigDict;
+    }
+
+    MPRoktConfig *config = [self buildRoktConfigFromDict:roktConfigDict];
+#else
+// Old Architecture Implementation
 RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSDictionary * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
 {
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
     MPRoktConfig *config = [self buildRoktConfigFromDict:roktConfig];
+#endif
 
     // Create callback implementation
     MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
 
-    __weak typeof(self) weakSelf = self;
+    __weak __typeof__(self) weakSelf = self;
 
     callbacks.onLoad = ^{
         [self.eventManager onRoktCallbackReceived:@"onLoad"];
@@ -88,7 +121,6 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
 
         [self subscribeViewEvents:identifer];
 
-        // TODO: Add placeholders and fontFilesMap
         [[[MParticle sharedInstance] rokt] selectPlacements:identifer
                                                  attributes:finalAttributes
                                               embeddedViews:nativePlaceholders
@@ -176,14 +208,14 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
     for(id key in placeholders){
-//#ifdef RCT_NEW_ARCH_ENABLED
-        /*RoktNativeWidgetComponentView *wrapperView = (RoktNativeWidgetComponentView *)viewRegistry[[placeholders objectForKey:key]];
-        if (!wrapperView || ![wrapperView isKindOfClass:[RoktNativeWidgetComponentView class]]) {
+#ifdef RCT_NEW_ARCH_ENABLED
+        RoktNativeLayoutComponentView *wrapperView = (RoktNativeLayoutComponentView *)viewRegistry[[placeholders objectForKey:key]];
+        if (!wrapperView || ![wrapperView isKindOfClass:[RoktNativeLayoutComponentView class]]) {
             RCTLogError(@"Cannot find RoktNativeWidgetComponentView with tag #%@", key);
             continue;
         }
-        nativePlaceholders[key] = wrapperView.roktEmbeddedView;*/
-//#else
+        nativePlaceholders[key] = wrapperView.roktEmbeddedView;
+#else
         MPRoktEmbeddedView *view = viewRegistry[[placeholders objectForKey:key]];
         if (!view || ![view isKindOfClass:[MPRoktEmbeddedView class]]) {
             RCTLogError(@"Cannot find RoktEmbeddedView with tag #%@", key);
@@ -191,10 +223,17 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
         }
 
         nativePlaceholders[key] = view;
-//#endif // RCT_NEW_ARCH_ENABLED
+#endif // RCT_NEW_ARCH_ENABLED
     }
 
     return nativePlaceholders;
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
+    self.bridge = params.instance.bridge;
+    return std::make_shared<facebook::react::NativeMPRoktSpecJSI>(params);
+}
+#endif // RCT_NEW_ARCH_ENABLED
 
 @end
