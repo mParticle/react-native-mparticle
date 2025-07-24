@@ -2,9 +2,12 @@ import { NativeModules, TurboModuleRegistry, TurboModule } from 'react-native';
 
 declare const global: {
   __turboModuleProxy: unknown;
+  nativeFabricUIManager: unknown;
 };
 
 export const isNewArchitecture = global.__turboModuleProxy != null;
+
+export const isFabricEnabled = global.nativeFabricUIManager != null;
 
 /**
  * Gets the native module for both old and new architectures
