@@ -40,6 +40,9 @@
     "jsSrcsDir": "js/codegenSpecs",
     "android": {
       "javaPackageName": "com.mparticle.react"
+    },
+    "ios": {
+      "RoktNativeLayout": "RoktNativeLayoutComponentView"
     }
   }
 }
