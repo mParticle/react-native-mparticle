@@ -31,6 +31,14 @@ export abstract class Rokt {
     );
   }
 
+  static async purchaseFinalized(
+    placementId: string,
+    catalogItemId: string,
+    success: boolean
+  ): Promise<void> {
+    MPRokt.purchaseFinalized(placementId, catalogItemId, success);
+  }
+
   static createRoktConfig(colorMode?: ColorMode, cacheConfig?: CacheConfig) {
     return new RoktConfig(colorMode ?? 'system', cacheConfig);
   }

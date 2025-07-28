@@ -20,4 +20,10 @@ abstract class NativeMPRoktSpec(
         roktConfig: ReadableMap?,
         fontFilesMap: ReadableMap?,
     )
+
+    abstract fun purchaseFinalized(
+        placementId: String,
+        catalogItemId: String,
+        success: Boolean,
+    )
 }

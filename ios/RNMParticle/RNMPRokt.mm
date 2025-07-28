@@ -129,6 +129,13 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     }];
 }
 
+RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
+    NSString *)catalogItemId success : (BOOL)success) {
+    [[[MParticle sharedInstance] rokt] purchaseFinalized:placementId
+                                           catalogItemId:catalogItemId
+                                                 success:success];
+}
+
 - (NSMutableDictionary*)convertToMutableDictionaryOfStrings:(NSDictionary*)attributes
 {
     NSMutableDictionary *finalAttributes = [attributes mutableCopy];

@@ -53,6 +53,15 @@ class MPRoktModule(
         }
     }
 
+    @ReactMethod
+    override fun purchaseFinalized(
+        placementId: String,
+        catalogItemId: String,
+        success: Boolean,
+    ) {
+        impl.purchaseFinalized(placementId, catalogItemId, success)
+    }
+
     private fun safeUnwrapPlaceholders(
         placeholders: ReadableMap?,
         nativeViewHierarchyManager: NativeViewHierarchyManager,
