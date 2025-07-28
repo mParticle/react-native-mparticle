@@ -55,6 +55,15 @@ class MPRoktModule(
         )
     }
 
+    @ReactMethod
+    override fun purchaseFinalized(
+        placementId: String,
+        catalogItemId: String,
+        success: Boolean,
+    ) {
+        impl.purchaseFinalized(placementId, catalogItemId, success)
+    }
+
 
     /**
      * Process placeholders from ReadableMap to a map of Widgets for use with Rokt.

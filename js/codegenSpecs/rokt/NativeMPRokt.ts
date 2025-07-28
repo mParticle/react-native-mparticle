@@ -21,6 +21,12 @@ export interface Spec extends TurboModule {
     roktConfig?: RoktConfigType,
     fontFilesMap?: { [key: string]: string }
   ): void;
+
+  purchaseFinalized(
+    placementId: string,
+    catalogItemId: string,
+    success: boolean
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNMPRokt');
