@@ -15,6 +15,7 @@ import com.mparticle.MParticle
 import com.mparticle.MpRoktEventCallback
 import com.mparticle.RoktEvent
 import com.mparticle.UnloadReasons
+import com.mparticle.WrapperSdk
 import com.mparticle.rokt.CacheConfig
 import com.mparticle.rokt.RoktConfig
 import kotlinx.coroutines.Job
@@ -24,6 +25,11 @@ import kotlinx.coroutines.launch
 class MPRoktModuleImpl(
     private val reactContext: ReactApplicationContext,
 ) {
+
+    init {
+        MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
+    }
+
     private var roktEventHandler: MpRoktEventCallback? = null
 
     private val eventSubscriptions = mutableMapOf<String, Job?>()

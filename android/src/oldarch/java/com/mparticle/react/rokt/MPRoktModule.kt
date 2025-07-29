@@ -15,9 +15,6 @@ import java.lang.ref.WeakReference
 class MPRoktModule(
     private val reactContext: ReactApplicationContext,
 ) : NativeMPRoktSpec(reactContext) {
-    init {
-        MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
-    }
 
     private val impl = MPRoktModuleImpl(reactContext)
 
