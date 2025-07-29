@@ -6,7 +6,6 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
-import com.mparticle.WrapperSdk
 import com.mparticle.internal.Logger
 import com.mparticle.react.NativeMPRoktSpec
 import com.mparticle.rokt.RoktEmbeddedView
@@ -15,7 +14,6 @@ import java.lang.ref.WeakReference
 class MPRoktModule(
     private val reactContext: ReactApplicationContext,
 ) : NativeMPRoktSpec(reactContext) {
-
     private val impl = MPRoktModuleImpl(reactContext)
 
     override fun getName(): String = impl.getName()

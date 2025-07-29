@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 class MPRoktModuleImpl(
     private val reactContext: ReactApplicationContext,
 ) {
-
     init {
         MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
     }
