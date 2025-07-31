@@ -90,6 +90,7 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     MPRoktConfig *config = [self buildRoktConfigFromDict:roktConfig];
 #endif
 
+    [MParticle _setWrapperSdk_internal:MPWrapperSdkReactNative version:@""];
     // Create callback implementation
     MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
 
