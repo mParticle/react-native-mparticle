@@ -1,1 +1,66 @@
-sample
+# Sample app
+sample/
+
+# Android build artifacts and libs
+android/libs/
+android/build/
+android/src/test/
+android/.gradle/
+android/local.properties
+android/.idea/
+android/.kotlin/
+android/gradlew
+android/gradlew.bat
+android/gradle.properties
+android/gradle/
+
+# iOS build artifacts
+ios/build/
+ios/RNMParticle.xcodeproj/xcuserdata/
+ios/RNMParticle.xcodeproj/xcshareddata/
+ios/RNMParticle.xcodeproj/project.xcworkspace/
+
+# Dependencies
+node_modules/
+
+# IDE files
+.idea/
+.vscode/
+.trunk/
+*.iml
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.github/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Other
+.gradle/
+.trunk/
+*.tgz
+*.tar.gz
+
+# Heavy binary files
+*.jar
+
+# Development files
+package-lock.json
+yarn.lock
+tsconfig.json
+release.sh
+dev-link.sh
+.prettierrc.js
+.eslintrc.js
+metro.config.js
+ONBOARDING.md
