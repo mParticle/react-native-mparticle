@@ -19,7 +19,7 @@ jobs:
         needs: ['confirm-master-branch']
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             - uses: actions/setup-node@master
             - uses: c-hive/gha-yarn-cache@v2
 
@@ -35,7 +35,7 @@ jobs:
         needs: ['confirm-master-branch']
         steps:
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             
             - name: Run Android Unit Tests
               run: echo "pwd"; pwd; echo "ls:"; ls; cd android; ./gradlew test
@@ -46,7 +46,7 @@ jobs:
         needs: ['android-unit-tests', 'react-tests']
         steps:
           - name: Checkout internal/development
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
              
           - name: Setup Node.js
             uses: actions/setup-node@v3
