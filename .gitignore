@@ -5,6 +5,7 @@
 ## Build generated
 build/
 DerivedData/
+.yarn/
 *.DS_Store
 
 ## Various settings
@@ -78,3 +79,9 @@ build
 .gradle
 local.properties
 package-lock.json
+
+# TypeScript build output
+lib/
+
+# Development package
+*.tgz
