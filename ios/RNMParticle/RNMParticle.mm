@@ -661,13 +661,9 @@ RCT_EXPORT_METHOD(setCCPAConsentState:(MPCCPAConsent *)consent)
             request.email = (NSString *)value;
         } else if ([key isEqualToString:@"customerId"]) {
             request.customerId = (NSString *)value;
-        } else {
-            NSCharacterSet *numericSet = [NSCharacterSet decimalDigitCharacterSet];
-            NSCharacterSet *keyCharacterSet = [NSCharacterSet characterSetWithCharactersInString:key];
-            if ([numericSet isSupersetOfSet:keyCharacterSet]) {
-                MPIdentity identityType = (MPIdentity)[key integerValue];
-                [request setIdentity:(NSString *)value identityType:identityType];
-            }
+        } else if ([RNMParticle isNumericIdentityKey:key]) {
+            MPIdentity identityType = (MPIdentity)[key integerValue];
+            [request setIdentity:(NSString *)value identityType:identityType];
         }
     }
     return request;
@@ -728,6 +724,17 @@ RCT_EXPORT_METHOD(setCCPAConsentState:(MPCCPAConsent *)consent)
     return std::make_shared<facebook::react::NativeMParticleSpecJSI>(params);
 }
 #endif
+
++ (BOOL)isNumericIdentityKey:(NSString *)key {
+    static NSCharacterSet *numericSet = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        numericSet = [NSCharacterSet decimalDigitCharacterSet];
+    });
+    
+    NSCharacterSet *keyCharacterSet = [NSCharacterSet characterSetWithCharactersInString:key];
+    return [numericSet isSupersetOfSet:keyCharacterSet];
+}
 
 @end
 
@@ -1089,6 +1096,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     return action;
 }
 
+
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json {
     NSDictionary *dict = json;
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
@@ -1103,13 +1111,9 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
             request.email = (NSString *)value;
         } else if ([key isEqualToString:@"customerId"]) {
             request.customerId = (NSString *)value;
-        } else {
-            NSCharacterSet *numericSet = [NSCharacterSet decimalDigitCharacterSet];
-            NSCharacterSet *keyCharacterSet = [NSCharacterSet characterSetWithCharactersInString:key];
-            if ([numericSet isSupersetOfSet:keyCharacterSet]) {
-                MPIdentity identityType = (MPIdentity)[key integerValue];
-                [request setIdentity:(NSString *)value identityType:identityType];
-            }
+        } else if ([RNMParticle isNumericIdentityKey:key]) {
+            MPIdentity identityType = (MPIdentity)[key integerValue];
+            [request setIdentity:(NSString *)value identityType:identityType];
         }
     }
 
