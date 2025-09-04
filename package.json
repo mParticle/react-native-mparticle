@@ -4,7 +4,7 @@
   "homepage": "https://www.mparticle.com",
   "license": "Apache-2.0",
   "repository": "mParticle/react-native-mparticle",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "react-native": "js/index",
