@@ -73,7 +73,7 @@ class MParticleModule(
 
         val event =
             MPEvent
-                .Builder(name, eventType)
+                .Builder(eventName, eventType)
                 .customAttributes(attributes)
                 .build()
         MParticle.getInstance()?.logEvent(event)
