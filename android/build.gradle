@@ -125,7 +125,7 @@ dependencies {
     //
     //   compile 'com.mparticle:android-example-kit:REPLACEME'
     //
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.9.4"
 
     testImplementation 'org.mockito:mockito-core:5.8.0'
     androidTestImplementation 'org.mockito:mockito-android:5.8.0'
