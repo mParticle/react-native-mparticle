@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "MParticle Expo Test",
+    "slug": "mparticle-expo-test",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mparticle.expotestapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.mparticle.expotestapp"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "react-native-mparticle",
+        {
+          "iosApiKey": "YOUR_IOS_API_KEY",
+          "iosApiSecret": "YOUR_IOS_API_SEC",
+          "androidApiKey": "YOUR_ANDROID_API_KEY",
+          "androidApiSecret": "YOUR_ANDROID_API_SEC",
+          "logLevel": "verbose",
+          "useEmptyIdentifyRequest": true,
+          "environment": "development",
+          "iosKits": ["mParticle-Rokt"],
+          "androidKits": ["android-rokt-kit"]
+        }
+      ]
+    ]
+  }
+}

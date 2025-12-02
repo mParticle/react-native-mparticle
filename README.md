@@ -6,23 +6,136 @@
 React Native allows developers to use a single code base to deploy features to multiple platforms. With the mParticle React Native library, you can leverage a single API to deploy your data to hundreds of integrations from your iOS and Android apps.
 
 ### Supported Features
-| Method | Android | iOS |
-| ---    | ---     | --- |
-| Custom Events | <li> [X] </li> | <li> [X]  </li> |
-| Page Views | <li> [X]  </li> | <li> [X]  </li> |
-| Identity | <li> [X]  </li> | <li> [X]  </li> |
-| eCommerce | <li> [X]  </li> | <li> [X]  </li> |
-| Consent | <li> [X]  </li> | <li> [X]  </li> |
+
+| Method        | Android | iOS |
+| ------------- | ------- | --- |
+| Custom Events | ✓       | ✓   |
+| Page Views    | ✓       | ✓   |
+| Identity      | ✓       | ✓   |
+| eCommerce     | ✓       | ✓   |
+| Consent       | ✓       | ✓   |
 
 # Installation
 
 **Download and install the mParticle React Native library** from npm:
 
 ```bash
-$ npm install react-native-mparticle --save
+npm install react-native-mparticle --save
 ```
 
-## <a name="iOS"></a>iOS
+## Expo
+
+This library supports Expo projects using the [Expo Config Plugin](https://docs.expo.dev/config-plugins/introduction/). The plugin automatically configures the native iOS and Android projects during `expo prebuild`.
+
+### Installation - Expo
+
+1. Install the library:
+
+```bash
+npx expo install react-native-mparticle
+```
+
+2. Add the plugin to your `app.json` or `app.config.js`:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-mparticle",
+        {
+          "iosApiKey": "YOUR_IOS_API_KEY",
+          "iosApiSecret": "YOUR_IOS_API_SECRET",
+          "androidApiKey": "YOUR_ANDROID_API_KEY",
+          "androidApiSecret": "YOUR_ANDROID_API_SECRET"
+        }
+      ]
+    ]
+  }
+}
+```
+
+3. Run prebuild:
+
+```bash
+npx expo prebuild --clean
+```
+
+4. Run the app:
+
+```bash
+npx expo run:ios
+# or
+npx expo run:android
+```
+
+### Plugin Configuration Options
+
+| Option                    | Type     | Required | Description                                                         |
+| ------------------------- | -------- | -------- | ------------------------------------------------------------------- |
+| `iosApiKey`               | string   | Yes      | iOS API key from mParticle dashboard                                |
+| `iosApiSecret`            | string   | Yes      | iOS API secret from mParticle dashboard                             |
+| `androidApiKey`           | string   | Yes      | Android API key from mParticle dashboard                            |
+| `androidApiSecret`        | string   | Yes      | Android API secret from mParticle dashboard                         |
+| `logLevel`                | string   | No       | Log level: `'none'`, `'error'`, `'warning'`, `'debug'`, `'verbose'` |
+| `environment`             | string   | No       | Environment: `'development'`, `'production'`, `'autoDetect'`        |
+| `dataPlanId`              | string   | No       | Data plan ID for validation                                         |
+| `dataPlanVersion`         | number   | No       | Data plan version                                                   |
+| `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                      |
+| `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)           |
+| `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)           |
+
+### Example with Kits
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-mparticle",
+        {
+          "iosApiKey": "YOUR_IOS_API_KEY",
+          "iosApiSecret": "YOUR_IOS_API_SECRET",
+          "androidApiKey": "YOUR_ANDROID_API_KEY",
+          "androidApiSecret": "YOUR_ANDROID_API_SECRET",
+          "environment": "development",
+          "logLevel": "verbose",
+          "iosKits": ["mParticle-Rokt", "mParticle-Amplitude"],
+          "androidKits": ["android-rokt-kit", "android-amplitude-kit"]
+        }
+      ]
+    ]
+  }
+}
+```
+
+### What the Plugin Does
+
+**iOS:**
+
+- Adds mParticle SDK initialization to `AppDelegate` (supports both Swift and Objective-C)
+- Configures `pre_install` hook in Podfile for dynamic framework linking
+- Adds specified kit pod dependencies
+
+**Android:**
+
+- Adds mParticle SDK initialization to `MainApplication` (supports both Kotlin and Java)
+- Adds specified kit Maven dependencies to `build.gradle`
+
+### Version Support
+
+| Expo SDK | React Native | iOS AppDelegate | Android MainApplication |
+| -------- | ------------ | --------------- | ----------------------- |
+| 53+      | 0.79+        | Swift           | Kotlin                  |
+| 50-52    | 0.73-0.78    | Objective-C++   | Kotlin                  |
+| 49       | 0.72         | Objective-C++   | Java                    |
+| ≤48      | ≤0.71        | Objective-C     | Java                    |
+
+The plugin automatically detects the language and generates appropriate code for each platform.
+
+---
+
+## iOS (Manual Setup)
 
 1. **Copy your mParticle key and secret** from [your app's dashboard][1].
 
@@ -33,6 +146,7 @@ $ npm install react-native-mparticle --save
 The npm install step above will automatically include our react framework and the core iOS framework in your project. However depending on your app and its other dependecies you must integrate it in 1 of 3 ways
 
 A. Static Libraries are the React Native default but since mParticle iOS contains swift code you need to add an exception for it in the from of a pre-install command in the Podfile.
+
 ```bash
 pre_install do |installer|
   installer.pod_targets.each do |pod|
@@ -44,24 +158,31 @@ pre_install do |installer|
   end
 end
 ```
+
 Then run the following command
-```
+
+```bash
 bundle exec pod install
 ```
 
-B&C. Frameworks are the default for Swift development and while it isn't preferred by React Native it is supported. Additionally you can define whether the frameworks are built staticly or dynamically. 
+B&C. Frameworks are the default for Swift development and while it isn't preferred by React Native it is supported. Additionally you can define whether the frameworks are built staticly or dynamically.
 
 Update your Podfile to be ready to use dynamically linked frameworks by commenting out the following line
+
 ```bash
 # :flipper_configuration => flipper_config,
 ```
+
 Then run either of the following commands
+
+```bash
+USE_FRAMEWORKS=static bundle exec pod install
 ```
-$ USE_FRAMEWORKS=static bundle exec pod install
-```
+
 or
-```
-$ USE_FRAMEWORKS=dynamic bundle exec pod install
+
+```bash
+USE_FRAMEWORKS=dynamic bundle exec pod install
 ```
 
 3. Import and start the mParticle Apple SDK into Swift or Objective-C.
@@ -82,10 +203,10 @@ For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/s
 import mParticle_Apple_SDK
 
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        
+
         //override point for customization after application launch.
         let mParticleOptions = MParticleOptions(key: "<<<App Key Here>>>", secret: "<<<App Secret Here>>>")
-        
+
         //optional- Please see the Identity page for more information on building this object
         let request = MPIdentityApiRequest()
         request.email = "email@example.com"
@@ -98,7 +219,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
         mParticleOptions.onAttributionComplete = { (attributionResult, error) in
                     NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
         }
-        MParticle.sharedInstance().start(with: mParticleOptions)        
+        MParticle.sharedInstance().start(with: mParticleOptions)
         return true
 }
 ```
@@ -125,7 +246,7 @@ Next, you'll need to start the SDK:
 
     MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
                                                                    secret:@"REPLACE ME"];
-    
+
     //optional - Please see the Identity page for more information on building this object
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
     request.email = @"email@example.com";
@@ -138,9 +259,9 @@ Next, you'll need to start the SDK:
     mParticleOptions.onAttributionComplete(MPAttributionResult * _Nullable attributionResult, NSError * _Nullable error) {
         NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
     }
-    
+
     [[MParticle sharedInstance] startWithOptions:mParticleOptions];
-    
+
     return YES;
 }
 ```
@@ -148,13 +269,14 @@ Next, you'll need to start the SDK:
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 4. Remember to start Metro with:
+
 ```bash
-$ npm start
+npm start
 ```
+
 and build your workspace from xCode.
 
-
-## <a name="Android"></a>Android
+## Android (Manual Setup)
 
 1. Copy your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/setup/inputs/apps) and construct an `MParticleOptions` object.
 
@@ -191,15 +313,14 @@ class MyApplication : Application() {
 }
 ```
 
-> **Warning:** Don't log events in your `Application.onCreate()`. Android may instantiate your `Application` class in the background without your knowledge, including when the user isn't using their device, and lead to unexpected results. 
-
+> **Warning:** Don't log events in your `Application.onCreate()`. Android may instantiate your `Application` class in the background without your knowledge, including when the user isn't using their device, and lead to unexpected results.
 
 # Usage
 
 ## Import the mParticle Module
 
 ```js
-import MParticle from 'react-native-mparticle'
+import MParticle from 'react-native-mparticle';
 ```
 
 ## Logging Events
@@ -207,38 +328,60 @@ import MParticle from 'react-native-mparticle'
 To log basic events:
 
 ```js
-MParticle.logEvent('Test event', MParticle.EventType.Other, { 'Test key': 'Test value' })
+MParticle.logEvent('Test event', MParticle.EventType.Other, {
+  'Test key': 'Test value',
+});
 ```
 
 To log commerce events:
 
 ```js
-const product = new MParticle.Product('Test product for cart', '1234', 19.99)
-const transactionAttributes = new MParticle.TransactionAttributes('Test transaction id')
-const event = MParticle.CommerceEvent.createProductActionEvent(MParticle.ProductActionType.AddToCart, [product], transactionAttributes)
+const product = new MParticle.Product('Test product for cart', '1234', 19.99);
+const transactionAttributes = new MParticle.TransactionAttributes(
+  'Test transaction id'
+);
+const event = MParticle.CommerceEvent.createProductActionEvent(
+  MParticle.ProductActionType.AddToCart,
+  [product],
+  transactionAttributes
+);
 
-MParticle.logCommerceEvent(event)
+MParticle.logCommerceEvent(event);
 ```
 
 ```js
-const promotion = new MParticle.Promotion('Test promotion id', 'Test promotion name', 'Test creative', 'Test position')
-const event = MParticle.CommerceEvent.createPromotionEvent(MParticle.PromotionActionType.View, [promotion])
+const promotion = new MParticle.Promotion(
+  'Test promotion id',
+  'Test promotion name',
+  'Test creative',
+  'Test position'
+);
+const event = MParticle.CommerceEvent.createPromotionEvent(
+  MParticle.PromotionActionType.View,
+  [promotion]
+);
 
-MParticle.logCommerceEvent(event)
+MParticle.logCommerceEvent(event);
 ```
 
 ```js
-const product = new MParticle.Product('Test product that was viewed', '5678', 29.99)
-const impression = new MParticle.Impression('Test impression list name', [product])
-const event = MParticle.CommerceEvent.createImpressionEvent([impression])
+const product = new MParticle.Product(
+  'Test product that was viewed',
+  '5678',
+  29.99
+);
+const impression = new MParticle.Impression('Test impression list name', [
+  product,
+]);
+const event = MParticle.CommerceEvent.createImpressionEvent([impression]);
 
-MParticle.logCommerceEvent(event)
+MParticle.logCommerceEvent(event);
 ```
 
 To log screen events:
 
 ```js
-MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' })
+MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' });
 ```
 
 ## User
@@ -246,49 +389,59 @@ MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' })
 To set, remove, and get user details, call the `User` or `Identity` methods as follows:
 
 ```js
-MParticle.User.setUserAttribute('User ID', 'Test key', 'Test value')
+MParticle.User.setUserAttribute('User ID', 'Test key', 'Test value');
 ```
 
 ```js
-MParticle.User.setUserAttribute('User ID', MParticle.UserAttributeType.FirstName, 'Test first name')
+MParticle.User.setUserAttribute(
+  'User ID',
+  MParticle.UserAttributeType.FirstName,
+  'Test first name'
+);
 ```
 
 ```js
-MParticle.User.setUserAttributeArray('User ID', 'Test key', ['Test value 1', 'Test value 2'])
+MParticle.User.setUserAttributeArray('User ID', 'Test key', [
+  'Test value 1',
+  'Test value 2',
+]);
 ```
 
 ```js
-MParticle.User.setUserTag('User ID', 'Test value')
+MParticle.User.setUserTag('User ID', 'Test value');
 ```
 
 ```js
-MParticle.User.removeUserAttribute('User ID', 'Test key')
+MParticle.User.removeUserAttribute('User ID', 'Test key');
 ```
 
 ```js
-MParticle.Identity.getUserIdentities((userIdentities) => {
-	console.debug(userIdentities);
+MParticle.Identity.getUserIdentities(userIdentities => {
+  console.debug(userIdentities);
 });
 ```
 
 ## IdentityRequest
 
 ```js
-var request = new MParticle.IdentityRequest()
+var request = new MParticle.IdentityRequest();
 ```
 
 **Setting** user identities:
 
 ```js
 var request = new MParticle.IdentityRequest();
-request.setUserIdentity('example@example.com', MParticle.UserIdentityType.Email);
+request.setUserIdentity(
+  'example@example.com',
+  MParticle.UserIdentityType.Email
+);
 ```
 
 ## Identity
 
 ```js
-MParticle.Identity.getCurrentUser((currentUser) => {
-    console.debug(currentUser.userID);
+MParticle.Identity.getCurrentUser(currentUser => {
+  console.debug(currentUser.userID);
 });
 ```
 
@@ -296,11 +449,11 @@ MParticle.Identity.getCurrentUser((currentUser) => {
 var request = new MParticle.IdentityRequest();
 
 MParticle.Identity.identify(request, (error, userId) => {
-    if (error) {
-        console.debug(error); //error is an MParticleError
-    } else {
-        console.debug(userId);
-    }
+  if (error) {
+    console.debug(error); //error is an MParticleError
+  } else {
+    console.debug(userId);
+  }
 });
 ```
 
@@ -309,11 +462,11 @@ var request = new MParticle.IdentityRequest();
 request.email = 'test email';
 
 MParticle.Identity.login(request, (error, userId) => {
-    if (error) {
-        console.debug(error); //error is an MParticleError
-    } else {
-        console.debug(userId);
-    }
+  if (error) {
+    console.debug(error); //error is an MParticleError
+  } else {
+    console.debug(userId);
+  }
 });
 ```
 
@@ -321,11 +474,11 @@ MParticle.Identity.login(request, (error, userId) => {
 var request = new MParticle.IdentityRequest();
 
 MParticle.Identity.logout(request, (error, userId) => {
-    if (error) {
-        console.debug(error);
-    } else {
-        console.debug(userId);
-    }
+  if (error) {
+    console.debug(error);
+  } else {
+    console.debug(userId);
+  }
 });
 ```
 
@@ -334,31 +487,33 @@ var request = new MParticle.IdentityRequest();
 request.email = 'test email 2';
 
 MParticle.Identity.modify(request, (error, userId) => {
-    if (error) {
-        console.debug(error); //error is an MParticleError
-    } else {
-        console.debug(userId);
-    }
+  if (error) {
+    console.debug(error); //error is an MParticleError
+  } else {
+    console.debug(userId);
+  }
 });
 ```
 
 ## Attribution
-```
+
+```js
 var attributions = MParticle.getAttributions();
 ```
 
-In order to listen for Attributions asynchronously, you need to set the proper field in `MParticleOptions` as shown in the [Android](#Android) or the [iOS](#iOS) SDK start examples.
+In order to listen for Attributions asynchronously, you need to set the proper field in `MParticleOptions` as shown in the [Android](#android-manual-setup) or the [iOS](#ios-manual-setup) SDK start examples.
 
 ## Kits
+
 Check if a kit is active
 
-```
+```js
 var isKitActive = MParticle.isKitActive(kitId);
 ```
 
 Check and set the SDK's opt out status
 
-```
+```js
 var isOptedOut = MParticle.getOptOut();
 MParticle.setOptOut(!isOptedOut);
 ```
@@ -369,54 +524,57 @@ The method `MParticle.logPushRegistration()` accepts 2 parameters. For Android, 
 
 ### Android
 
-```
+```js
 MParticle.logPushRegistration(pushToken, senderId);
 ```
 
 ### iOS
 
-```
+```js
 MParticle.logPushRegistration(pushToken, null);
 ```
 
 ## GDPR Consent
+
 Add a GDPRConsent
 
-```
+```js
 var gdprConsent = GDPRConsent()
-    .setConsented(true)
-    .setDocument("the document")
-    .setTimestamp(new Date().getTime())  // optional, native SDK will automatically set current timestamp if omitted
-    .setLocation("the location")
-    .setHardwareId("the hardwareId");
+  .setConsented(true)
+  .setDocument('the document')
+  .setTimestamp(new Date().getTime()) // optional, native SDK will automatically set current timestamp if omitted
+  .setLocation('the location')
+  .setHardwareId('the hardwareId');
 
-MParticle.addGDPRConsentState(gdprConsent, "the purpose");
+MParticle.addGDPRConsentState(gdprConsent, 'the purpose');
 ```
 
 Remove a GDPRConsent
-```
-MParticle.removeGDPRConsentStateWithPurpose("the purpose");
+
+```js
+MParticle.removeGDPRConsentStateWithPurpose('the purpose');
 ```
 
 ## CCPA Consent
+
 Add a CCPAConsent
 
-```
+```js
 var ccpaConsent = CCPAConsent()
-    .setConsented(true)
-    .setDocument("the document")
-    .setTimestamp(new Date().getTime())  // optional, native SDK will automatically set current timestamp if omitted
-    .setLocation("the location")
-    .setHardwareId("the hardwareId");
+  .setConsented(true)
+  .setDocument('the document')
+  .setTimestamp(new Date().getTime()) // optional, native SDK will automatically set current timestamp if omitted
+  .setLocation('the location')
+  .setHardwareId('the hardwareId');
 
 MParticle.addCCPAConsentState(ccpaConsent);
 ```
 
 Remove CCPAConsent
-```
+
+```js
 MParticle.removeCCPAConsentState();
 ```
-
 
 # License
 

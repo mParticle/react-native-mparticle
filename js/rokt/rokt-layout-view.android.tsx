@@ -103,9 +103,10 @@ export class RoktLayoutView extends Component<
 
       // Return the native component with the props
       // Cast to React.ComponentType to make it compatible with JSX
+      // Using 'unknown' intermediate cast for compatibility with different @types/react versions
       const RoktComponent =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        RoktNativeLayoutComponent as React.ComponentType<any>;
+        RoktNativeLayoutComponent as unknown as React.ComponentType<any>;
       return (
         <RoktComponent
           placeholderName={placeholderName}

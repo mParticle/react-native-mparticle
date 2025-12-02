@@ -10,25 +10,44 @@
   "react-native": "js/index",
   "scripts": {
     "build": "tsc",
+    "build:plugin": "tsc --build plugin",
     "clean": "rm -rf lib",
-    "prepare": "yarn clean && yarn build",
-    "dev:pack": "yarn build && yarn pack --filename react-native-mparticle-latest.tgz",
+    "clean:plugin": "rm -rf plugin/build",
+    "prepare": "yarn clean && yarn build; yarn build:plugin",
+    "dev:pack": "yarn build && yarn build:plugin && yarn pack --filename react-native-mparticle-latest.tgz",
     "dev:link": "./dev-link.sh",
     "lint": "eslint '{js,lib}/**/*.{ts,tsx}' --fix",
     "format": "prettier --write '{js,lib}/**/*.{ts,tsx}'",
     "test": "npm run lint"
   },
+  "files": [
+    "android",
+    "ios",
+    "js",
+    "lib",
+    "react-native-mparticle.podspec",
+    "app.plugin.js",
+    "plugin"
+  ],
   "dependencies": {},
   "peerDependencies": {
     "react": ">= 16.0.0-alpha.12",
-    "react-native": ">= 0.45.0"
+    "react-native": ">= 0.45.0",
+    "@expo/config-plugins": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo/config-plugins": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@expo/config-plugins": "^7.2.5",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "expo-module-scripts": "^3.0.0",
     "prettier": "^2.8.8",
     "@types/react": "^18.0.0",
     "@types/react-native": "^0.70.0",
