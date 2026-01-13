@@ -21,15 +21,19 @@ This guide will help you set up your development environment for working on the 
 ```
 react-native-mparticle/
 ├── android/          # Native Android SDK implementation
-├── ios/             # Native iOS SDK implementation
-├── js/              # JavaScript/TypeScript SDK implementation
-├── sample/          # Sample app for testing
+├── ios/              # Native iOS SDK implementation
+├── js/               # JavaScript/TypeScript SDK implementation
+├── plugin/           # Expo config plugin source
+│   └── src/          # Plugin TypeScript source files
+├── sample/           # Sample app for testing (manual RN setup)
+├── ExpoTestApp/      # Expo test app for testing config plugin
 └── ...
 ```
 
 ## Initial Setup
 
 Install dependencies:
+
 ```bash
 yarn install
 ```
@@ -41,16 +45,19 @@ The sample app is a great way to test your changes and see the SDK in action.
 ### iOS Sample App
 
 1. Navigate to the sample directory:
+
 ```bash
 cd sample
 ```
 
 2. Install JavaScript dependencies:
+
 ```bash
 yarn install
 ```
 
 3. Install iOS dependencies:
+
 ```bash
 cd ios
 pod install
@@ -58,11 +65,13 @@ cd ..
 ```
 
 4. Start the Metro bundler:
+
 ```bash
 yarn start
 ```
 
 5. Open the iOS workspace:
+
 ```bash
 open ios/MParticleSample.xcworkspace
 ```
@@ -75,11 +84,13 @@ open ios/MParticleSample.xcworkspace
 ### Android Sample App
 
 1. Navigate to the sample directory:
+
 ```bash
 cd sample
 ```
 
 2. Install JavaScript dependencies:
+
 ```bash
 npm install
 # or
@@ -87,6 +98,7 @@ yarn install
 ```
 
 3. Start the Metro bundler:
+
 ```bash
 npm start
 # or
@@ -102,17 +114,127 @@ yarn start
    - Select your target device/emulator
    - Click Run (or press ⇧F10)
 
+### Expo Test App
+
+The ExpoTestApp is used for testing the Expo config plugin integration.
+
+1. Build and pack the main library:
+
+```bash
+# From the root directory
+yarn dev:pack
+```
+
+2. Navigate to the ExpoTestApp:
+
+```bash
+cd ExpoTestApp
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+4. Update API keys in `app.json` (plugins section):
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-mparticle",
+        {
+          "iosApiKey": "YOUR_IOS_API_KEY",
+          "iosApiSecret": "YOUR_IOS_API_SECRET",
+          "androidApiKey": "YOUR_ANDROID_API_KEY",
+          "androidApiSecret": "YOUR_ANDROID_API_SECRET"
+        }
+      ]
+    ]
+  }
+}
+```
+
+5. Run prebuild to generate native projects:
+
+```bash
+npm run prebuild
+```
+
+6. Run the app:
+
+```bash
+# iOS
+npm run ios
+
+# Android
+npm run android
+```
+
+#### Verifying Plugin Integration
+
+After prebuild, verify the plugin configured the native projects correctly:
+
+**iOS (`ios/<AppName>/AppDelegate.swift`):**
+
+- Check for `import mParticle_Apple_SDK`
+- Check for `MParticleOptions` initialization in `didFinishLaunchingWithOptions`
+
+**Android (`android/app/src/main/java/.../MainApplication.kt`):**
+
+- Check for mParticle imports
+- Check for `MParticleOptions` initialization in `onCreate()`
+
+#### Rebuilding After Plugin Changes
+
+When making changes to the Expo plugin:
+
+```bash
+# From the root directory
+yarn build:plugin
+yarn dev:pack
+
+# From ExpoTestApp directory
+rm -rf node_modules ios android
+npm install
+npm run prebuild
+```
+
 ## Development Workflow
 
 ### Building the SDK
 
+#### TypeScript/JavaScript
+
+```bash
+yarn build
+```
+
+#### Expo Plugin
+
+```bash
+yarn build:plugin
+```
+
+#### Pack for Local Testing
+
+```bash
+yarn dev:pack
+```
+
+This creates `react-native-mparticle-latest.tgz` which can be used for local testing in the ExpoTestApp or other projects.
+
 #### Android
+
 ```bash
 cd android
 ./gradlew build
 ```
 
 #### iOS
+
 ```bash
 cd ios
 pod install
@@ -139,8 +261,9 @@ xcodebuild test
 
 1. "Missing config.h" error:
    This error occurs because the mParticle SDK contains Swift code which requires special handling. To fix this:
-   
+
    a. Open your `sample/ios/Podfile` and add this block before the target definition:
+
    ```ruby
    pre_install do |installer|
      installer.pod_targets.each do |pod|
@@ -154,6 +277,7 @@ xcodebuild test
    ```
 
    b. Clean and reinstall pods:
+
    ```bash
    cd sample/ios
    pod cache clean --all
@@ -208,6 +332,7 @@ xcodebuild test
 4. After merge, create a new release on GitHub
 
 5. Publish to npm:
+
 ```bash
 npm publish
 ```
