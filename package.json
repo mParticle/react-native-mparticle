@@ -13,7 +13,7 @@
     "build:plugin": "tsc --build plugin",
     "clean": "rm -rf lib",
     "clean:plugin": "rm -rf plugin/build",
-    "prepare": "yarn clean && yarn build; yarn build:plugin",
+    "prepare": "yarn clean && yarn build && yarn build:plugin",
     "dev:pack": "yarn build && yarn build:plugin && yarn pack --filename react-native-mparticle-latest.tgz",
     "dev:link": "./dev-link.sh",
     "lint": "eslint '{js,lib}/**/*.{ts,tsx}' --fix",
