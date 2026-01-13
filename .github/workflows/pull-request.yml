@@ -116,7 +116,7 @@ jobs:
           with:
             model: iPhone 16
             os: iOS
-            os_version: ">=18.0"
+            os_version: "18.4"
             wait_for_boot: true
             shutdown_after_job: true
 
