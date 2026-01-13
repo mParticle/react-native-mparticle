@@ -110,6 +110,16 @@ jobs:
           with:
             xcode-version: 16.3
 
+        - name: Setup iOS Simulator
+          uses: futureware-tech/simulator-action@v4
+          id: simulator
+          with:
+            model: iPhone 16
+            os: iOS
+            os_version: ">=18.0"
+            wait_for_boot: true
+            shutdown_after_job: true
+
         - name: Install node modules
           run: yarn install
 
@@ -133,7 +143,7 @@ jobs:
             set -o pipefail && xcodebuild -workspace MParticleSample.xcworkspace \
             -configuration Debug \
             -scheme MParticleSample \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'id=${{ steps.simulator.outputs.udid }}' \
             -derivedDataPath ios/build \
             -UseModernBuildSystem=YES \
             build | bundle exec xcpretty -k
