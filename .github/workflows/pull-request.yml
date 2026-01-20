@@ -20,7 +20,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - uses: actions/setup-node@v6.2.0
         with:
           node-version: 18
@@ -40,7 +40,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
           - name: "Checkout"
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
           - name: "Run Android Unit Tests"
             working-directory: android
             run: ./gradlew test
@@ -50,7 +50,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: "Checkout"
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
         - name: "Run Android lint"
           working-directory: android
           run: ./gradlew lint
@@ -60,7 +60,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: "Checkout"
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
         - name: "Run Android kotlin lint"
           working-directory: android
           run: ./gradlew ktlintCheck
@@ -70,7 +70,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: Checkout
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
         - uses: actions/setup-node@v6.2.0
           with:
             node-version: 18
@@ -98,7 +98,7 @@ jobs:
       runs-on: macos-15
       steps:
         - name: Checkout
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
         - uses: actions/setup-node@v6.2.0
           with:
             node-version: 18
