@@ -127,8 +127,8 @@ dependencies {
     //
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
 
-    testImplementation 'org.mockito:mockito-core:5.8.0'
-    androidTestImplementation 'org.mockito:mockito-android:5.8.0'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
+    androidTestImplementation 'org.mockito:mockito-android:5.20.0'
     testImplementation 'androidx.annotation:annotation:1.7.1'
 
     testImplementation 'junit:junit:4.13.2'
