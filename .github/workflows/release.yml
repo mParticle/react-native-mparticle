@@ -65,7 +65,7 @@ jobs:
 
           - name: Install node modules
             run: yarn install
-          
+
           - name: Ensure npm CLI supports OIDC
             run: npm install -g npm@latest
 
