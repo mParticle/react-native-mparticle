@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-npm publish --provenance --access public
+npm publish --provenance
