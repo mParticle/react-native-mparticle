@@ -29,6 +29,11 @@
     "app.plugin.js",
     "plugin"
   ],
+  "publishConfig": {
+      "access": "public",
+      "provenance": true,
+      "registry": "https://registry.npmjs.org"
+  },
   "dependencies": {},
   "peerDependencies": {
     "react": ">= 16.0.0-alpha.12",
