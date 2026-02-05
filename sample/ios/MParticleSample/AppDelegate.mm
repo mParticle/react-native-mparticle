@@ -18,8 +18,15 @@
 {
   self.moduleName = @"MParticleSample";
   self.initialProps = @{};
-  MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
-                                                                 secret:@"REPLACE ME"];
+  
+  MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
+  networkOptions.pinningDisabled = true;
+ 
+  MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE_ME"
+                                                                 secret:@"REPLACE_ME"];
+  mParticleOptions.logLevel = MPILogLevelDebug;
+  mParticleOptions.environment = MPEnvironmentProduction;
+  
   //Please see the Identity page for more information on building this object
   MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
   request.email = @"email@example.com";
