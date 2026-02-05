@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "postinstall": "cd ios && pod install"
+    "postinstall": "if [ \"$(uname)\" = \"Darwin\" ]; then cd ios && pod install; fi"
   },
   "dependencies": {
     "react": "18.3.1",
