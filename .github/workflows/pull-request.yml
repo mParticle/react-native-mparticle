@@ -111,7 +111,7 @@ jobs:
             xcode-version: latest-stable
 
         - name: Setup iOS Simulator
-          uses: futureware-tech/simulator-action@v4
+          uses: futureware-tech/simulator-action@v5
           id: simulator
           with:
             model: iPhone 16
