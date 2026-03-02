@@ -50,33 +50,25 @@ The sample app is a great way to test your changes and see the SDK in action.
 cd sample
 ```
 
-2. Install JavaScript dependencies:
+2. Install dependencies (iOS pods are installed automatically via postinstall):
 
 ```bash
 yarn install
 ```
 
-3. Install iOS dependencies:
-
-```bash
-cd ios
-pod install
-cd ..
-```
-
-4. Start the Metro bundler:
+3. Start the Metro bundler:
 
 ```bash
 yarn start
 ```
 
-5. Open the iOS workspace:
+4. Open the iOS workspace:
 
 ```bash
 open ios/MParticleSample.xcworkspace
 ```
 
-6. In Xcode:
+5. In Xcode:
    - Select your target device/simulator
    - Update signing configuration if needed
    - Build and run (⌘R)

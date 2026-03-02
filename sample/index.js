@@ -14,6 +14,11 @@ import {
   findNodeHandle,
   ScrollView,
   NativeEventEmitter,
+  SafeAreaView,
+  TextInput,
+  View,
+  TouchableOpacity,
+  KeyboardAvoidingView,
 } from 'react-native';
 import MParticle from 'react-native-mparticle';
 
@@ -25,11 +30,14 @@ export default class MParticleSample extends Component {
     constructor(props) {
         super(props);
         this.placeholder1 = React.createRef();
-        this.state = {isShowingText: true,
+        this.state = {
+            isShowingText: true,
             optedOut: true,
             attributionResults: "{value: no attributionResults}",
             session: '',
-            isKitActive: true};
+            isKitActive: true,
+            customIdentifier: 'MSDKBottomSheetLayout',
+        };
 
         this._toggleOptOut = this._toggleOptOut.bind(this)
         this._getAttributionResults = this._getAttributionResults.bind(this)
@@ -235,67 +243,162 @@ export default class MParticleSample extends Component {
         let optAction = this.state.optedOut ? 'In' : 'Out'
         let kitActive = this.state.isKitActive ? 'true' : 'false'
         return (
-            <ScrollView contentContainerStyle={styles.container}>
-                <Text style={styles.welcome}>
-                    Welcome to React Native! {display}
-                </Text>
-                <Text style={styles.welcome}>
-                    Opted Out = {optedOut}
-                </Text>
-                <Button
-                    onPress={() => {this._toggleOptOut()}}
-                    title={'Opt ' + optAction}/>
-                <Text>
-                    Session = {JSON.stringify(this.state.session)}
-                </Text>
-                <Text>
-                    Attributes = {JSON.stringify(this.state.attributionResults)}
-                </Text>
-                <Button
-                    onPress={() => {this._getAttributionResults()}}
-                    title="Get Attribution Results"/>
-                <Text>
-                    KitActive = {kitActive} (should switch to false)
-                </Text>
-                <Button
-                    onPress={() => {this._isKitActive()}}
-                    title="Check Kit Active"/>
-                <Text style={styles.instructions}>
-                    To get started, edit index.js
-                </Text>
-                <Text style={styles.instructions}>
-                    Press Cmd+R to reload,{'\n'}
-                    Cmd+D or shake for dev menu
-                </Text>
+            <SafeAreaView style={styles.safeArea}>
+                <KeyboardAvoidingView
+                    style={styles.keyboardAvoid}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                >
+                <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+                    <View style={styles.header}>
+                        <Text style={styles.logo}>mParticle</Text>
+                        <Text style={styles.subtitle}>React Native SDK Sample</Text>
+                    </View>
+                    <Text style={styles.statusText}>
+                        {display}
+                    </Text>
+                    <Text style={styles.infoText}>
+                        Opted Out = {optedOut}
+                    </Text>
+                    <Button
+                        onPress={() => {this._toggleOptOut()}}
+                        title={'Opt ' + optAction}/>
+                    <Text style={styles.infoText}>
+                        Session = {JSON.stringify(this.state.session)}
+                    </Text>
+                    <Text style={styles.infoText}>
+                        Attributes = {JSON.stringify(this.state.attributionResults)}
+                    </Text>
+                    <Button
+                        onPress={() => {this._getAttributionResults()}}
+                        title="Get Attribution Results"/>
+                    <Text style={styles.infoText}>
+                        KitActive = {kitActive} (should switch to false)
+                    </Text>
+                    <Button
+                        onPress={() => {this._isKitActive()}}
+                        title="Check Kit Active"/>
+                    <Text style={styles.instructions}>
+                        To get started, edit index.js
+                    </Text>
+                    <Text style={styles.instructions}>
+                        Press Cmd+R to reload,{'\n'}
+                        Cmd+D or shake for dev menu
+                    </Text>
 
-                <Button
-                    onPress={() => {this._incrementAttribute()}}
-                    title="Increment Attribute"/>
-                <Text style={styles.instructions}>ROKT</Text>
-                <Button title="ROKT Embedded" onPress={() => {this._roktSelectEmbeddedPlacements()}}/>
-                <Button title="ROKT Overlay" onPress={() => {this._roktSelectOverlayPlacements()}}/>
-                <Button title="ROKT BottomSheet" onPress={() => {this._roktSelectBottomSheetPlacements()}}/>
-                <RoktLayoutView
-                  ref={this.placeholder1}
-                  placeholderName="Location1" />
-            </ScrollView>
+                    <Button
+                        onPress={() => {this._incrementAttribute()}}
+                        title="Increment Attribute"/>
+                    <Text style={styles.sectionTitle}>ROKT</Text>
+                    <Button title="ROKT Embedded" onPress={() => {this._roktSelectEmbeddedPlacements()}}/>
+                    <Button title="ROKT Overlay" onPress={() => {this._roktSelectOverlayPlacements()}}/>
+                    <Button title="ROKT BottomSheet" onPress={() => {this._roktSelectBottomSheetPlacements()}}/>
+
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Custom Placement</Text>
+                        <TextInput
+                            style={styles.textInput}
+                            value={this.state.customIdentifier}
+                            onChangeText={(text) => this.setState({ customIdentifier: text })}
+                            placeholder="Enter placement identifier"
+                            placeholderTextColor="#999"
+                        />
+                        <TouchableOpacity
+                            style={styles.primaryButton}
+                            onPress={() => this._roktSelectPlacements(this.state.customIdentifier)}
+                        >
+                            <Text style={styles.primaryButtonText}>Run Custom Placement</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <RoktLayoutView
+                        ref={this.placeholder1}
+                        placeholderName="Location1" />
+                </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
+    keyboardAvoid: {
+        flex: 1,
+    },
     container: {
         flexGrow: 1,
-        backgroundColor: '#F5FCFF',
+        padding: 20,
+        backgroundColor: '#FFFFFF',
     },
-    welcome: {
-        fontSize: 20,
+    header: {
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    logo: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#C20075',  // Beetroot
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#666666',
+        marginTop: 4,
+    },
+    statusText: {
         textAlign: 'center',
-        margin: 10,
+        fontSize: 14,
+        color: '#000000',
+        marginBottom: 20,
+    },
+    section: {
+        marginVertical: 15,
+        padding: 15,
+        backgroundColor: '#F8F8F8',
+        borderRadius: 10,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#000000',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    textInput: {
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 14,
+        backgroundColor: '#FFFFFF',
+        marginBottom: 10,
+        color: '#000000',
+    },
+    primaryButton: {
+        backgroundColor: '#C20075',  // Beetroot
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    primaryButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    infoText: {
+        fontSize: 14,
+        color: '#666666',
+        marginVertical: 5,
     },
     instructions: {
         textAlign: 'center',
-        color: '#333333',
+        color: '#666666',
         marginBottom: 5,
     },
 });
