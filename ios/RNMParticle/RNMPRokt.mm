@@ -128,6 +128,9 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
         [self.eventManager onWidgetHeightChanges:height placement:placementId];
     };
 
+    if (self.bridge == nil || self.bridge.uiManager == nil) {
+        NSLog(@"[mParticle-Rokt] addUIBlock skipped: self.bridge%@ is nil. selectPlacements will not be called. This can occur in New Architecture bridgeless production builds.", self.bridge == nil ? @"" : @".uiManager");
+    }
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
         NSMutableDictionary *nativePlaceholders = [self getNativePlaceholders:placeholders viewRegistry:viewRegistry];
 
