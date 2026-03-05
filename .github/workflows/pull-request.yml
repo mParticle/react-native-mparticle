@@ -110,6 +110,9 @@ jobs:
           with:
             xcode-version: latest-stable
 
+        - name: Set Xcode Toolchain
+          run: echo "TOOLCHAINS=com.apple.dt.toolchain.XcodeDefault" >> $GITHUB_ENV
+
         - name: Setup iOS Simulator
           uses: futureware-tech/simulator-action@v5
           id: simulator
