@@ -6,6 +6,7 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
+import com.mparticle.react.MParticlePackage
 import com.mparticle.MParticle
 import com.mparticle.MParticleOptions
 import com.mparticle.identity.IdentityApiRequest
@@ -17,8 +18,7 @@ class MainApplication : Application(), ReactApplication {
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          // Packages that cannot be autolinked yet can be added manually here, for example:
-          // add(MyReactNativePackage())
+          add(MParticlePackage())
         },
     )
   }
@@ -30,7 +30,7 @@ class MainApplication : Application(), ReactApplication {
     val identityRequest = IdentityApiRequest.withEmptyUser()
 
     val options = MParticleOptions.builder(this)
-      .credentials("REPLACE ME","REPLACE ME")
+      .credentials("REPLACE_ME","REPLACE_ME")
       .logLevel(MParticle.LogLevel.VERBOSE)
       .identify(identityRequest.build())
       .build()
