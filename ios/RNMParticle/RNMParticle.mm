@@ -163,7 +163,14 @@ RCT_EXPORT_METHOD(getUserAttributes:(NSString *)mpid callback:(RCTResponseSender
 {
     MParticleUser *selectedUser = [[MParticleUser alloc] init];
     selectedUser.userId = [NSNumber numberWithLong:mpid.longLongValue];
-    callback(@[[NSNull null], [selectedUser userAttributes]]);
+    NSDictionary *attributes = [selectedUser userAttributes] ?: @{};
+    NSMutableDictionary *sanitizedAttributes = [[NSMutableDictionary alloc] initWithCapacity:attributes.count];
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if (obj != nil && obj != [NSNull null]) {
+            sanitizedAttributes[key] = obj;
+        }
+    }];
+    callback(@[[NSNull null], sanitizedAttributes]);
 }
 
 RCT_EXPORT_METHOD(setUserTag:(NSString *)mpid tag:(NSString *)tag)

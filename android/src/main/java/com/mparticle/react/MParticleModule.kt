@@ -179,7 +179,7 @@ class MParticleModule(
                 },
             )
         } else {
-            callback.invoke()
+            callback.invoke(null, WritableNativeMap())
         }
     }
 

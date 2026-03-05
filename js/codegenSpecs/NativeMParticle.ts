@@ -1,10 +1,9 @@
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
+import type { UnsafeObject } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type CustomAttributes = { [key: string]: string | number | boolean };
-export type UserAttributes = {
-  [key: string]: string | string[] | number | boolean | null;
-};
+export type UserAttributes = UnsafeObject;
 export type UserIdentities = { [key: string]: string };
 
 export interface Product {
@@ -153,7 +152,7 @@ export interface Spec extends TurboModule {
     mpid: string,
     callback: (
       error: CallbackError | null,
-      result: UserAttributes | null
+      result: UserAttributes
     ) => void
   ): void;
   setUserTag(mpid: string, tag: string): void;
