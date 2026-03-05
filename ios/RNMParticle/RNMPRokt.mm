@@ -58,18 +58,17 @@ RCT_EXTERN void RCTRegisterModule(Class);
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
-// New Architecture Implementation
-- (void)selectPlacements:(NSString *)identifer
-              attributes:(NSDictionary *)attributes
-            placeholders:(NSDictionary *)placeholders
-               roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
-            fontFilesMap:(NSDictionary *)fontFilesMap
-{
-    NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
-
-    // Convert JS struct to NSDictionary for internal use
+// Extracts roktConfig fields into an NSDictionary, returning nil when the
+// TurboModule bridge passes a null C++ reference for an omitted optional param.
+// __attribute__((optnone)) is required: &ref != nullptr is UB in C++ and the
+// compiler removes the check at -O2, causing a SIGSEGV in Release builds.
+static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
+    JS::NativeMPRokt::RoktConfigType &roktConfig) {
+    if (&roktConfig == nullptr) {
+        return nil;
+    }
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
-    if (&roktConfig != nullptr && roktConfig.cacheConfig().has_value()) {
+    if (roktConfig.cacheConfig().has_value()) {
         NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
         auto cacheConfig = roktConfig.cacheConfig().value();
         if (cacheConfig.cacheDurationInSeconds().has_value()) {
@@ -80,7 +79,19 @@ RCT_EXTERN void RCTRegisterModule(Class);
         }
         roktConfigDict[@"cacheConfig"] = cacheConfigDict;
     }
+    return roktConfigDict;
+}
 
+// New Architecture Implementation
+- (void)selectPlacements:(NSString *)identifer
+              attributes:(NSDictionary *)attributes
+            placeholders:(NSDictionary *)placeholders
+               roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
+            fontFilesMap:(NSDictionary *)fontFilesMap
+{
+    NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
+
+    NSDictionary *roktConfigDict = safeExtractRoktConfigDict(roktConfig);
     MPRoktConfig *config = [self buildRoktConfigFromDict:roktConfigDict];
 #else
 // Old Architecture Implementation
