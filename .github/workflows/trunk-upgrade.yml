@@ -1,0 +1,34 @@
+name: Run trunk upgrade
+
+on:
+  workflow_call:
+  schedule:
+    - cron: 0 0 1 * *
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-and-call-upgrade:
+    runs-on: ubuntu-latest
+    outputs:
+      generated-token: ${{ steps.generate-token.outputs.token }}
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }} # trunk-ignore(actionlint/expression)
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }} # trunk-ignore(actionlint/expression)
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            react-native-mparticle
+
+  trunk-upgrade:
+    needs: generate-and-call-upgrade
+    name: Run trunk upgrade
+    uses: ROKT/rokt-workflows/.github/workflows/trunk-upgrade.yml@main # trunk-ignore(actionlint/workflow-call)
+    with:
+      token: ${{ needs.generate-and-call-upgrade.outputs.generated-token }}
