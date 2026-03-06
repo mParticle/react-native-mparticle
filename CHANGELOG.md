@@ -5,20 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-
-- Add SPM hybrid bridge for mParticle-Apple-SDK iOS dependency (#283)
-- Add Expo config plugin for mParticle integration (#270)
-
-### Fixed
-
-- Fix React Native Codegen issue with version 0.84 (#284)
-- Prevent app crash in Release builds on iOS (#286)
-- Log nil bridge before addUIBlock in New Architecture (#287)
-
-
 ## [2.9.0] - 2026-03-06
 
 ### Added
@@ -45,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Log nil bridge before addUIBlock in New Architecture ([#287](https://github.com/mParticle/react-native-mparticle/pull/287))
 - Prevent app crash in Release builds ([#286](https://github.com/mParticle/react-native-mparticle/pull/286))
 - React Native Codegen issue with version 0.84 ([#284](https://github.com/mParticle/react-native-mparticle/pull/284))
-
 
 ## [2.8.1] - 2025-09-04
 
