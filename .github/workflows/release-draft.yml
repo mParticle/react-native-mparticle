@@ -72,6 +72,10 @@ jobs:
           title: 'chore: release ${{ steps.bump-version.outputs.new_version }}'
           body: |
             ## Release ${{ steps.bump-version.outputs.new_version }}
+            
+            These files should have changed during the release, if they didn't then this is likely an issue and should be investigated:
+            - package.json
+            - CHANGELOG.md
 
             ${{ steps.changelog.outputs.release-notes }}
           commit-message: 'chore: bump version to ${{ steps.bump-version.outputs.new_version }}'
