@@ -1,7 +1,7 @@
 name: Release Draft
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # checkov:skip=CKV_GHA_7
     inputs:
       bump-type:
         description: Version bump type
@@ -30,34 +30,36 @@ jobs:
         id: current-version
         run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
 
-      - name: Bump semver
-        id: bump-semver
-        uses: actions-ecosystem/action-bump-semver@34e334551143a5301f38c830e44a22273c6ff5c5
+      - name: Bump version
+        id: bump-version
+        uses: actions-ecosystem/action-bump-semver@34e334551143a5301f38c830e44a22273c6ff5c5 # v1.0.0
         with:
           current_version: ${{ steps.current-version.outputs.version }}
-          level: ${{ inputs.bump-type }}
+          level: ${{ github.event.inputs.bump-type || 'patch' }}
 
       - name: Write new version to VERSION
-        run: echo "${{ steps.bump-semver.outputs.new_version }}" > VERSION
+        run: echo "${{ steps.bump-version.outputs.new_version }}" > VERSION
 
       - name: Update package.json version
-        run: npm version "${{ steps.bump-semver.outputs.new_version }}" --no-git-tag-version
+        run: npm version "${{ steps.bump-version.outputs.new_version }}" --no-git-tag-version
 
       - name: Update CHANGELOG.md
         uses: thomaseizinger/keep-a-changelog-new-release@f62c3c390716df5af712ba5d94f4f4a8efc1306d
         with:
-          tag: ${{ steps.bump-semver.outputs.new_version }}
+          tag: ${{ steps.bump-version.outputs.new_version }}
 
       - name: Generate changelog from git history
         id: changelog
         uses: ROKT/rokt-workflows/actions/generate-changelog@main
+        with:
+          version: ${{ steps.bump-version.outputs.new_version }}
 
       - name: Generate GitHub App token
         id: generate-token
         uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
         with:
-          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }} # trunk-ignore(actionlint/expression)
-          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }} # trunk-ignore(actionlint/expression)
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: |
             react-native-mparticle
@@ -66,10 +68,10 @@ jobs:
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0
         with:
           token: ${{ steps.generate-token.outputs.token }}
-          branch: release/${{ steps.bump-semver.outputs.new_version }}
-          title: 'chore: release ${{ steps.bump-semver.outputs.new_version }}'
+          branch: release/${{ steps.bump-version.outputs.new_version }}
+          title: 'chore: release ${{ steps.bump-version.outputs.new_version }}'
           body: |
-            ## Release ${{ steps.bump-semver.outputs.new_version }}
+            ## Release ${{ steps.bump-version.outputs.new_version }}
 
             ${{ steps.changelog.outputs.release-notes }}
-          commit-message: 'chore: bump version to ${{ steps.bump-semver.outputs.new_version }}'
+          commit-message: 'chore: bump version to ${{ steps.bump-version.outputs.new_version }}'
