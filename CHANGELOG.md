@@ -18,6 +18,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent app crash in Release builds on iOS (#286)
 - Log nil bridge before addUIBlock in New Architecture (#287)
 
+
+## [2.9.0] - 2026-03-06
+
+### Added
+
+- Add SPM hybrid bridge for mParticle-Apple-SDK iOS dependency ([#283](https://github.com/mParticle/react-native-mparticle/pull/283))
+- Add Expo config plugin for mParticle integration and create Expo test app ([#270](https://github.com/mParticle/react-native-mparticle/pull/270))
+
+### Changed
+
+- Release process ([#288](https://github.com/mParticle/react-native-mparticle/pull/288))
+- Add trunk ([#285](https://github.com/mParticle/react-native-mparticle/pull/285))
+- Bump fast-xml-parser from 4.5.3 to 4.5.4 in /sample ([#282](https://github.com/mParticle/react-native-mparticle/pull/282))
+- Update sample app to ease testing ([#279](https://github.com/mParticle/react-native-mparticle/pull/279))
+- Bump futureware-tech/simulator-action from 4 to 5 ([#281](https://github.com/mParticle/react-native-mparticle/pull/281))
+- Update release workflow for npm OIDC authentication and bump up node version ([#273](https://github.com/mParticle/react-native-mparticle/pull/273))
+- Update mParticle android sdk to version 5.76.1 in sample app ([#276](https://github.com/mParticle/react-native-mparticle/pull/276))
+- Bump actions/checkout from 4 to 6 ([#268](https://github.com/mParticle/react-native-mparticle/pull/268))
+- Bump actions/setup-node from 6.0.0 to 6.2.0 ([#274](https://github.com/mParticle/react-native-mparticle/pull/274))
+- Bump actions/setup-node from 5.0.0 to 6.0.0 ([#263](https://github.com/mParticle/react-native-mparticle/pull/263))
+- Bump actions/setup-node from 4.4.0 to 5.0.0 ([#258](https://github.com/mParticle/react-native-mparticle/pull/258))
+
+### Fixed
+
+- Log nil bridge before addUIBlock in New Architecture ([#287](https://github.com/mParticle/react-native-mparticle/pull/287))
+- Prevent app crash in Release builds ([#286](https://github.com/mParticle/react-native-mparticle/pull/286))
+- React Native Codegen issue with version 0.84 ([#284](https://github.com/mParticle/react-native-mparticle/pull/284))
+
+
 ## [2.8.1] - 2025-09-04
 
 ### Fixed
@@ -331,7 +360,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[Unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...HEAD
+[2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
 [2.8.1]: https://github.com/mParticle/react-native-mparticle/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/mParticle/react-native-mparticle/compare/v2.7.13...2.8.0
 [2.7.13]: https://github.com/mParticle/react-native-mparticle/compare/v2.7.12...v2.7.13
