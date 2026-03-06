@@ -1,0 +1,76 @@
+name: Release Draft
+
+on:
+  workflow_dispatch: # checkov:skip=CKV_GHA_7
+    inputs:
+      bump-type:
+        description: Version bump type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    name: Create Release PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read current version
+        id: current-version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version
+        id: bump-version
+        uses: actions-ecosystem/action-bump-semver@34e334551143a5301f38c830e44a22273c6ff5c5 # v1.0.0
+        with:
+          current_version: ${{ steps.current-version.outputs.version }}
+          level: ${{ github.event.inputs.bump-type || 'patch' }}
+
+      - name: Write new version to VERSION
+        run: echo "${{ steps.bump-version.outputs.new_version }}" > VERSION
+
+      - name: Update package.json version
+        run: npm version "${{ steps.bump-version.outputs.new_version }}" --no-git-tag-version
+
+      - name: Generate changelog from git history
+        id: changelog
+        uses: ROKT/rokt-workflows/actions/generate-changelog@main
+        with:
+          version: ${{ steps.bump-version.outputs.new_version }}
+
+      - name: Generate GitHub App token
+        id: generate-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            react-native-mparticle
+
+      - name: Create release PR
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          branch: release/${{ steps.bump-version.outputs.new_version }}
+          title: 'chore: release ${{ steps.bump-version.outputs.new_version }}'
+          body: |
+            ## Release ${{ steps.bump-version.outputs.new_version }}
+
+            These files should have changed during the release, if they didn't then this is likely an issue and should be investigated:
+            - package.json
+            - CHANGELOG.md
+
+            ${{ steps.changelog.outputs.release-notes }}
+          commit-message: 'chore: bump version to ${{ steps.bump-version.outputs.new_version }}'
