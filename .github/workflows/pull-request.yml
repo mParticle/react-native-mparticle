@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v6
-      - uses: actions/setup-node@v6.2.0
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
@@ -84,7 +84,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - uses: actions/setup-node@v6.2.0
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
@@ -112,7 +112,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - uses: actions/setup-node@v6.2.0
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
