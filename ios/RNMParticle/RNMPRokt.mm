@@ -43,11 +43,15 @@ RCT_EXTERN void RCTRegisterModule(Class);
 }
 
 + (void)load {
+    RCTLogWarn(@"[mParticle-Rokt] RNMPRokt module load");
     RCTRegisterModule(self);
 }
 
 - (dispatch_queue_t)methodQueue
 {
+    BOOL bridgeNil = (self.bridge == nil);
+    BOOL uiManagerNil = (self.bridge.uiManager == nil);
+    RCTLogWarn(@"[mParticle-Rokt] methodQueue called, bridge %@, uiManager %@", bridgeNil ? @"nil" : @"non-nil", uiManagerNil ? @"nil" : @"non-nil");
     return self.bridge.uiManager.methodQueue;
 }
 
@@ -65,8 +69,10 @@ RCT_EXTERN void RCTRegisterModule(Class);
 static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
     JS::NativeMPRokt::RoktConfigType &roktConfig) {
     if (&roktConfig == nullptr) {
+        RCTLogWarn(@"[mParticle-Rokt] safeExtractRoktConfigDict: roktConfig ref is nullptr, returning nil");
         return nil;
     }
+    RCTLogWarn(@"[mParticle-Rokt] safeExtractRoktConfigDict: extracting config");
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
     if (roktConfig.cacheConfig().has_value()) {
         NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
@@ -78,7 +84,11 @@ static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
             cacheConfigDict[@"cacheAttributes"] = cacheConfig.cacheAttributes();
         }
         roktConfigDict[@"cacheConfig"] = cacheConfigDict;
+        RCTLogWarn(@"[mParticle-Rokt] safeExtractRoktConfigDict: cacheConfig present, keys: %lu", (unsigned long)roktConfigDict.count);
+    } else {
+        RCTLogWarn(@"[mParticle-Rokt] safeExtractRoktConfigDict: cacheConfig has no value");
     }
+    RCTLogWarn(@"[mParticle-Rokt] safeExtractRoktConfigDict: returning dict with %lu keys", (unsigned long)roktConfigDict.count);
     return roktConfigDict;
 }
 
@@ -89,6 +99,7 @@ static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
                roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
             fontFilesMap:(NSDictionary *)fontFilesMap
 {
+    RCTLogWarn(@"[mParticle-Rokt] New Architecture Implementation");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
 
     NSDictionary *roktConfigDict = safeExtractRoktConfigDict(roktConfig);
@@ -97,51 +108,70 @@ static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
 // Old Architecture Implementation
 RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSDictionary * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
 {
+    RCTLogWarn(@"[mParticle-Rokt] Old Architecture Implementation");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
     MPRoktConfig *config = [self buildRoktConfigFromDict:roktConfig];
 #endif
 
+    RCTLogWarn(@"[mParticle-Rokt] selectPlacements called with identifier: %@, attributes count: %lu", identifer, (unsigned long)finalAttributes.count);
+
     [MParticle _setWrapperSdk_internal:MPWrapperSdkReactNative version:@""];
     // Create callback implementation
     MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
-
     __weak __typeof__(self) weakSelf = self;
 
     callbacks.onLoad = ^{
-        [self.eventManager onRoktCallbackReceived:@"onLoad"];
+        RCTLogWarn(@"[mParticle-Rokt] onLoad");
+        [weakSelf.eventManager onRoktCallbackReceived:@"onLoad"];
     };
 
     callbacks.onUnLoad = ^{
-        [self.eventManager onRoktCallbackReceived:@"onUnLoad"];
-        RCTLogInfo(@"unloaded");
+        RCTLogWarn(@"[mParticle-Rokt] onUnLoad");
+        [weakSelf.eventManager onRoktCallbackReceived:@"onUnLoad"];
     };
 
     callbacks.onShouldShowLoadingIndicator = ^{
-        [self.eventManager onRoktCallbackReceived:@"onShouldShowLoadingIndicator"];
+        RCTLogWarn(@"[mParticle-Rokt] onShouldShowLoadingIndicator");
+        [weakSelf.eventManager onRoktCallbackReceived:@"onShouldShowLoadingIndicator"];
     };
 
     callbacks.onShouldHideLoadingIndicator = ^{
-        [self.eventManager onRoktCallbackReceived:@"onShouldHideLoadingIndicator"];
+        RCTLogWarn(@"[mParticle-Rokt] onShouldHideLoadingIndicator");
+        [weakSelf.eventManager onRoktCallbackReceived:@"onShouldHideLoadingIndicator"];
     };
 
     callbacks.onEmbeddedSizeChange = ^(NSString *placementId, CGFloat height) {
-        [self.eventManager onWidgetHeightChanges:height placement:placementId];
+        RCTLogWarn(@"[mParticle-Rokt] onEmbeddedSizeChange");
+        [weakSelf.eventManager onWidgetHeightChanges:height placement:placementId];
     };
 
-    if (self.bridge == nil || self.bridge.uiManager == nil) {
-        NSLog(@"[mParticle-Rokt] addUIBlock skipped: self.bridge%@ is nil. selectPlacements will not be called. This can occur in New Architecture bridgeless production builds.", self.bridge == nil ? @"" : @".uiManager");
+    BOOL bridgeNil = (self.bridge == nil);
+    BOOL uiManagerNil = (self.bridge.uiManager == nil);
+    RCTLogWarn(@"[mParticle-Rokt] bridge %@, uiManager %@", bridgeNil ? @"nil" : @"non-nil", uiManagerNil ? @"nil" : @"non-nil");
+
+    if (bridgeNil || uiManagerNil) {
+        RCTLogWarn(@"[mParticle-Rokt] addUIBlock skipped: self.bridge%@ is nil. selectPlacements will not be called. This can occur in New Architecture bridgeless production builds.", bridgeNil ? @"" : @".uiManager");
+    } else {
+        RCTLogWarn(@"[mParticle-Rokt] queuing addUIBlock for identifier: %@", identifer);
     }
     [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-        NSMutableDictionary *nativePlaceholders = [self getNativePlaceholders:placeholders viewRegistry:viewRegistry];
+        __strong __typeof__(weakSelf) strongSelf = weakSelf;
+        RCTLogWarn(@"[mParticle-Rokt] addUIBlock executing for identifier: %@, viewRegistry count: %lu", identifer, (unsigned long)viewRegistry.count);
 
-        [self subscribeViewEvents:identifer];
+        NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf getNativePlaceholders:placeholders viewRegistry:viewRegistry] : [NSMutableDictionary dictionary];
 
+        if (strongSelf) {
+            [strongSelf subscribeViewEvents:identifer];
+        }
+
+        RCTLogWarn(@"[mParticle-Rokt] calling mParticle Core selectPlacements for: %@", identifer);
         [[[MParticle sharedInstance] rokt] selectPlacements:identifer
                                                  attributes:finalAttributes
                                               embeddedViews:nativePlaceholders
                                                      config:config
                                                   callbacks:callbacks];
     }];
+    RCTLogWarn(@"[mParticle-Rokt] addUIBlock enqueued for identifier: %@", identifer);
 }
 
 RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
@@ -180,6 +210,7 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 }
 
 - (MPRoktConfig *)buildRoktConfigFromDict:(NSDictionary<NSString *, id> *)configMap {
+    RCTLogWarn(@"[mParticle-Rokt] buildRoktConfigFromDict: configMap %@", configMap == nil ? @"nil" : [NSString stringWithFormat:@"non-nil (%lu keys)", (unsigned long)configMap.count]);
     MPRoktConfig *config = [[MPRoktConfig alloc] init];
     BOOL isConfigEmpty = YES;
 
@@ -212,11 +243,13 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
         config.cacheDuration = cacheDuration;
     }
 
+    RCTLogWarn(@"[mParticle-Rokt] buildRoktConfigFromDict: returning %@", isConfigEmpty ? @"nil" : @"config");
     return isConfigEmpty ? nil : config;
 }
 
 - (void)subscribeViewEvents:(NSString* _Nonnull) viewName
 {
+    RCTLogWarn(@"[mParticle-Rokt] subscribeViewEvents for viewName: %@", viewName);
     if (self.eventManager == nil) {
         self.eventManager = [RoktEventManager allocWithZone: nil];
     }
@@ -227,6 +260,7 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 
 - (NSMutableDictionary *)getNativePlaceholders:(NSDictionary *)placeholders viewRegistry:(NSDictionary<NSNumber *, UIView *> *)viewRegistry
 {
+    RCTLogWarn(@"[mParticle-Rokt] getNativePlaceholders: placeholders %lu, viewRegistry %lu", (unsigned long)placeholders.count, (unsigned long)viewRegistry.count);
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
     for(id key in placeholders){
@@ -248,12 +282,14 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 #endif // RCT_NEW_ARCH_ENABLED
     }
 
+    RCTLogWarn(@"[mParticle-Rokt] getNativePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
     self.bridge = params.instance.bridge;
+    RCTLogWarn(@"[mParticle-Rokt] getTurboModule: bridge set to %@", self.bridge == nil ? @"nil" : @"non-nil");
     return std::make_shared<facebook::react::NativeMPRoktSpecJSI>(params);
 }
 #endif // RCT_NEW_ARCH_ENABLED
