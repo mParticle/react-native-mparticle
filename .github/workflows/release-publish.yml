@@ -73,7 +73,7 @@ jobs:
 
       - name: Extract release notes from CHANGELOG.md
         id: release-notes
-        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105
+        uses: ffurrer2/extract-release-notes@273da39a24fb7db106a35526c8162815faffd31d
         with:
           release_notes_file: RELEASE_NOTES.md
 
@@ -81,7 +81,7 @@ jobs:
         run: npm publish --provenance
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd
         with:
           tag: ${{ steps.version.outputs.version }}
           name: ${{ steps.version.outputs.version }}
