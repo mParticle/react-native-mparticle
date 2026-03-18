@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [2.9.1] - 2026-03-18
+
+### Changed
+
+- Add Additonal Diagnostic Logs ([#292](https://github.com/mParticle/react-native-mparticle/pull/292))
+- Bump ffurrer2/extract-release-notes from 3.0.0 to 3.1.0 ([#295](https://github.com/mParticle/react-native-mparticle/pull/295))
+- Bump actions/create-github-app-token from 2.2.1 to 3.0.0 ([#294](https://github.com/mParticle/react-native-mparticle/pull/294))
+- Bump ncipollo/release-action from 1.20.0 to 1.21.0 ([#293](https://github.com/mParticle/react-native-mparticle/pull/293))
+- Bump actions/checkout from 4 to 6 ([#290](https://github.com/mParticle/react-native-mparticle/pull/290))
+- Bump actions/setup-node from 4 to 6 ([#291](https://github.com/mParticle/react-native-mparticle/pull/291))
+
 ## [2.9.0] - 2026-03-06
 
 ### Added
@@ -345,7 +358,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...HEAD
+[2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
 [2.8.1]: https://github.com/mParticle/react-native-mparticle/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/mParticle/react-native-mparticle/compare/v2.7.13...2.8.0
