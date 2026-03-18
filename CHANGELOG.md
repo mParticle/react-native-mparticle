@@ -345,7 +345,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...HEAD
+[2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
 [2.8.1]: https://github.com/mParticle/react-native-mparticle/compare/2.8.0...2.8.1
 [2.8.0]: https://github.com/mParticle/react-native-mparticle/compare/v2.7.13...2.8.0
