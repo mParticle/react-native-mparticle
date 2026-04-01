@@ -6,9 +6,9 @@ cli:
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
   enabled:
-    - go@1.19.5
+    - go@1.21.0
     - java@13.0.11
-    - node@18.12.1
+    - node@22.16.0
     - python@3.10.8
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
@@ -37,21 +37,21 @@ lint:
             '
           success_codes: [0, 1]
   enabled:
-    - actionlint@1.6.9
-    - checkov@3.2.507
-    - dotenv-linter@3.3.0
+    - actionlint@1.7.12
+    - checkov@3.2.513
+    - dotenv-linter@4.0.0
     - eslint@10.0.2
     - git-diff-check
-    - ktlint@0.43.2
+    - ktlint@1.8.0
     - markdownlint@0.48.0
     - mparticle-api-key-check
-    - osv-scanner@1.3.6
-    - oxipng@7.0.0
+    - osv-scanner@2.3.5
+    - oxipng@10.1.0
     - prettier@3.8.1
-    - shellcheck@0.8.0
+    - shellcheck@0.11.0
     - shfmt@3.6.0
-    - trivy@0.69.2
-    - trufflehog@3.31.3
+    - trivy@0.69.3
+    - trufflehog@3.94.1
   disabled:
     - yamllint
   ignore:
@@ -71,3 +71,8 @@ actions:
     - trunk-check-pre-push-always
     - trunk-fmt-pre-commit
     - trunk-upgrade-available
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.7.6
+      uri: https://github.com/trunk-io/plugins
