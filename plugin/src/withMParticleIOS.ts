@@ -338,7 +338,7 @@ function addMParticleToObjcAppDelegate(
  * These are dependencies of mParticle kits that must also be dynamic frameworks
  */
 const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
-  'mParticle-Rokt': ['Rokt-Widget'],
+  'mParticle-Rokt': ['Rokt-Widget', 'RoktContracts', 'RoktUXHelper', 'DcuiSchema'],
   // Add other kit dependencies here as needed
   // "mParticle-Amplitude": [],
   // "mParticle-Braze": [],
@@ -348,7 +348,7 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
  * Get all pods that need dynamic framework linking
  */
 function getDynamicFrameworkPods(iosKits?: string[]): string[] {
-  const pods = ['mParticle-Apple-SDK'];
+  const pods = ['mParticle-Apple-SDK', 'mParticle-Apple-SDK-ObjC', 'mParticle-Apple-SDK-Swift'];
 
   if (iosKits) {
     for (const kit of iosKits) {
