@@ -50,7 +50,6 @@ lint:
     - prettier@3.8.1
     - shellcheck@0.8.0
     - shfmt@3.6.0
-    - trivy@0.69.2
     - trufflehog@3.31.3
   disabled:
     - yamllint
