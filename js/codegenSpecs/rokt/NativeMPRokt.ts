@@ -27,6 +27,12 @@ export interface Spec extends TurboModule {
     catalogItemId: string,
     success: boolean
   ): void;
+
+  selectShoppableAds(
+    identifier: string,
+    attributes: { [key: string]: string },
+    roktConfig?: RoktConfigType
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNMPRokt');

@@ -4,7 +4,7 @@
   "homepage": "https://www.mparticle.com",
   "license": "Apache-2.0",
   "repository": "mParticle/react-native-mparticle",
-  "version": "2.9.2",
+  "version": "3.0.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "react-native": "js/index",
@@ -66,7 +66,9 @@
       "javaPackageName": "com.mparticle.react"
     },
     "ios": {
-      "RoktNativeLayout": "RoktNativeLayoutComponentView"
+      "componentProvider": {
+        "RoktNativeLayout": "RoktNativeLayoutComponentView"
+      }
     }
   }
 }

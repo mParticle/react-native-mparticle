@@ -219,6 +219,32 @@ export default function App() {
   const handleRoktBottomSheet = () =>
     handleRoktSelectPlacements('MSDKBottomSheetLayout');
 
+  const handleRoktShoppableAds = () => {
+    const attributes = {
+      email: 'user@example.com',
+      firstname: 'John',
+      lastname: 'Doe',
+      confirmationref: 'ORDER-12345',
+      amount: '99.99',
+      currency: 'USD',
+      paymenttype: 'credit_card',
+    };
+
+    const config = MParticle.Rokt.createRoktConfig('system');
+
+    addLog('Rokt: Calling selectShoppableAds');
+
+    MParticle.Rokt.selectShoppableAds('ConfirmationPage', attributes, config)
+      .then((result: any) => {
+        addLog(`Rokt selectShoppableAds success: ${JSON.stringify(result)}`);
+        setStatus('Rokt: Shoppable Ads loaded');
+      })
+      .catch((error: any) => {
+        addLog(`Rokt selectShoppableAds error: ${JSON.stringify(error)}`);
+        setStatus(`Rokt error: ${error.message || 'Unknown error'}`);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -322,6 +348,13 @@ export default function App() {
               onPress={handleRoktBottomSheet}
             >
               <Text style={styles.buttonText}>Bottom Sheet</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButtonAlt]}
+              onPress={handleRoktShoppableAds}
+            >
+              <Text style={styles.buttonText}>Shoppable Ads</Text>
             </TouchableOpacity>
           </View>
 

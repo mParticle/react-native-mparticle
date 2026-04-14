@@ -1,6 +1,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
-#import <mParticle_Apple_SDK/MPRokt.h>
+
+@class RoktEvent;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -9,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onWidgetHeightChanges:(CGFloat)widgetHeight placement:(NSString * _Nonnull)selectedPlacement;
 - (void)onFirstPositiveResponse;
 - (void)onRoktCallbackReceived:(NSString * _Nonnull)eventValue;
-- (void)onRoktEvents:(MPRoktEvent * _Nonnull)event viewName:(NSString * _Nullable)viewName;
+- (void)onRoktEvents:(RoktEvent * _Nonnull)event viewName:(NSString * _Nullable)viewName;
 
 @end
 

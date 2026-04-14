@@ -7,17 +7,15 @@ import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.uimanager.UIManagerHelper
 import com.mparticle.MParticle
-import com.mparticle.WrapperSdk
+import com.mparticle.internal.Logger
 import com.mparticle.react.NativeMPRoktSpec
 import com.mparticle.rokt.RoktEmbeddedView
-import com.mparticle.internal.Logger
 import java.lang.ref.WeakReference
 import java.util.concurrent.CountDownLatch
 
 class MPRoktModule(
     private val reactContext: ReactApplicationContext,
 ) : NativeMPRoktSpec(reactContext) {
-
     private val impl = MPRoktModuleImpl(reactContext)
 
     override fun getName(): String = impl.getName()
@@ -53,6 +51,15 @@ class MPRoktModule(
     }
 
     @ReactMethod
+    override fun selectShoppableAds(
+        identifier: String,
+        attributes: ReadableMap?,
+        roktConfig: ReadableMap?,
+    ) {
+        impl.selectShoppableAds(identifier, attributes, roktConfig)
+    }
+
+    @ReactMethod
     override fun purchaseFinalized(
         placementId: String,
         catalogItemId: String,
@@ -60,7 +67,6 @@ class MPRoktModule(
     ) {
         impl.purchaseFinalized(placementId, catalogItemId, success)
     }
-
 
     /**
      * Process placeholders from ReadableMap to a map of Widgets for use with Rokt.
@@ -83,8 +89,9 @@ class MPRoktModule(
                             // Get the tag value as an integer
                             val reactTag =
                                 when {
-                                    placeholders.getType(key) == ReadableType.Number ->
+                                    placeholders.getType(key) == ReadableType.Number -> {
                                         placeholders.getDouble(key).toInt()
+                                    }
 
                                     else -> {
                                         Logger.warning("Invalid view tag for key: $key")

@@ -49,6 +49,15 @@ class MPRoktModule(
     }
 
     @ReactMethod
+    override fun selectShoppableAds(
+        identifier: String,
+        attributes: ReadableMap?,
+        roktConfig: ReadableMap?,
+    ) {
+        impl.selectShoppableAds(identifier, attributes, roktConfig)
+    }
+
+    @ReactMethod
     override fun purchaseFinalized(
         placementId: String,
         catalogItemId: String,

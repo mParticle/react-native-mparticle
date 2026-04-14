@@ -31,6 +31,14 @@ export abstract class Rokt {
     );
   }
 
+  static async selectShoppableAds(
+    identifier: string,
+    attributes: Record<string, string>,
+    roktConfig?: IRoktConfig
+  ): Promise<void> {
+    MPRokt.selectShoppableAds(identifier, attributes, roktConfig);
+  }
+
   static async purchaseFinalized(
     placementId: string,
     catalogItemId: string,
