@@ -221,20 +221,32 @@ export default function App() {
 
   const handleRoktShoppableAds = () => {
     const attributes = {
-      email: 'user@example.com',
-      firstname: 'John',
-      lastname: 'Doe',
-      confirmationref: 'ORDER-12345',
-      amount: '99.99',
-      currency: 'USD',
-      paymenttype: 'credit_card',
+      country: "US",
+      shippingstate: "NY",
+      shippingzipcode: "10001",
+      firstname: "Jenny",
+      stripeApplePayAvailable: "true",
+      last4digits: "4444",
+      shippingaddress1: "123 Main St",
+      colormode: "LIGHT",
+      billingzipcode: "07762",
+      paymenttype: "ApplePay",
+      shippingcountry: "US",
+      sandbox: "true",
+      shippingaddress2: "Apt 4B",
+      confirmationref: "ORD-12345",
+      shippingcity: "New York",
+      newToApplePay: "false",
+      applePayCapabilities: "true",
+      lastname: "Smith",
+      email: "jenny.smith@example.com"
     };
 
     const config = MParticle.Rokt.createRoktConfig('system');
 
     addLog('Rokt: Calling selectShoppableAds');
 
-    MParticle.Rokt.selectShoppableAds('ConfirmationPage', attributes, config)
+    MParticle.Rokt.selectShoppableAds('StgRoktShoppableAds', attributes, config)
       .then((result: any) => {
         addLog(`Rokt selectShoppableAds success: ${JSON.stringify(result)}`);
         setStatus('Rokt: Shoppable Ads loaded');
