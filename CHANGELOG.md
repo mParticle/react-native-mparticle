@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.2] - 2026-04-15
+
+### Fixed
+
+- Remove SPM duplicate for mParticle-Apple-SDK ([#309](https://github.com/mParticle/react-native-mparticle/pull/309))
+
+### Changed
+
+- Bump peter-evans/create-pull-request from 8.1.0 to 8.1.1 ([#307](https://github.com/mParticle/react-native-mparticle/pull/307))
+- Bump actions/create-github-app-token from 3.0.0 to 3.1.1 ([#306](https://github.com/mParticle/react-native-mparticle/pull/306))
+- Bump maxim-lobanov/setup-xcode from 1.6.0 to 1.7.0 ([#299](https://github.com/mParticle/react-native-mparticle/pull/299))
+
 ## [2.9.1] - 2026-03-18
 
 ### Changed
@@ -358,7 +370,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...HEAD
+[2.9.2]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
 [2.8.1]: https://github.com/mParticle/react-native-mparticle/compare/2.8.0...2.8.1
