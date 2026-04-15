@@ -106,8 +106,12 @@ Example (same pattern as `ExpoTestApp/App.tsx`):
 const config = MParticle.Rokt.createRoktConfig('system');
 
 MParticle.Rokt.selectShoppableAds('YOUR_PLACEMENT_ID', attributes, config)
-  .then(() => { /* success */ })
-  .catch((error) => { /* handle */ });
+  .then(() => {
+    /* success */
+  })
+  .catch(error => {
+    /* handle */
+  });
 ```
 
 Listen for `RoktCallback` and `RoktEvents` on `RoktEventManager` to observe load/unload and Shoppable Ads–related events emitted by the native bridge.
@@ -277,16 +281,16 @@ dependencies {
 
 ## Plugin Configuration Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `iosApiKey` | string | mParticle iOS API key |
-| `iosApiSecret` | string | mParticle iOS API secret |
-| `androidApiKey` | string | mParticle Android API key |
-| `androidApiSecret` | string | mParticle Android API secret |
-| `logLevel` | string | Log level: `none`, `error`, `warning`, `debug`, `verbose` |
-| `environment` | string | Environment: `development`, `production`, `autoDetect` |
-| `useEmptyIdentifyRequest` | boolean | Initialize with empty identify request (default: true) |
-| `dataPlanId` | string | Data plan ID for validation |
-| `dataPlanVersion` | number | Data plan version |
-| `iosKits` | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`) |
-| `androidKits` | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`) |
+| Option                    | Type     | Description                                               |
+| ------------------------- | -------- | --------------------------------------------------------- |
+| `iosApiKey`               | string   | mParticle iOS API key                                     |
+| `iosApiSecret`            | string   | mParticle iOS API secret                                  |
+| `androidApiKey`           | string   | mParticle Android API key                                 |
+| `androidApiSecret`        | string   | mParticle Android API secret                              |
+| `logLevel`                | string   | Log level: `none`, `error`, `warning`, `debug`, `verbose` |
+| `environment`             | string   | Environment: `development`, `production`, `autoDetect`    |
+| `useEmptyIdentifyRequest` | boolean  | Initialize with empty identify request (default: true)    |
+| `dataPlanId`              | string   | Data plan ID for validation                               |
+| `dataPlanVersion`         | number   | Data plan version                                         |
+| `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)            |
+| `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)   |
