@@ -25,16 +25,5 @@ Pod::Spec.new do |s|
     s.dependency "React-Core"
   end
 
-  # Primary: CocoaPods dependency (still works when SPM is not used)
   s.dependency 'mParticle-Apple-SDK', '~> 8.0'
-
-  # SPM bridge: registers mParticle-Apple-SDK as an SPM dependency alongside CocoaPods (RN 0.75+).
-  # See: https://github.com/facebook/react-native/pull/44627
-  if respond_to?(:spm_dependency, true)
-    spm_dependency(s,
-      url: 'https://github.com/mParticle/mparticle-apple-sdk.git',
-      requirement: { kind: 'upToNextMajorVersion', minimumVersion: '8.0.0' },
-      products: ['mParticle-Apple-SDK']
-    )
-  end
 end
