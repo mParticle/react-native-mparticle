@@ -16,6 +16,7 @@ import com.mparticle.MpRoktEventCallback
 import com.mparticle.RoktEvent
 import com.mparticle.UnloadReasons
 import com.mparticle.WrapperSdk
+import com.mparticle.internal.Logger
 import com.mparticle.rokt.CacheConfig
 import com.mparticle.rokt.RoktConfig
 import kotlinx.coroutines.Job
@@ -38,6 +39,14 @@ class MPRoktModuleImpl(
         }
 
     fun getName(): String = MODULE_NAME
+
+    fun selectShoppableAds(
+        identifier: String,
+        attributes: ReadableMap?,
+        roktConfig: ReadableMap?,
+    ) {
+        Logger.warning("selectShoppableAds is not yet supported on Android")
+    }
 
     fun purchaseFinalized(
         placementId: String,

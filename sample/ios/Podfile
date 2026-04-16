@@ -5,12 +5,13 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+# react-native-mparticle.podspec requires iOS 15.6+; RN's min_ios_version_supported is still 15.1.
+platform :ios, '15.6'
 prepare_react_native_project!
 
 pre_install do |installer|
   installer.pod_targets.each do |pod|
-    if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget'
+    if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Apple-SDK-ObjC' || pod.name == 'mParticle-Apple-SDK-Swift' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget' || pod.name == 'RoktContracts' || pod.name == 'RoktUXHelper' || pod.name == 'DcuiSchema'
       def pod.build_type;
         Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
       end

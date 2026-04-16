@@ -80,12 +80,67 @@ The app also includes Rokt placement testing via the mParticle Rokt kit:
 - **Embedded**: Loads an embedded Rokt placement that renders in-line within the app content. The placement appears in the designated placeholder area below the buttons.
 - **Overlay**: Loads a full-screen overlay Rokt placement that appears on top of the app content.
 - **Bottom Sheet**: Loads a bottom sheet Rokt placement that slides up from the bottom of the screen.
+- **Shoppable Ads**: Calls `MParticle.Rokt.selectShoppableAds` with a staging placement identifier and checkout-style attributes (see implementation guide below).
 
 The Rokt section also demonstrates:
 
 - Platform-specific attributes (iOS vs Android configurations)
 - Rokt event listeners for callbacks and placement events
 - Using `RoktLayoutView` as an embedded placeholder component
+
+### Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions
+
+This mirrors the recent SDK work (Shoppable Ads API on iOS and the Expo test app wiring) and how to pair it with native payment registration.
+
+#### JavaScript: `selectShoppableAds`
+
+Use `MParticle.Rokt.selectShoppableAds(identifier, attributes, roktConfig?)` when you need the Shoppable Ads experience instead of `selectPlacements`.
+
+- **identifier**: Rokt page / placement identifier configured for your account (the Expo test app uses a staging example such as `StgRoktShoppableAds`; replace with your production identifier).
+- **attributes**: String key/value pairs passed to Rokt (shipping, billing, payment hints, sandbox flags, etc.). The demo in `App.tsx` includes fields like `country`, `shippingstate`, `paymenttype`, `stripeApplePayAvailable`, `applePayCapabilities`, and `sandbox`—adjust to match your integration and Rokt’s attribute contract.
+- **roktConfig**: Optional; the demo uses `MParticle.Rokt.createRoktConfig('system')` for color mode. Add a cache config if you use caching elsewhere.
+
+Example (same pattern as `ExpoTestApp/App.tsx`):
+
+```javascript
+const config = MParticle.Rokt.createRoktConfig('system');
+
+MParticle.Rokt.selectShoppableAds('YOUR_PLACEMENT_ID', attributes, config)
+  .then(() => {
+    /* success */
+  })
+  .catch(error => {
+    /* handle */
+  });
+```
+
+Listen for `RoktCallback` and `RoktEvents` on `RoktEventManager` to observe load/unload and Shoppable Ads–related events emitted by the native bridge.
+
+**Android:** `selectShoppableAds` is not implemented on Android yet; the native module logs a warning and does not run the Shoppable Ads flow. Plan for iOS-only behavior until Android support ships.
+
+#### iOS native: `RoktStripePaymentExtension` (payment extensions)
+
+Shoppable Ads flows that use Apple Pay / Stripe integration expect a **payment extension** to be registered on mParticle’s Rokt interface after the SDK starts.
+
+In `ios/MParticleExpoTest/AppDelegate.swift`, the test app:
+
+1. Imports the Stripe payment extension module provided with the Rokt / kit stack: `import RoktStripePaymentExtension`.
+2. After `MParticle.sharedInstance().start(with: mParticleOptions)`, constructs `RoktStripePaymentExtension(applePayMerchantId: "...")` with your **Apple Pay merchant ID** (replace `merchant.dummy` with your real `merchant.*` identifier from Apple Developer).
+3. Registers it: `MParticle.sharedInstance().rokt.register(paymentExtension)`.
+
+```swift
+import RoktStripePaymentExtension
+
+// After MParticle.sharedInstance().start(with: mParticleOptions):
+if let paymentExtension = RoktStripePaymentExtension(applePayMerchantId: "merchant.your.id") {
+  MParticle.sharedInstance().rokt.register(paymentExtension)
+}
+```
+
+**Important:**
+
+- The Expo config plugin **does not** generate the payment extension block today. After `expo prebuild`, add or merge this code into `AppDelegate.swift` (inside the same app launch path as mParticle init). If you regenerate native projects with `--clean`, re-apply this snippet.
+- Ensure the **mParticle Rokt kit** (and transitive Rokt dependencies) are installed so `RoktStripePaymentExtension` resolves—same as configuring `iosKits`: `["mParticle-Rokt"]` in `app.json`.
 
 All activity is logged in the Activity Log section at the bottom of the screen.
 
@@ -115,6 +170,8 @@ Check `ios/MParticleExpoTest/AppDelegate.swift` for:
   mParticleOptions.identifyRequest = identifyRequest
   MParticle.sharedInstance().start(with: mParticleOptions)
   ```
+
+For Shoppable Ads with Apple Pay / Stripe, you may also need to register `RoktStripePaymentExtension` after `start`—see **Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions** above.
 
 #### Objective-C AppDelegate (Legacy)
 
@@ -224,16 +281,16 @@ dependencies {
 
 ## Plugin Configuration Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `iosApiKey` | string | mParticle iOS API key |
-| `iosApiSecret` | string | mParticle iOS API secret |
-| `androidApiKey` | string | mParticle Android API key |
-| `androidApiSecret` | string | mParticle Android API secret |
-| `logLevel` | string | Log level: `none`, `error`, `warning`, `debug`, `verbose` |
-| `environment` | string | Environment: `development`, `production`, `autoDetect` |
-| `useEmptyIdentifyRequest` | boolean | Initialize with empty identify request (default: true) |
-| `dataPlanId` | string | Data plan ID for validation |
-| `dataPlanVersion` | number | Data plan version |
-| `iosKits` | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`) |
-| `androidKits` | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`) |
+| Option                    | Type     | Description                                               |
+| ------------------------- | -------- | --------------------------------------------------------- |
+| `iosApiKey`               | string   | mParticle iOS API key                                     |
+| `iosApiSecret`            | string   | mParticle iOS API secret                                  |
+| `androidApiKey`           | string   | mParticle Android API key                                 |
+| `androidApiSecret`        | string   | mParticle Android API secret                              |
+| `logLevel`                | string   | Log level: `none`, `error`, `warning`, `debug`, `verbose` |
+| `environment`             | string   | Environment: `development`, `production`, `autoDetect`    |
+| `useEmptyIdentifyRequest` | boolean  | Initialize with empty identify request (default: true)    |
+| `dataPlanId`              | string   | Data plan ID for validation                               |
+| `dataPlanVersion`         | number   | Data plan version                                         |
+| `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)            |
+| `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)   |

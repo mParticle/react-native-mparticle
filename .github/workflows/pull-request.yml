@@ -25,6 +25,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: Install node modules
+        run: yarn install --frozen-lockfile
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1
 

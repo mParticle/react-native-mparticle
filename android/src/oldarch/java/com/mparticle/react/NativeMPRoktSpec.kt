@@ -21,6 +21,12 @@ abstract class NativeMPRoktSpec(
         fontFilesMap: ReadableMap?,
     )
 
+    abstract fun selectShoppableAds(
+        identifier: String,
+        attributes: ReadableMap?,
+        roktConfig: ReadableMap?,
+    )
+
     abstract fun purchaseFinalized(
         placementId: String,
         catalogItemId: String,

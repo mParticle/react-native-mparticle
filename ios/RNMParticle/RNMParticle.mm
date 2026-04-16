@@ -1,18 +1,12 @@
 #import "RNMParticle.h"
 #import <React/RCTConvert.h>
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
+// SDK 9.0: ObjC headers moved to mParticle_Apple_SDK_ObjC module
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/mParticle.h>)
+    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
+#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
     #import <mParticle_Apple_SDK/mParticle.h>
-#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
-    #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #else
-    #import <mParticle_Apple_SDK/Include/mParticle.h>
-#endif
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>)
-    #import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
-#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle_Apple_SDK-Swift.h>)
-    #import <mParticle_Apple_SDK_NoLocation/mParticle_Apple_SDK-Swift.h>
-#else
-    #import "mParticle_Apple_SDK-Swift.h"
+    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
 #endif
 #import <React/RCTConvert.h>
 
@@ -44,8 +38,8 @@ RCT_EXPORT_METHOD(upload)
 
 RCT_EXPORT_METHOD(setLocation:(double)latitude longitude:(double)longitude)
 {
-    CLLocation *newLocation = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
-    [MParticle sharedInstance].location = newLocation;
+    // Location support was removed in mParticle Apple SDK 9.0
+    NSLog(@"[RNMParticle] setLocation is a no-op in mParticle SDK 9.0+");
 }
 
 RCT_EXPORT_METHOD(setUploadInterval:(double)uploadInterval)
@@ -204,8 +198,8 @@ RCT_EXPORT_METHOD(identify:(MPIdentityApiRequest *)identityRequest completion:(R
                     [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
                 }
 
-                if ([NSNumber numberWithInt:response.code] != nil) {
-                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                if ([NSNumber numberWithInteger:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInteger:response.code] forKey:@"responseCode"];
                 }
 
                 if (response.message != nil) {
@@ -238,8 +232,8 @@ RCT_EXPORT_METHOD(login:(MPIdentityApiRequest *)identityRequest completion:(RCTR
                     [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
                 }
 
-                if ([NSNumber numberWithInt:response.code] != nil) {
-                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                if ([NSNumber numberWithInteger:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInteger:response.code] forKey:@"responseCode"];
                 }
 
                 if (response.message != nil) {
@@ -272,8 +266,8 @@ RCT_EXPORT_METHOD(logout:(MPIdentityApiRequest *)identityRequest completion:(RCT
                     [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
                 }
 
-                if ([NSNumber numberWithInt:response.code] != nil) {
-                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                if ([NSNumber numberWithInteger:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInteger:response.code] forKey:@"responseCode"];
                 }
 
                 if (response.message != nil) {
@@ -306,8 +300,8 @@ RCT_EXPORT_METHOD(modify:(MPIdentityApiRequest *)identityRequest completion:(RCT
                     [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
                 }
 
-                if ([NSNumber numberWithInt:response.code] != nil) {
-                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                if ([NSNumber numberWithInteger:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInteger:response.code] forKey:@"responseCode"];
                 }
 
                 if (response.message != nil) {
@@ -684,8 +678,8 @@ RCT_EXPORT_METHOD(setCCPAConsentState:(MPCCPAConsent *)consent)
                 if ([NSNumber numberWithLong:response.httpCode] != nil) {
                     [reactError setObject:[NSNumber numberWithLong:response.httpCode] forKey:@"httpCode"];
                 }
-                if ([NSNumber numberWithInt:response.code] != nil) {
-                    [reactError setObject:[NSNumber numberWithInt:response.code] forKey:@"responseCode"];
+                if ([NSNumber numberWithInteger:response.code] != nil) {
+                    [reactError setObject:[NSNumber numberWithInteger:response.code] forKey:@"responseCode"];
                 }
                 if (response.message != nil) {
                     [reactError setObject:response.message forKey:@"message"];
@@ -1165,7 +1159,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     event.category = json[@"category"];
     event.duration = json[@"duration"];
     event.endTime = json[@"endTime"];
-    event.info = json[@"info"];
+    event.customAttributes = json[@"info"];
     event.name = json[@"name"];
     event.startTime = json[@"startTime"];
     [event setType:(MPEventType)[json[@"type"] intValue]];
