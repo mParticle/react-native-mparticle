@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-04-16
+
+### Added
+
+- Support Shoppable ads and v9 of mParticle iOS SDK ([#311](https://github.com/mParticle/react-native-mparticle/pull/311))
+
+For a full guide on Shoppable ads, see [Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions](./ExpoTestApp/README.md#implementation-guide-shoppable-ads-selectshoppableads-and-ios-payment-extensions) in the Expo test app README.
+
+### Changed
+
+- Add --allow-same-version to draft release workflow ([#312](https://github.com/mParticle/react-native-mparticle/pull/312))
+
 ## [2.9.2] - 2026-04-15
 
 ### Fixed
@@ -370,7 +382,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...HEAD
+[3.0.0]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...3.0.0
 [2.9.2]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
