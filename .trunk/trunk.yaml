@@ -42,7 +42,14 @@ lint:
     - checkov@3.2.507
     - dotenv-linter@3.3.0
     # ESLint 9+ defaults to flat config only; this repo uses .eslintrc.js (ESLint 8 style).
-    - eslint@8.57.1
+    # Trunk runs ESLint in an isolated env without the repo's node_modules; bundle the same
+    # plugins/parser as package.json so @typescript-eslint/* resolves (CI + local).
+    - eslint@8.57.1:
+        packages:
+          - '@typescript-eslint/eslint-plugin@5.62.0'
+          - '@typescript-eslint/parser@5.62.0'
+          - 'eslint-config-prettier@8.10.0'
+          - 'eslint-plugin-prettier@4.2.1'
     - git-diff-check
     - ktlint@0.43.2
     # 0.48+ pulls string-width that requires Node 20+ for regex /v; Trunk's runner uses Node 18.
