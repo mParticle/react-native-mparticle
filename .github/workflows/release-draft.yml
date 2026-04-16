@@ -41,7 +41,7 @@ jobs:
         run: echo "${{ steps.bump-version.outputs.new_version }}" > VERSION
 
       - name: Update package.json version
-        run: npm version "${{ steps.bump-version.outputs.new_version }}" --no-git-tag-version
+        run: npm version "${{ steps.bump-version.outputs.new_version }}" --no-git-tag-version --allow-same-version
 
       - name: Generate changelog from git history
         id: changelog
