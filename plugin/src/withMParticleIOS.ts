@@ -106,10 +106,6 @@ function getIOSCustomBaseURL(props: MParticlePluginProps): string | null {
   return customBaseURL;
 }
 
-function hasIOSRoktKit(props: MParticlePluginProps): boolean {
-  return props.iosKits?.includes('mParticle-Rokt') ?? false;
-}
-
 /**
  * Generate mParticle initialization code for Swift AppDelegate
  */
@@ -241,35 +237,25 @@ const withMParticleAppDelegate: ConfigPlugin<MParticlePluginProps> = (
 ) => {
   return withAppDelegate(config, config => {
     const { contents, language } = config.modResults;
-    let appDelegateContents = contents;
-    const hasMParticleInitialization =
+
+    // Check if mParticle is already initialized
+    if (
       contents.includes('MParticleOptions') ||
-      contents.includes('mParticleOptions');
+      contents.includes('mParticleOptions')
+    ) {
+      return config;
+    }
 
     if (language === 'swift') {
-      if (!hasMParticleInitialization) {
-        appDelegateContents = addMParticleToSwiftAppDelegate(
-          appDelegateContents,
-          props
-        );
-      }
-      if (hasIOSRoktKit(props)) {
-        appDelegateContents =
-          addRoktURLCallbackToSwiftAppDelegate(appDelegateContents);
-      }
-      config.modResults.contents = appDelegateContents;
+      config.modResults.contents = addMParticleToSwiftAppDelegate(
+        contents,
+        props
+      );
     } else if (language === 'objc' || language === 'objcpp') {
-      if (!hasMParticleInitialization) {
-        appDelegateContents = addMParticleToObjcAppDelegate(
-          appDelegateContents,
-          props
-        );
-      }
-      if (hasIOSRoktKit(props)) {
-        appDelegateContents =
-          addRoktURLCallbackToObjcAppDelegate(appDelegateContents);
-      }
-      config.modResults.contents = appDelegateContents;
+      config.modResults.contents = addMParticleToObjcAppDelegate(
+        contents,
+        props
+      );
     } else {
       console.warn(
         `[react-native-mparticle] Unsupported AppDelegate language: ${language}. ` +
@@ -280,62 +266,6 @@ const withMParticleAppDelegate: ConfigPlugin<MParticlePluginProps> = (
     return config;
   });
 };
-
-function addRoktURLCallbackToSwiftAppDelegate(contents: string): string {
-  if (contents.includes('rokt.handleURLCallback(with: url)')) {
-    return contents;
-  }
-
-  const openURLReturn =
-    /return super\.application\(app, open: url, options: options\) \|\| RCTLinkingManager\.application\(app, open: url, options: options\)/;
-  if (!openURLReturn.test(contents)) {
-    console.warn(
-      '[react-native-mparticle] Could not find Swift AppDelegate URL handler. ' +
-        'Forward iOS Rokt payment callback URLs to MParticle.sharedInstance().rokt.handleURLCallback(with:) manually.'
-    );
-    return contents;
-  }
-
-  const withCallback = mergeContents({
-    src: contents,
-    newSrc:
-      '\n    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {\n      return true\n    }\n',
-    anchor: openURLReturn,
-    offset: 0,
-    tag: `${MPARTICLE_TAG}-rokt-url-callback`,
-    comment: '//',
-  });
-
-  return withCallback.contents;
-}
-
-function addRoktURLCallbackToObjcAppDelegate(contents: string): string {
-  if (contents.includes('handleURLCallback:url')) {
-    return contents;
-  }
-
-  const openURLReturn =
-    /return \[RCTLinkingManager application:application openURL:url options:options\];|return \[super application:application openURL:url options:options\] \|\| \[RCTLinkingManager application:application openURL:url options:options\];/;
-  if (!openURLReturn.test(contents)) {
-    console.warn(
-      '[react-native-mparticle] Could not find Objective-C AppDelegate URL handler. ' +
-        'Forward iOS Rokt payment callback URLs to [[[MParticle sharedInstance] rokt] handleURLCallback:] manually.'
-    );
-    return contents;
-  }
-
-  const withCallback = mergeContents({
-    src: contents,
-    newSrc:
-      '\n  if ([[[MParticle sharedInstance] rokt] handleURLCallback:url]) {\n    return YES;\n  }\n',
-    anchor: openURLReturn,
-    offset: 0,
-    tag: `${MPARTICLE_TAG}-rokt-url-callback`,
-    comment: '//',
-  });
-
-  return withCallback.contents;
-}
 
 /**
  * Add mParticle import and initialization to Swift AppDelegate
@@ -453,7 +383,6 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
     'RoktUXHelper',
     'DcuiSchema',
   ],
-  RoktPaymentExtension: ['RoktContracts'],
   // Add other kit dependencies here as needed
   // "mParticle-Amplitude": [],
   // "mParticle-Braze": [],
@@ -461,7 +390,6 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
 
 const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
   'mParticle-Rokt': "'~> 9.2'",
-  RoktPaymentExtension: "'~> 2.0'",
 };
 
 /**

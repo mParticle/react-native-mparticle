@@ -17,13 +17,6 @@ For standard Rokt placements on iOS, use:
 pod 'mParticle-Rokt', '~> 9.2'
 ```
 
-For iOS Shoppable Ads payment-extension flows, add the payment extension
-alongside the standard Rokt kit:
-
-```ruby
-pod 'RoktPaymentExtension', '~> 2.0'
-```
-
 Do not add `Rokt-Widget` directly to this React Native wrapper's podspec. Apps
 receive it transitively through `mParticle-Rokt`.
 
@@ -41,68 +34,6 @@ MParticle.Rokt.getSessionId(): Promise<string | null>
 mParticle Rokt kit; Android currently resolves safely without changing the
 session until the Android mParticle Rokt kit exposes equivalent public APIs.
 
-### URL Callback Handling
-
-Do not forward Shoppable Ads payment redirect URLs from React Native `Linking`.
-The Rokt URL callback is an iOS lifecycle concern because it must synchronously
-return from the native URL handler.
-
-Forward incoming iOS URLs to mParticle's native Rokt interface before falling
-back to React Native Linking.
-
-#### Swift AppDelegate
-
-```swift
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
-        return true
-    }
-
-    return RCTLinkingManager.application(app, open: url, options: options)
-}
-```
-
-#### Swift SceneDelegate
-
-```swift
-func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    guard let url = URLContexts.first?.url else {
-        return
-    }
-
-    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
-        return
-    }
-
-    RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
-}
-```
-
-#### SwiftUI
-
-```swift
-WindowGroup {
-    ContentView()
-        .onOpenURL { url in
-            _ = MParticle.sharedInstance().rokt.handleURLCallback(with: url)
-        }
-}
-```
-
-#### Objective-C AppDelegate
-
-```objective-c
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-    if ([[[MParticle sharedInstance] rokt] handleURLCallback:url]) {
-        return YES;
-    }
-
-    return [RCTLinkingManager application:application openURL:url options:options];
-}
-```
-
 ### Expo Config Plugin
 
 Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
@@ -118,11 +49,8 @@ Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
 ]
 ```
 
-The plugin pins generated `mParticle-Rokt` pods to `~> 9.2`. When `iosKits`
-contains `mParticle-Rokt`, the plugin also injects AppDelegate URL callback
-forwarding for Expo's standard generated URL handler. If your app uses a custom
-AppDelegate, SceneDelegate, or SwiftUI lifecycle, apply the native snippet
-manually.
+The plugin pins generated `mParticle-Rokt` pods to `~> 9.2`. It does not add
+payment-extension pods or URL callback forwarding in this release.
 
 For global CNAME setup, configure `iosCustomBaseURL`:
 
@@ -138,5 +66,4 @@ reads this setting during initialization.
 
 ### Notes
 
-- Native payment extension registration remains native-side.
 - The React Native API intentionally does not expose `handleURLCallback`.

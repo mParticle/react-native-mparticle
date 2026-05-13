@@ -288,62 +288,7 @@ For standard Rokt placements, add the mParticle Rokt kit:
 pod 'mParticle-Rokt', '~> 9.2'
 ```
 
-For iOS Shoppable Ads flows that need the payment extension stack, add the payment extension alongside the mParticle Rokt kit:
-
-```ruby
-pod 'RoktPaymentExtension', '~> 2.0'
-```
-
-In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. Add `RoktPaymentExtension` to `iosKits` only when you are wiring the native payment extension registration.
-
-For iOS Shoppable Ads redirect-based payment flows, forward incoming URLs to Rokt in native iOS lifecycle code before falling back to React Native Linking. Do not forward these URLs from React Native `Linking`; the callback needs to return synchronously from the OS URL handler.
-
-Expo prebuild injects this AppDelegate forwarding when `iosKits` includes `mParticle-Rokt` and the generated AppDelegate uses Expo's standard URL handler. Verify the generated file after prebuild if your app customizes AppDelegate.
-
-```swift
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
-        return true
-    }
-
-    return RCTLinkingManager.application(app, open: url, options: options)
-}
-```
-
-```swift
-WindowGroup {
-    ContentView()
-        .onOpenURL { url in
-            _ = MParticle.sharedInstance().rokt.handleURLCallback(with: url)
-        }
-}
-```
-
-```swift
-func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    guard let url = URLContexts.first?.url else {
-        return
-    }
-
-    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
-        return
-    }
-
-    RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
-}
-```
-
-```objective-c
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-    if ([[[MParticle sharedInstance] rokt] handleURLCallback:url]) {
-        return YES;
-    }
-
-    return [RCTLinkingManager application:application openURL:url options:options];
-}
-```
+In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin does not add payment-extension pods or URL callback forwarding in this release.
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 

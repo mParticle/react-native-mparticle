@@ -70,9 +70,7 @@ The sample Podfile pins the standard Rokt kit with:
 pod 'mParticle-Rokt', '~> 9.2'
 ```
 
-Add `pod 'RoktPaymentExtension', '~> 2.0'` when validating the iOS Shoppable Ads payment-extension install path.
-
-Forward iOS Shoppable Ads payment redirect URLs from native AppDelegate, SceneDelegate, or SwiftUI `onOpenURL` code to `MParticle.sharedInstance().rokt.handleURLCallback(with:)`. This is not a React Native `Linking` API because the URL callback must be handled synchronously in native iOS code. The sample app includes buttons for Rokt close/session APIs.
+The sample app includes buttons for Rokt close/session APIs. Payment-extension installation and native URL callback forwarding are not configured in this release.
 
 ## Running the Sample App
 
