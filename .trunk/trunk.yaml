@@ -43,9 +43,10 @@ lint:
     - dotenv-linter@3.3.0
     # ESLint 9+ defaults to flat config only; this repo uses .eslintrc.js (ESLint 8 style).
     # Trunk runs ESLint in an isolated env without the repo's node_modules; bundle the same
-    # plugins/parser as package.json so @typescript-eslint/* resolves (CI + local).
+    # plugins/parser as package.json plus the sample app config so ESLint resolves in CI.
     - eslint@8.57.0:
         packages:
+          - '@react-native/eslint-config@0.84.0'
           - '@typescript-eslint/eslint-plugin@5.62.0'
           - '@typescript-eslint/parser@5.62.0'
           - 'eslint-config-prettier@8.10.0'
