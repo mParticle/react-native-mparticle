@@ -64,6 +64,16 @@ cd sample/ios
 pod install
 ```
 
+The sample Podfile pins the standard Rokt kit with:
+
+```ruby
+pod 'mParticle-Rokt', '~> 9.2'
+```
+
+Add `pod 'RoktPaymentExtension', '~> 2.0'` when validating the iOS Shoppable Ads payment-extension install path.
+
+Forward iOS Shoppable Ads payment redirect URLs from native AppDelegate, SceneDelegate, or SwiftUI `onOpenURL` code to `MParticle.sharedInstance().rokt.handleURLCallback(with:)`. This is not a React Native `Linking` API because the URL callback must be handled synchronously in native iOS code. The sample app includes buttons for Rokt close/session APIs.
+
 ## Running the Sample App
 
 ### iOS
@@ -89,10 +99,10 @@ When making changes to the mParticle React Native SDK:
 1. Make your changes to the SDK source code
 2. Rebuild and reinstall the package:
 
-    ```bash
-    # From root directory
-    yarn dev:link
-    ```
+   ```bash
+   # From root directory
+   yarn dev:link
+   ```
 
 3. Restart the sample app to see your changes
 

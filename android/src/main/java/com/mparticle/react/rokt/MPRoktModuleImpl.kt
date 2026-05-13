@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
@@ -54,6 +55,24 @@ class MPRoktModuleImpl(
         success: Boolean,
     ) {
         MParticle.getInstance()?.Rokt()?.purchaseFinalized(placementId, catalogItemId, success)
+    }
+
+    fun close(promise: Promise) {
+        MParticle.getInstance()?.Rokt()?.close()
+        promise.resolve(null)
+    }
+
+    fun setSessionId(
+        sessionId: String,
+        promise: Promise,
+    ) {
+        Logger.warning("setSessionId is not supported on Android")
+        promise.resolve(null)
+    }
+
+    fun getSessionId(promise: Promise) {
+        Logger.warning("getSessionId is not supported on Android")
+        promise.resolve(null)
     }
 
     fun setRoktEventHandler(roktEventHandler: MpRoktEventCallback) {

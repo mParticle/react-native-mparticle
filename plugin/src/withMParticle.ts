@@ -57,6 +57,13 @@ export interface MParticlePluginProps {
   iosKits?: string[];
 
   /**
+   * iOS custom base URL for global CNAME setup.
+   * This is applied before mParticle starts.
+   * @example 'https://your-cname.example.com'
+   */
+  iosCustomBaseURL?: string;
+
+  /**
    * Android kit artifact names to include (version auto-detected from core SDK)
    * @example ['android-rokt-kit', 'android-amplitude-kit']
    */

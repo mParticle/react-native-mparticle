@@ -82,6 +82,7 @@ npx expo run:android
 | `dataPlanId`              | string   | No       | Data plan ID for validation                                         |
 | `dataPlanVersion`         | number   | No       | Data plan version                                                   |
 | `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                      |
+| `iosCustomBaseURL`        | string   | No       | iOS custom base URL for global CNAME setup                          |
 | `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)           |
 | `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)           |
 
@@ -100,6 +101,7 @@ npx expo run:android
           "androidApiSecret": "YOUR_ANDROID_API_SECRET",
           "environment": "development",
           "logLevel": "verbose",
+          "iosCustomBaseURL": "https://cname.example.com",
           "iosKits": ["mParticle-Rokt", "mParticle-Amplitude"],
           "androidKits": ["android-rokt-kit", "android-amplitude-kit"]
         }
@@ -114,6 +116,7 @@ npx expo run:android
 **iOS:**
 
 - Adds mParticle SDK initialization to `AppDelegate` (supports both Swift and Objective-C)
+- Sets `MPNetworkOptions.customBaseURL` before startup when `iosCustomBaseURL` is configured
 - Configures `pre_install` hook in Podfile for dynamic framework linking
 - Adds specified kit pod dependencies
 
@@ -219,6 +222,12 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
         mParticleOptions.onAttributionComplete = { (attributionResult, error) in
                     NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
         }
+
+        // Optional global CNAME setup. Configure before start.
+        let networkOptions = MPNetworkOptions()
+        networkOptions.customBaseURL = URL(string: "https://cname.example.com")
+        mParticleOptions.networkOptions = networkOptions
+
         MParticle.sharedInstance().start(with: mParticleOptions)
         return true
 }
@@ -260,11 +269,83 @@ Next, you'll need to start the SDK:
         NSLog(@"Attribution Complete. attributionResults = %@", attributionResult.linkInfo)
     }
 
+    // Optional global CNAME setup. Configure before start.
+    MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
+    networkOptions.customBaseURL = [NSURL URLWithString:@"https://cname.example.com"];
+    mParticleOptions.networkOptions = networkOptions;
+
     [[MParticle sharedInstance] startWithOptions:mParticleOptions];
 
     return YES;
 }
 ```
+
+### Rokt iOS Setup
+
+For standard Rokt placements, add the mParticle Rokt kit:
+
+```ruby
+pod 'mParticle-Rokt', '~> 9.2'
+```
+
+For iOS Shoppable Ads flows that need the payment extension stack, add the payment extension alongside the mParticle Rokt kit:
+
+```ruby
+pod 'RoktPaymentExtension', '~> 2.0'
+```
+
+In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. Add `RoktPaymentExtension` to `iosKits` only when you are wiring the native payment extension registration.
+
+For iOS Shoppable Ads redirect-based payment flows, forward incoming URLs to Rokt in native iOS lifecycle code before falling back to React Native Linking. Do not forward these URLs from React Native `Linking`; the callback needs to return synchronously from the OS URL handler.
+
+Expo prebuild injects this AppDelegate forwarding when `iosKits` includes `mParticle-Rokt` and the generated AppDelegate uses Expo's standard URL handler. Verify the generated file after prebuild if your app customizes AppDelegate.
+
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
+        return true
+    }
+
+    return RCTLinkingManager.application(app, open: url, options: options)
+}
+```
+
+```swift
+WindowGroup {
+    ContentView()
+        .onOpenURL { url in
+            _ = MParticle.sharedInstance().rokt.handleURLCallback(with: url)
+        }
+}
+```
+
+```swift
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    guard let url = URLContexts.first?.url else {
+        return
+    }
+
+    if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
+        return
+    }
+
+    RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
+}
+```
+
+```objective-c
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if ([[[MParticle sharedInstance] rokt] handleURLCallback:url]) {
+        return YES;
+    }
+
+    return [RCTLinkingManager application:application openURL:url options:options];
+}
+```
+
+See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 

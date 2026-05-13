@@ -28,6 +28,14 @@
     },
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.6"
+          }
+        }
+      ],
+      [
         "react-native-mparticle",
         {
           "iosApiKey": "YOUR_IOS_API_KEY",
@@ -37,6 +45,7 @@
           "logLevel": "verbose",
           "useEmptyIdentifyRequest": true,
           "environment": "development",
+          "iosCustomBaseURL": "https://cname.example.com",
           "iosKits": ["mParticle-Rokt"],
           "androidKits": ["android-rokt-kit"]
         }

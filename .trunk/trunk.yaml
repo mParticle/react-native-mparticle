@@ -44,7 +44,7 @@ lint:
     # ESLint 9+ defaults to flat config only; this repo uses .eslintrc.js (ESLint 8 style).
     # Trunk runs ESLint in an isolated env without the repo's node_modules; bundle the same
     # plugins/parser as package.json so @typescript-eslint/* resolves (CI + local).
-    - eslint@8.57.1:
+    - eslint@8.57.0:
         packages:
           - '@typescript-eslint/eslint-plugin@5.62.0'
           - '@typescript-eslint/parser@5.62.0'

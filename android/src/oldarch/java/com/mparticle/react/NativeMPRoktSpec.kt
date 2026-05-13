@@ -1,5 +1,6 @@
 package com.mparticle.react
 
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReadableMap
@@ -32,4 +33,13 @@ abstract class NativeMPRoktSpec(
         catalogItemId: String,
         success: Boolean,
     )
+
+    abstract fun close(promise: Promise)
+
+    abstract fun setSessionId(
+        sessionId: String,
+        promise: Promise,
+    )
+
+    abstract fun getSessionId(promise: Promise)
 }

@@ -257,6 +257,31 @@ export default function App() {
       });
   };
 
+  const handleRoktClose = () => {
+    MParticle.Rokt.close()
+      .then(() => {
+        addLog('Rokt close called');
+        setStatus('Rokt close called');
+      })
+      .catch((error: any) => {
+        addLog(`Rokt close error: ${JSON.stringify(error)}`);
+      });
+  };
+
+  const handleRoktSession = () => {
+    const sessionId = `rn-expo-${Date.now()}`;
+
+    MParticle.Rokt.setSessionId(sessionId)
+      .then(() => MParticle.Rokt.getSessionId())
+      .then((currentSessionId: string | null) => {
+        addLog(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+        setStatus(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+      })
+      .catch((error: any) => {
+        addLog(`Rokt session error: ${JSON.stringify(error)}`);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -367,6 +392,20 @@ export default function App() {
               onPress={handleRoktShoppableAds}
             >
               <Text style={styles.buttonText}>Shoppable Ads</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButton]}
+              onPress={handleRoktClose}
+            >
+              <Text style={styles.buttonText}>Close Rokt</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButtonAlt]}
+              onPress={handleRoktSession}
+            >
+              <Text style={styles.buttonText}>Rokt Session</Text>
             </TouchableOpacity>
           </View>
 

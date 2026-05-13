@@ -26,6 +26,14 @@ This app tests the Expo config plugin integration for the mParticle React Native
      "expo": {
        "plugins": [
          [
+           "expo-build-properties",
+           {
+             "ios": {
+               "deploymentTarget": "15.6"
+             }
+           }
+         ],
+         [
            "react-native-mparticle",
            {
              "iosApiKey": "YOUR_IOS_API_KEY",
@@ -34,6 +42,7 @@ This app tests the Expo config plugin integration for the mParticle React Native
              "androidApiSecret": "YOUR_ANDROID_API_SECRET",
              "logLevel": "verbose",
              "environment": "development",
+             "iosCustomBaseURL": "https://cname.example.com",
              "iosKits": ["mParticle-Rokt"],
              "androidKits": ["android-rokt-kit"]
            }
@@ -81,6 +90,8 @@ The app also includes Rokt placement testing via the mParticle Rokt kit:
 - **Overlay**: Loads a full-screen overlay Rokt placement that appears on top of the app content.
 - **Bottom Sheet**: Loads a bottom sheet Rokt placement that slides up from the bottom of the screen.
 - **Shoppable Ads**: Calls `MParticle.Rokt.selectShoppableAds` with a staging placement identifier and checkout-style attributes (see implementation guide below).
+- **Close Rokt**: Calls `MParticle.Rokt.close()`.
+- **Rokt Session**: Calls `MParticle.Rokt.setSessionId()` and `MParticle.Rokt.getSessionId()`.
 
 The Rokt section also demonstrates:
 
@@ -118,29 +129,76 @@ Listen for `RoktCallback` and `RoktEvents` on `RoktEventManager` to observe load
 
 **Android:** `selectShoppableAds` is not implemented on Android yet; the native module logs a warning and does not run the Shoppable Ads flow. Plan for iOS-only behavior until Android support ships.
 
-#### iOS native: `RoktStripePaymentExtension` (payment extensions)
+#### iOS native: `RoktPaymentExtension` (payment extensions)
 
-Shoppable Ads flows that use Apple Pay / Stripe integration expect a **payment extension** to be registered on mParticle’s Rokt interface after the SDK starts.
+Shoppable Ads flows that use Apple Pay expect a **payment extension** to be registered on mParticle’s Rokt interface after the SDK starts.
 
 In `ios/MParticleExpoTest/AppDelegate.swift`, the test app:
 
-1. Imports the Stripe payment extension module provided with the Rokt / kit stack: `import RoktStripePaymentExtension`.
-2. After `MParticle.sharedInstance().start(with: mParticleOptions)`, constructs `RoktStripePaymentExtension(applePayMerchantId: "...")` with your **Apple Pay merchant ID** (replace `merchant.dummy` with your real `merchant.*` identifier from Apple Developer).
-3. Registers it: `MParticle.sharedInstance().rokt.register(paymentExtension)`.
+1. Installs the Rokt kit with `iosKits`: `["mParticle-Rokt"]` or, manually, `pod 'mParticle-Rokt', '~> 9.2'`.
+2. Imports the payment extension module: `import RoktPaymentExtension`.
+3. After `MParticle.sharedInstance().start(with: mParticleOptions)`, constructs `RoktPaymentExtension(applePayMerchantId: "...")` with your **Apple Pay merchant ID** (replace `merchant.dummy` with your real `merchant.*` identifier from Apple Developer).
+4. Registers it: `MParticle.sharedInstance().rokt.registerPaymentExtension(paymentExtension)`.
 
 ```swift
-import RoktStripePaymentExtension
+import RoktPaymentExtension
 
 // After MParticle.sharedInstance().start(with: mParticleOptions):
-if let paymentExtension = RoktStripePaymentExtension(applePayMerchantId: "merchant.your.id") {
-  MParticle.sharedInstance().rokt.register(paymentExtension)
+if let paymentExtension = RoktPaymentExtension(applePayMerchantId: "merchant.your.id") {
+  MParticle.sharedInstance().rokt.registerPaymentExtension(paymentExtension)
 }
 ```
 
 **Important:**
 
 - The Expo config plugin **does not** generate the payment extension block today. After `expo prebuild`, add or merge this code into `AppDelegate.swift` (inside the same app launch path as mParticle init). If you regenerate native projects with `--clean`, re-apply this snippet.
-- Ensure the **mParticle Rokt kit** (and transitive Rokt dependencies) are installed so `RoktStripePaymentExtension` resolves—same as configuring `iosKits`: `["mParticle-Rokt"]` in `app.json`.
+- Use `iosKits`: `["mParticle-Rokt"]` for standard Rokt placements. Add `RoktPaymentExtension` to `iosKits` only when you are wiring the native payment extension registration.
+- In manually managed iOS apps, use `pod 'mParticle-Rokt', '~> 9.2'` for standard placements and add `pod 'RoktPaymentExtension', '~> 2.0'` for the payment-extension install path.
+
+#### URL callback forwarding
+
+Forward redirect URLs to Rokt from native iOS URL handlers before other linking handlers. This is intentionally not exposed as a React Native JavaScript API because iOS payment-extension redirects must be handled synchronously from the OS URL callback.
+
+The Expo config plugin injects this AppDelegate forwarding when `iosKits` includes `["mParticle-Rokt"]` and the generated AppDelegate uses Expo's standard URL handler. Verify the generated AppDelegate after `npm run prebuild` if your app has custom URL handling.
+
+Swift `AppDelegate`:
+
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+  if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
+    return true
+  }
+
+  return RCTLinkingManager.application(app, open: url, options: options)
+}
+```
+
+SwiftUI:
+
+```swift
+WindowGroup {
+  ContentView()
+    .onOpenURL { url in
+      _ = MParticle.sharedInstance().rokt.handleURLCallback(with: url)
+    }
+}
+```
+
+Swift `SceneDelegate`:
+
+```swift
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+  guard let url = URLContexts.first?.url else {
+    return
+  }
+
+  if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
+    return
+  }
+
+  RCTLinkingManager.application(UIApplication.shared, open: url, options: [:])
+}
+```
 
 All activity is logged in the Activity Log section at the bottom of the screen.
 
@@ -160,6 +218,14 @@ Check `ios/MParticleExpoTest/AppDelegate.swift` for:
   import mParticle_Apple_SDK
   ```
 
+- Rokt URL callback forwarding when `iosKits` includes `mParticle-Rokt`:
+
+  ```swift
+  if MParticle.sharedInstance().rokt.handleURLCallback(with: url) {
+    return true
+  }
+  ```
+
 - MParticleOptions initialization in `didFinishLaunchingWithOptions`:
 
   ```swift
@@ -168,10 +234,13 @@ Check `ios/MParticleExpoTest/AppDelegate.swift` for:
   mParticleOptions.environment = .development
   let identifyRequest = MPIdentityApiRequest.withEmptyUser()
   mParticleOptions.identifyRequest = identifyRequest
+  let networkOptions = MPNetworkOptions()
+  networkOptions.customBaseURL = URL(string: "https://cname.example.com")
+  mParticleOptions.networkOptions = networkOptions
   MParticle.sharedInstance().start(with: mParticleOptions)
   ```
 
-For Shoppable Ads with Apple Pay / Stripe, you may also need to register `RoktStripePaymentExtension` after `start`—see **Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions** above.
+For Shoppable Ads with Apple Pay, you may also need to register `RoktPaymentExtension` after `start` - see **Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions** above.
 
 #### Objective-C AppDelegate (Legacy)
 
@@ -192,6 +261,9 @@ For older Expo SDK versions, check `ios/MParticleExpoTest/AppDelegate.mm` for:
   mParticleOptions.environment = MPEnvironmentDevelopment;
   MPIdentityApiRequest *identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];
   mParticleOptions.identifyRequest = identifyRequest;
+  MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
+  networkOptions.customBaseURL = [NSURL URLWithString:@"https://cname.example.com"];
+  mParticleOptions.networkOptions = networkOptions;
   [[MParticle sharedInstance] startWithOptions:mParticleOptions];
   ```
 
@@ -204,7 +276,7 @@ Check `ios/Podfile` for:
   ```ruby
   pre_install do |installer|
     installer.pod_targets.each do |pod|
-      if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget'
+      if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Apple-SDK-ObjC' || pod.name == 'mParticle-Apple-SDK-Swift' || pod.name == 'mParticle-Rokt' || pod.name == 'RoktPaymentExtension' || pod.name == 'Rokt-Widget' || pod.name == 'RoktContracts'
         def pod.build_type;
           Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
         end
@@ -216,7 +288,7 @@ Check `ios/Podfile` for:
 - Kit pods (if specified):
 
   ```ruby
-  pod 'mParticle-Rokt'
+  pod 'mParticle-Rokt', '~> 9.2'
   ```
 
 ### Verify Android Integration
@@ -293,4 +365,5 @@ dependencies {
 | `dataPlanId`              | string   | Data plan ID for validation                               |
 | `dataPlanVersion`         | number   | Data plan version                                         |
 | `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)            |
+| `iosCustomBaseURL`        | string   | iOS custom base URL for global CNAME setup                |
 | `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)   |
