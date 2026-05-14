@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-05-14
+
+### Added
+
+- Support mParticle Apple SDK 9.2 ([#324](https://github.com/mParticle/react-native-mparticle/pull/324))
+
 ## [3.0.0] - 2026-04-16
 
 ### Added
@@ -382,7 +388,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.1.0...HEAD
+[3.1.0]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...3.0.0
 [2.9.2]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
