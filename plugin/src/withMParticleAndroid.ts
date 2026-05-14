@@ -5,6 +5,7 @@ import {
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import { MParticlePluginProps } from './withMParticle';
+import { getCustomBaseUrl } from './customBaseUrl';
 
 // Tag used for mergeContents to identify code blocks added by this plugin
 const MPARTICLE_TAG = 'react-native-mparticle';
@@ -62,6 +63,7 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
     dataPlanId,
     dataPlanVersion,
   } = props;
+  const customBaseUrl = getCustomBaseUrl(props);
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -82,6 +84,16 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
   if (dataPlanId) {
     const versionParam = dataPlanVersion ? `, ${dataPlanVersion}` : '';
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
+  }
+
+  if (customBaseUrl) {
+    lines.push('    .networkOptions(');
+    lines.push('        NetworkOptions.builder()');
+    lines.push(
+      `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+    );
+    lines.push('            .build()');
+    lines.push('    )');
   }
 
   if (useEmptyIdentifyRequest) {
@@ -107,6 +119,7 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     dataPlanId,
     dataPlanVersion,
   } = props;
+  const customBaseUrl = getCustomBaseUrl(props);
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -129,6 +142,16 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
   }
 
+  if (customBaseUrl) {
+    lines.push('    .networkOptions(');
+    lines.push('        NetworkOptions.builder()');
+    lines.push(
+      `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+    );
+    lines.push('            .build()');
+    lines.push('    )');
+  }
+
   if (useEmptyIdentifyRequest) {
     lines.push('    .identify(IdentityApiRequest.withEmptyUser().build())');
   }
@@ -143,19 +166,35 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
 /**
  * Generate mParticle import statements for Kotlin
  */
-function getKotlinImports(): string {
-  return `import com.mparticle.MParticle
-import com.mparticle.MParticleOptions
-import com.mparticle.identity.IdentityApiRequest`;
+function getKotlinImports(props: MParticlePluginProps): string {
+  const imports = [
+    'import com.mparticle.MParticle',
+    'import com.mparticle.MParticleOptions',
+    'import com.mparticle.identity.IdentityApiRequest',
+  ];
+
+  if (getCustomBaseUrl(props)) {
+    imports.push('import com.mparticle.networking.NetworkOptions');
+  }
+
+  return imports.join('\n');
 }
 
 /**
  * Generate mParticle import statements for Java
  */
-function getJavaImports(): string {
-  return `import com.mparticle.MParticle;
-import com.mparticle.MParticleOptions;
-import com.mparticle.identity.IdentityApiRequest;`;
+function getJavaImports(props: MParticlePluginProps): string {
+  const imports = [
+    'import com.mparticle.MParticle;',
+    'import com.mparticle.MParticleOptions;',
+    'import com.mparticle.identity.IdentityApiRequest;',
+  ];
+
+  if (getCustomBaseUrl(props)) {
+    imports.push('import com.mparticle.networking.NetworkOptions;');
+  }
+
+  return imports.join('\n');
 }
 
 /**
@@ -210,7 +249,7 @@ function addMParticleToKotlinMainApplication(
   // Add import statements using mergeContents
   const withImports = mergeContents({
     src: contents,
-    newSrc: getKotlinImports(),
+    newSrc: getKotlinImports(props),
     anchor: /^package .+$/m,
     offset: 1, // Add after package declaration
     tag: `${MPARTICLE_TAG}-import`,
@@ -261,7 +300,7 @@ function addMParticleToJavaMainApplication(
   // Add import statements using mergeContents
   const withImports = mergeContents({
     src: contents,
-    newSrc: getJavaImports(),
+    newSrc: getJavaImports(props),
     anchor: /^package .+;$/m,
     offset: 1, // Add after package declaration
     tag: `${MPARTICLE_TAG}-import`,

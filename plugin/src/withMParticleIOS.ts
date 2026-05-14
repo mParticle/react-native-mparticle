@@ -5,6 +5,7 @@ import {
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import { MParticlePluginProps } from './withMParticle';
+import { getCustomBaseUrl } from './customBaseUrl';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -134,6 +135,17 @@ function generateSwiftInitCode(props: MParticlePluginProps): string {
     lines.push('mParticleOptions.identifyRequest = identifyRequest');
   }
 
+  const customBaseUrl = getCustomBaseUrl(props);
+  if (customBaseUrl) {
+    lines.push('let networkOptions = MPNetworkOptions()');
+    lines.push(
+      `networkOptions.customBaseURL = URL(string: ${JSON.stringify(
+        customBaseUrl
+      )})`
+    );
+    lines.push('mParticleOptions.networkOptions = networkOptions');
+  }
+
   lines.push('MParticle.sharedInstance().start(with: mParticleOptions)');
 
   return lines.join('\n    ');
@@ -181,6 +193,19 @@ function generateObjcInitCode(props: MParticlePluginProps): string {
       'MPIdentityApiRequest *identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];'
     );
     lines.push('mParticleOptions.identifyRequest = identifyRequest;');
+  }
+
+  const customBaseUrl = getCustomBaseUrl(props);
+  if (customBaseUrl) {
+    lines.push(
+      'MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];'
+    );
+    lines.push(
+      `networkOptions.customBaseURL = [NSURL URLWithString:@${JSON.stringify(
+        customBaseUrl
+      )}];`
+    );
+    lines.push('mParticleOptions.networkOptions = networkOptions;');
   }
 
   lines.push('[[MParticle sharedInstance] startWithOptions:mParticleOptions];');
@@ -349,6 +374,10 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
   // "mParticle-Braze": [],
 };
 
+const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
+  'mParticle-Rokt': "'~> 9.2'",
+};
+
 /**
  * Get all pods that need dynamic framework linking
  */
@@ -371,6 +400,13 @@ function getDynamicFrameworkPods(iosKits?: string[]): string[] {
   }
 
   return [...new Set(pods)]; // Remove duplicates
+}
+
+function getKitPodDeclaration(kit: string): string {
+  const versionRequirement = KIT_VERSION_REQUIREMENTS[kit];
+  return versionRequirement
+    ? `  pod '${kit}', ${versionRequirement}`
+    : `  pod '${kit}'`;
 }
 
 /**
@@ -427,7 +463,7 @@ end
 
       // Add kit pods if specified
       if (props.iosKits && props.iosKits.length > 0) {
-        const kitPods = props.iosKits.map(kit => `  pod '${kit}'`).join('\n');
+        const kitPods = props.iosKits.map(getKitPodDeclaration).join('\n');
 
         // Check if kits are already added
         const kitsAlreadyAdded = props.iosKits.every(kit =>

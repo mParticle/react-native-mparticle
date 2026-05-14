@@ -47,6 +47,18 @@ export abstract class Rokt {
     MPRokt.purchaseFinalized(placementId, catalogItemId, success);
   }
 
+  static close(): Promise<void> {
+    return MPRokt.close();
+  }
+
+  static setSessionId(sessionId: string): Promise<void> {
+    return MPRokt.setSessionId(sessionId);
+  }
+
+  static getSessionId(): Promise<string | null> {
+    return MPRokt.getSessionId();
+  }
+
   static createRoktConfig(colorMode?: ColorMode, cacheConfig?: CacheConfig) {
     return new RoktConfig(colorMode ?? 'system', cacheConfig);
   }

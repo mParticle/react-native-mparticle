@@ -25,6 +25,6 @@ Pod::Spec.new do |s|
     s.dependency "React-Core"
   end
 
-  s.dependency 'mParticle-Apple-SDK-ObjC', '~> 9.0'
-  s.dependency 'RoktContracts', '~> 0.1'
+  s.dependency 'mParticle-Apple-SDK-ObjC', '~> 9.2'
+  s.dependency 'RoktContracts', '~> 2.0'
 end

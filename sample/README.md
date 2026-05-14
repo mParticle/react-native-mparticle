@@ -64,6 +64,17 @@ cd sample/ios
 pod install
 ```
 
+The sample Podfile pins the standard Rokt kit with:
+
+```ruby
+pod 'mParticle-Rokt', '~> 9.2'
+```
+
+The sample Android app pins `com.mparticle:android-core` and
+`com.mparticle:android-rokt-kit` to `5.79.0` so the Rokt session APIs and
+Android CNAME support are available. Payment-extension installation and native
+URL callback forwarding are not configured in this release.
+
 ## Running the Sample App
 
 ### iOS
@@ -89,10 +100,10 @@ When making changes to the mParticle React Native SDK:
 1. Make your changes to the SDK source code
 2. Rebuild and reinstall the package:
 
-    ```bash
-    # From root directory
-    yarn dev:link
-    ```
+   ```bash
+   # From root directory
+   yarn dev:link
+   ```
 
 3. Restart the sample app to see your changes
 

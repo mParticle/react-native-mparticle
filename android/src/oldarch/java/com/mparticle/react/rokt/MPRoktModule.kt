@@ -1,5 +1,6 @@
 package com.mparticle.react.rokt
 
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
@@ -64,6 +65,24 @@ class MPRoktModule(
         success: Boolean,
     ) {
         impl.purchaseFinalized(placementId, catalogItemId, success)
+    }
+
+    @ReactMethod
+    override fun close(promise: Promise) {
+        impl.close(promise)
+    }
+
+    @ReactMethod
+    override fun setSessionId(
+        sessionId: String,
+        promise: Promise,
+    ) {
+        impl.setSessionId(sessionId, promise)
+    }
+
+    @ReactMethod
+    override fun getSessionId(promise: Promise) {
+        impl.getSessionId(promise)
     }
 
     private fun safeUnwrapPlaceholders(

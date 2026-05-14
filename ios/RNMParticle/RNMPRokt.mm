@@ -16,6 +16,7 @@
     #import <RoktContracts/RoktContracts.h>
 #endif
 #import <React/RCTConvert.h>
+#import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTViewManager.h>
 #import <React/RCTUIManager.h>
@@ -207,6 +208,63 @@ RCT_EXPORT_METHOD(selectShoppableAds:(NSString *)identifier attributes:(NSDictio
                                                  onEvent:^(RoktEvent * _Nonnull event) {
         [weakSelf.eventManager onRoktEvents:event viewName:identifier];
     }];
+}
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (void)close:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self closeWithResolve:resolve];
+}
+
+- (void)setSessionId:(NSString *)sessionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
+}
+
+- (void)getSessionId:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
+}
+#else
+RCT_EXPORT_METHOD(close:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self closeWithResolve:resolve];
+}
+
+RCT_EXPORT_METHOD(setSessionId:(NSString *)sessionId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
+}
+
+RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
+}
+#endif
+
+- (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
+{
+    [[[MParticle sharedInstance] rokt] close];
+    resolve(nil);
+}
+
+- (void)setSessionIdWithString:(NSString *)sessionId
+                       resolve:(RCTPromiseResolveBlock)resolve
+{
+    [[[MParticle sharedInstance] rokt] setSessionId:sessionId ?: @""];
+    resolve(nil);
+}
+
+- (void)getSessionIdWithResolve:(RCTPromiseResolveBlock)resolve
+{
+    NSString *sessionId = [[[MParticle sharedInstance] rokt] getSessionId];
+    resolve(sessionId ?: [NSNull null]);
 }
 
 RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (

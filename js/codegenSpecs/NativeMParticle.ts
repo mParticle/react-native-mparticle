@@ -150,10 +150,7 @@ export interface Spec extends TurboModule {
   setUserAttributeArray(mpid: string, key: string, value: Array<string>): void;
   getUserAttributes(
     mpid: string,
-    callback: (
-      error: CallbackError | null,
-      result: UserAttributes
-    ) => void
+    callback: (error: CallbackError | null, result: UserAttributes) => void
   ): void;
   setUserTag(mpid: string, tag: string): void;
   incrementUserAttribute(mpid: string, key: string, value: number): void;
