@@ -5,6 +5,7 @@ import {
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import { MParticlePluginProps } from './withMParticle';
+import { getCustomBaseUrl } from './customBaseUrl';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -91,33 +92,6 @@ function getObjcEnvironment(
   }
 }
 
-function getIOSCustomBaseURL(props: MParticlePluginProps): string | null {
-  const customBaseURL = props.iosCustomBaseURL?.trim();
-  if (!customBaseURL) {
-    return null;
-  }
-
-  let parsedCustomBaseURL: URL;
-  try {
-    parsedCustomBaseURL = new URL(customBaseURL);
-  } catch {
-    throw new Error(
-      'react-native-mparticle iosCustomBaseURL must be a valid https URL'
-    );
-  }
-
-  if (
-    parsedCustomBaseURL.protocol !== 'https:' ||
-    !parsedCustomBaseURL.hostname
-  ) {
-    throw new Error(
-      'react-native-mparticle iosCustomBaseURL must be a valid https URL'
-    );
-  }
-
-  return customBaseURL;
-}
-
 /**
  * Generate mParticle initialization code for Swift AppDelegate
  */
@@ -161,12 +135,12 @@ function generateSwiftInitCode(props: MParticlePluginProps): string {
     lines.push('mParticleOptions.identifyRequest = identifyRequest');
   }
 
-  const iosCustomBaseURL = getIOSCustomBaseURL(props);
-  if (iosCustomBaseURL) {
+  const customBaseUrl = getCustomBaseUrl(props);
+  if (customBaseUrl) {
     lines.push('let networkOptions = MPNetworkOptions()');
     lines.push(
       `networkOptions.customBaseURL = URL(string: ${JSON.stringify(
-        iosCustomBaseURL
+        customBaseUrl
       )})`
     );
     lines.push('mParticleOptions.networkOptions = networkOptions');
@@ -221,14 +195,14 @@ function generateObjcInitCode(props: MParticlePluginProps): string {
     lines.push('mParticleOptions.identifyRequest = identifyRequest;');
   }
 
-  const iosCustomBaseURL = getIOSCustomBaseURL(props);
-  if (iosCustomBaseURL) {
+  const customBaseUrl = getCustomBaseUrl(props);
+  if (customBaseUrl) {
     lines.push(
       'MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];'
     );
     lines.push(
       `networkOptions.customBaseURL = [NSURL URLWithString:@${JSON.stringify(
-        iosCustomBaseURL
+        customBaseUrl
       )}];`
     );
     lines.push('mParticleOptions.networkOptions = networkOptions;');

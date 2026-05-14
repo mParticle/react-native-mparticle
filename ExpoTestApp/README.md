@@ -42,7 +42,6 @@ This app tests the Expo config plugin integration for the mParticle React Native
              "androidApiSecret": "YOUR_ANDROID_API_SECRET",
              "logLevel": "verbose",
              "environment": "development",
-             "iosCustomBaseURL": "https://cname.example.com",
              "iosKits": ["mParticle-Rokt"],
              "androidKits": ["android-rokt-kit"]
            }
@@ -100,7 +99,9 @@ The Rokt section also demonstrates:
 - Using `RoktLayoutView` as an embedded placeholder component
 
 On Android, the Rokt session APIs require `android-core` and
-`android-rokt-kit` `5.77.0` or newer.
+`android-rokt-kit` `5.79.0` or newer. If configured, the shared Expo
+`customBaseUrl` setting is applied to Android through
+`NetworkOptions.setCustomBaseURL`.
 
 ### Implementation guide: Shoppable Ads (`selectShoppableAds`)
 
@@ -156,9 +157,6 @@ Check `ios/MParticleExpoTest/AppDelegate.swift` for:
   mParticleOptions.environment = .development
   let identifyRequest = MPIdentityApiRequest.withEmptyUser()
   mParticleOptions.identifyRequest = identifyRequest
-  let networkOptions = MPNetworkOptions()
-  networkOptions.customBaseURL = URL(string: "https://cname.example.com")
-  mParticleOptions.networkOptions = networkOptions
   MParticle.sharedInstance().start(with: mParticleOptions)
   ```
 
@@ -181,9 +179,6 @@ For older Expo SDK versions, check `ios/MParticleExpoTest/AppDelegate.mm` for:
   mParticleOptions.environment = MPEnvironmentDevelopment;
   MPIdentityApiRequest *identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];
   mParticleOptions.identifyRequest = identifyRequest;
-  MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
-  networkOptions.customBaseURL = [NSURL URLWithString:@"https://cname.example.com"];
-  mParticleOptions.networkOptions = networkOptions;
   [[MParticle sharedInstance] startWithOptions:mParticleOptions];
   ```
 
@@ -285,5 +280,5 @@ dependencies {
 | `dataPlanId`              | string   | Data plan ID for validation                               |
 | `dataPlanVersion`         | number   | Data plan version                                         |
 | `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)            |
-| `iosCustomBaseURL`        | string   | iOS custom base URL for global CNAME setup                |
+| `customBaseUrl`           | string   | Custom base URL for global CNAME setup on iOS and Android |
 | `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)   |

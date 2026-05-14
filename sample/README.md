@@ -71,9 +71,9 @@ pod 'mParticle-Rokt', '~> 9.2'
 ```
 
 The sample Android app pins `com.mparticle:android-core` and
-`com.mparticle:android-rokt-kit` to `5.78.5` so the Rokt session APIs work on
-Android. Payment-extension installation and native URL callback forwarding are
-not configured in this release.
+`com.mparticle:android-rokt-kit` to `5.79.0` so the Rokt session APIs and
+Android CNAME support are available. Payment-extension installation and native
+URL callback forwarding are not configured in this release.
 
 ## Running the Sample App
 

@@ -82,7 +82,7 @@ npx expo run:android
 | `dataPlanId`              | string   | No       | Data plan ID for validation                                         |
 | `dataPlanVersion`         | number   | No       | Data plan version                                                   |
 | `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                      |
-| `iosCustomBaseURL`        | string   | No       | iOS custom base URL for global CNAME setup                          |
+| `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android           |
 | `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)           |
 | `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)           |
 
@@ -101,7 +101,6 @@ npx expo run:android
           "androidApiSecret": "YOUR_ANDROID_API_SECRET",
           "environment": "development",
           "logLevel": "verbose",
-          "iosCustomBaseURL": "https://cname.example.com",
           "iosKits": ["mParticle-Rokt", "mParticle-Amplitude"],
           "androidKits": ["android-rokt-kit", "android-amplitude-kit"]
         }
@@ -111,18 +110,27 @@ npx expo run:android
 }
 ```
 
+For global CNAME setup, add the optional shared `customBaseUrl` setting:
+
+```json
+{
+  "customBaseUrl": "https://cname.example.com"
+}
+```
+
 ### What the Plugin Does
 
 **iOS:**
 
 - Adds mParticle SDK initialization to `AppDelegate` (supports both Swift and Objective-C)
-- Sets `MPNetworkOptions.customBaseURL` before startup when `iosCustomBaseURL` is configured
+- Sets `MPNetworkOptions.customBaseURL` before startup when `customBaseUrl` is configured
 - Configures `pre_install` hook in Podfile for dynamic framework linking
 - Adds specified kit pod dependencies
 
 **Android:**
 
 - Adds mParticle SDK initialization to `MainApplication` (supports both Kotlin and Java)
+- Sets `NetworkOptions.setCustomBaseURL` before startup when `customBaseUrl` is configured
 - Adds specified kit Maven dependencies to `build.gradle`
 
 ### Version Support
@@ -294,7 +302,8 @@ See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 
 For Android integrations that use `MParticle.Rokt.setSessionId()` or
 `MParticle.Rokt.getSessionId()`, `android-core` and `android-rokt-kit`
-`5.77.0` or newer are required.
+`5.79.0` or newer are required. Android CNAME setup through
+`customBaseUrl` also requires `android-core` `5.79.0` or newer.
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
@@ -315,13 +324,15 @@ and build your workspace from xCode.
 For more help, see [the Android set up docs](https://docs.mparticle.com/developers/sdk/android/getting-started/#create-an-input).
 
 ```kotlin
-package com.example.myapp;
+package com.example.myapp
 
-import android.app.Application;
-import com.mparticle.MParticle;
+import android.app.Application
+import com.mparticle.MParticle
+import com.mparticle.MParticleOptions
+import com.mparticle.networking.NetworkOptions
 
 class MyApplication : Application() {
-    fun onCreate() {
+    override fun onCreate() {
         super.onCreate()
         val options: MParticleOptions = MParticleOptions.builder(this)
             .credentials("REPLACE ME WITH KEY", "REPLACE ME WITH SECRET")
@@ -329,6 +340,12 @@ class MyApplication : Application() {
             .logLevel(MParticle.LogLevel.VERBOSE)
             //optional
             .identify(identifyRequest)
+            //optional global CNAME setup
+            .networkOptions(
+                NetworkOptions.builder()
+                    .setCustomBaseURL("https://cname.example.com")
+                    .build()
+            )
             //optional
             .identifyTask(
                 BaseIdentityTask()

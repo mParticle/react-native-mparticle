@@ -45,7 +45,6 @@
           "logLevel": "verbose",
           "useEmptyIdentifyRequest": true,
           "environment": "development",
-          "iosCustomBaseURL": "https://cname.example.com",
           "iosKits": ["mParticle-Rokt"],
           "androidKits": ["android-rokt-kit"]
         }

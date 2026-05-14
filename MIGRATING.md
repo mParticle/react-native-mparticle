@@ -32,7 +32,7 @@ MParticle.Rokt.getSessionId(): Promise<string | null>
 
 `close()` is supported on iOS and Android. Session APIs are backed by the iOS
 mParticle Rokt kit. On Android, apps that use these session APIs must use
-`android-core` and `android-rokt-kit` `5.77.0` or newer.
+`android-core` and `android-rokt-kit` `5.79.0` or newer.
 
 ### Expo Config Plugin
 
@@ -52,17 +52,18 @@ Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
 The plugin pins generated `mParticle-Rokt` pods to `~> 9.2`. It does not add
 payment-extension pods or URL callback forwarding in this release.
 
-For global CNAME setup, configure `iosCustomBaseURL`:
+For global CNAME setup, configure the shared `customBaseUrl` setting:
 
 ```json
 {
-  "iosCustomBaseURL": "https://cname.example.com"
+  "customBaseUrl": "https://cname.example.com"
 }
 ```
 
-The plugin applies this through `MPNetworkOptions.customBaseURL` before
-mParticle starts. There is no runtime JavaScript setter because the Rokt kit
-reads this setting during initialization.
+The plugin applies this through `MPNetworkOptions.customBaseURL` on iOS and
+`NetworkOptions.setCustomBaseURL` on Android before mParticle starts. There is
+no runtime JavaScript setter because the Rokt kit reads this setting during
+initialization.
 
 ### Notes
 
