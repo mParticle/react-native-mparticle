@@ -213,37 +213,42 @@ RCT_EXPORT_METHOD(selectShoppableAds:(NSString *)identifier attributes:(NSDictio
 #ifdef RCT_NEW_ARCH_ENABLED
 - (void)close:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-    [self closeWithResolve:resolve reject:reject];
+    (void)reject;
+    [self closeWithResolve:resolve];
 }
 
 - (void)setSessionId:(NSString *)sessionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-    [self setSessionIdWithString:sessionId resolve:resolve reject:reject];
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
 }
 
 - (void)getSessionId:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
 {
-    [self getSessionIdWithResolve:resolve reject:reject];
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
 }
 #else
 RCT_EXPORT_METHOD(close:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self closeWithResolve:resolve reject:reject];
+    (void)reject;
+    [self closeWithResolve:resolve];
 }
 
 RCT_EXPORT_METHOD(setSessionId:(NSString *)sessionId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self setSessionIdWithString:sessionId resolve:resolve reject:reject];
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
 }
 
 RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self getSessionIdWithResolve:resolve reject:reject];
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
 }
 #endif
 
 - (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
 {
     [[[MParticle sharedInstance] rokt] close];
     resolve(nil);
@@ -251,14 +256,12 @@ RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
 
 - (void)setSessionIdWithString:(NSString *)sessionId
                        resolve:(RCTPromiseResolveBlock)resolve
-                        reject:(RCTPromiseRejectBlock)reject
 {
     [[[MParticle sharedInstance] rokt] setSessionId:sessionId ?: @""];
     resolve(nil);
 }
 
 - (void)getSessionIdWithResolve:(RCTPromiseResolveBlock)resolve
-                         reject:(RCTPromiseRejectBlock)reject
 {
     NSString *sessionId = [[[MParticle sharedInstance] rokt] getSessionId];
     resolve(sessionId ?: [NSNull null]);

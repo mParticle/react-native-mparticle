@@ -292,6 +292,10 @@ In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. Th
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 
+For Android integrations that use `MParticle.Rokt.setSessionId()` or
+`MParticle.Rokt.getSessionId()`, `android-core` and `android-rokt-kit`
+`5.77.0` or newer are required.
+
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 4. Remember to start Metro with:

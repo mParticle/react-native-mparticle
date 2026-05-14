@@ -97,7 +97,19 @@ function getIOSCustomBaseURL(props: MParticlePluginProps): string | null {
     return null;
   }
 
-  if (!/^https:\/\/[^\s]+$/.test(customBaseURL)) {
+  let parsedCustomBaseURL: URL;
+  try {
+    parsedCustomBaseURL = new URL(customBaseURL);
+  } catch {
+    throw new Error(
+      'react-native-mparticle iosCustomBaseURL must be a valid https URL'
+    );
+  }
+
+  if (
+    parsedCustomBaseURL.protocol !== 'https:' ||
+    !parsedCustomBaseURL.hostname
+  ) {
     throw new Error(
       'react-native-mparticle iosCustomBaseURL must be a valid https URL'
     );

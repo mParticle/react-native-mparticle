@@ -99,6 +99,9 @@ The Rokt section also demonstrates:
 - Rokt event listeners for callbacks and placement events
 - Using `RoktLayoutView` as an embedded placeholder component
 
+On Android, the Rokt session APIs require `android-core` and
+`android-rokt-kit` `5.77.0` or newer.
+
 ### Implementation guide: Shoppable Ads (`selectShoppableAds`)
 
 Use `MParticle.Rokt.selectShoppableAds(identifier, attributes, roktConfig?)` when you need the Shoppable Ads experience instead of `selectPlacements`.

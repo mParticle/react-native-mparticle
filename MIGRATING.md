@@ -31,8 +31,8 @@ MParticle.Rokt.getSessionId(): Promise<string | null>
 ```
 
 `close()` is supported on iOS and Android. Session APIs are backed by the iOS
-mParticle Rokt kit; Android currently resolves safely without changing the
-session until the Android mParticle Rokt kit exposes equivalent public APIs.
+mParticle Rokt kit. On Android, apps that use these session APIs must use
+`android-core` and `android-rokt-kit` `5.77.0` or newer.
 
 ### Expo Config Plugin
 

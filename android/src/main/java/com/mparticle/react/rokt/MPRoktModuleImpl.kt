@@ -66,13 +66,12 @@ class MPRoktModuleImpl(
         sessionId: String,
         promise: Promise,
     ) {
-        Logger.warning("setSessionId is not supported on Android")
+        MParticle.getInstance()?.Rokt()?.setSessionId(sessionId)
         promise.resolve(null)
     }
 
     fun getSessionId(promise: Promise) {
-        Logger.warning("getSessionId is not supported on Android")
-        promise.resolve(null)
+        promise.resolve(MParticle.getInstance()?.Rokt()?.getSessionId())
     }
 
     fun setRoktEventHandler(roktEventHandler: MpRoktEventCallback) {

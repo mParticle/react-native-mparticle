@@ -70,7 +70,10 @@ The sample Podfile pins the standard Rokt kit with:
 pod 'mParticle-Rokt', '~> 9.2'
 ```
 
-The sample app includes buttons for Rokt close/session APIs. Payment-extension installation and native URL callback forwarding are not configured in this release.
+The sample Android app pins `com.mparticle:android-core` and
+`com.mparticle:android-rokt-kit` to `5.78.5` so the Rokt session APIs work on
+Android. Payment-extension installation and native URL callback forwarding are
+not configured in this release.
 
 ## Running the Sample App
 
