@@ -26,6 +26,13 @@ const {RoktLayoutView} = MParticle;
 
 const eventManagerEmitter = new NativeEventEmitter(MParticle.RoktEventManager);
 
+const generateGuid = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === 'x' ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+
 export default class MParticleSample extends Component {
   constructor(props) {
     super(props);
@@ -47,64 +54,73 @@ export default class MParticleSample extends Component {
     this.render = this.render.bind(this);
 
     // Example Login
-    var request = new MParticle.IdentityRequest();
-    request.email = 'testing1@gmail.com';
-    request.customerId = '123';
-    MParticle.Identity.login(request, (error, userId, previousUserId) => {
-      if (error) {
-        console.debug(error);
-      }
+    var loginRequest = new MParticle.IdentityRequest();
+    loginRequest.email = 'testing1@gmail.com';
+    loginRequest.customerId = '123';
+    MParticle.Identity.login(
+      loginRequest,
+      (loginError, loginUserId, previousUserId) => {
+        if (loginError) {
+          console.debug(loginError);
+        }
 
-      // Only create alias request if there's a previous user
-      if (previousUserId) {
-        var previousUser = new MParticle.User(previousUserId);
-        previousUser.getFirstSeen(firstSeen => {
-          previousUser.getLastSeen(lastSeen => {
-            var aliasRequest = new MParticle.AliasRequest()
-              .sourceMpid(previousUser.getMpid())
-              .destinationMpid(userId)
-              .startTime(firstSeen - 1000)
-              .endTime(lastSeen - 1000);
-            console.log('AliasRequest = ' + JSON.stringify(aliasRequest));
-            MParticle.Identity.aliasUsers(aliasRequest, (success, error) => {
-              if (error) {
-                console.log('Alias error = ' + error);
-              }
-              console.log('Alias result: ' + success);
-            });
+        // Only create alias request if there's a previous user
+        if (previousUserId) {
+          var previousUser = new MParticle.User(previousUserId);
+          previousUser.getFirstSeen(firstSeen => {
+            previousUser.getLastSeen(lastSeen => {
+              var aliasRequest = new MParticle.AliasRequest()
+                .sourceMpid(previousUser.getMpid())
+                .destinationMpid(loginUserId)
+                .startTime(firstSeen - 1000)
+                .endTime(lastSeen - 1000);
+              console.log('AliasRequest = ' + JSON.stringify(aliasRequest));
+              MParticle.Identity.aliasUsers(
+                aliasRequest,
+                (success, aliasError) => {
+                  if (aliasError) {
+                    console.log('Alias error = ' + aliasError);
+                  }
+                  console.log('Alias result: ' + success);
+                },
+              );
 
-            var aliasRequest2 = new MParticle.AliasRequest()
-              .sourceMpid(previousUser.getMpid())
-              .destinationMpid(userId);
-            console.log('AliasRequest2 = ' + JSON.stringify(aliasRequest2));
-            MParticle.Identity.aliasUsers(aliasRequest2, (success, error) => {
-              if (error) {
-                console.log('Alias 2 error = ' + error);
-              }
-              console.log('Alias 2 result: ' + success);
+              var aliasRequest2 = new MParticle.AliasRequest()
+                .sourceMpid(previousUser.getMpid())
+                .destinationMpid(loginUserId);
+              console.log('AliasRequest2 = ' + JSON.stringify(aliasRequest2));
+              MParticle.Identity.aliasUsers(
+                aliasRequest2,
+                (success, alias2Error) => {
+                  if (alias2Error) {
+                    console.log('Alias 2 error = ' + alias2Error);
+                  }
+                  console.log('Alias 2 result: ' + success);
+                },
+              );
             });
           });
-        });
-      } else {
-        console.log('No previous user found, skipping alias request');
-      }
-
-      var user = new MParticle.User(userId);
-      console.debug('User Attributes = ' + user.userAttributes);
-      MParticle.Identity.logout({}, (error, userId) => {
-        if (error) {
-          console.debug('Logout error' + error);
+        } else {
+          console.log('No previous user found, skipping alias request');
         }
-        var request = new MParticle.IdentityRequest();
-        request.email = 'testing2@gmail.com';
-        request.customerId = '456';
-        MParticle.Identity.modify(request, error => {
-          if (error) {
-            console.debug('Modify error = ' + error);
+
+        var user = new MParticle.User(loginUserId);
+        console.debug('User Attributes = ' + user.userAttributes);
+        MParticle.Identity.logout({}, logoutError => {
+          if (logoutError) {
+            console.debug('Logout error' + logoutError);
           }
+          var modifyRequest = new MParticle.IdentityRequest();
+          modifyRequest.email = 'testing2@gmail.com';
+          modifyRequest.customerId = '456';
+          MParticle.Identity.modify(modifyRequest, modifyError => {
+            if (modifyError) {
+              console.debug('Modify error = ' + modifyError);
+            }
+          });
         });
-      });
-    });
+      },
+    );
 
     var i = 0;
     // Toggle the state every few seconds, 10 times
@@ -121,10 +137,13 @@ export default class MParticleSample extends Component {
       MParticle.Identity.getCurrentUser(currentUser => {
         //currentUser.setUserTag('regular');
       });
-      var request = new MParticle.IdentityRequest();
-      request.email = 'testing1@gmail.com';
-      request.customerId = 'vlknasdlknv';
-      request.setUserIdentity('12345', MParticle.UserIdentityType.Alias);
+      var intervalRequest = new MParticle.IdentityRequest();
+      intervalRequest.email = 'testing1@gmail.com';
+      intervalRequest.customerId = 'vlknasdlknv';
+      intervalRequest.setUserIdentity(
+        '12345',
+        MParticle.UserIdentityType.Alias,
+      );
 
       const product = new MParticle.Product(
         'Test product for cart',
@@ -239,7 +258,7 @@ export default class MParticleSample extends Component {
   }
 
   _roktSession() {
-    const sessionId = `rn-sample-${Date.now()}`;
+    const sessionId = generateGuid();
     MParticle.Rokt.setSessionId(sessionId)
       .then(() => {
         return MParticle.Rokt.getSessionId();
@@ -272,7 +291,9 @@ export default class MParticleSample extends Component {
     const attributes =
       Platform.OS === 'ios' ? iosAttributes : androidAttributes;
     console.log(
-      `Platform detected: ${Platform.OS}, using ${Platform.OS === 'ios' ? 'iOS' : 'Android'} attributes:`,
+      `Platform detected: ${Platform.OS}, using ${
+        Platform.OS === 'ios' ? 'iOS' : 'Android'
+      } attributes:`,
       attributes,
     );
     const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);

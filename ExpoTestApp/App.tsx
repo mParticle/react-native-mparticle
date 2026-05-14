@@ -26,6 +26,13 @@ const { RoktLayoutView, RoktEventManager } = MParticle;
 // Create event emitter for Rokt events
 const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
 
+const generateGuid = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === 'x' ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+
 export default function App() {
   const [eventName, setEventName] = useState('Test Event');
   const [status, setStatus] = useState('SDK initialized via native code');
@@ -269,7 +276,7 @@ export default function App() {
   };
 
   const handleRoktSession = () => {
-    const sessionId = `rn-expo-${Date.now()}`;
+    const sessionId = generateGuid();
 
     MParticle.Rokt.setSessionId(sessionId)
       .then(() => MParticle.Rokt.getSessionId())

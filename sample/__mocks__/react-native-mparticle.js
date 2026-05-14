@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Mock for react-native-mparticle
  * This mock provides a simple API that mimics the essential functionality
