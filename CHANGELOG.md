@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-05-27
+
+### Fixed
+
+- Pin android-core upper bound to prevent 6.0.0-rc.1 pull (#710) ([#329](https://github.com/mParticle/react-native-mparticle/pull/329))
+
+### Changed
+
+- Bump @tootallnate/once from 2.0.0 to 2.0.1 ([#328](https://github.com/mParticle/react-native-mparticle/pull/328))
+- Bump actions/create-github-app-token from 3.1.1 to 3.2.0 ([#327](https://github.com/mParticle/react-native-mparticle/pull/327))
+
 ## [3.1.0] - 2026-05-14
 
 ### Added
@@ -388,7 +399,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.1.0...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.1.1...HEAD
+[3.1.1]: https://github.com/mParticle/react-native-mparticle/compare/3.1.0...3.1.1
 [3.1.0]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...3.0.0
 [2.9.2]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...2.9.2
