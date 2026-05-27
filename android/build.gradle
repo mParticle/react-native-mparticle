@@ -118,7 +118,9 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    api 'com.mparticle:android-core:[5.79.0, )'
+    // Bounded upper bound prevents resolving to 6.0.0-rc.1+ on Maven Central.
+    // 6.x removed deprecated symbols (e.g. UserAttributeListener); see #710.
+    api 'com.mparticle:android-core:[5.79.0, 6.0)'
 
     //
     // And, if you want to include kits, you can do so as follows:
