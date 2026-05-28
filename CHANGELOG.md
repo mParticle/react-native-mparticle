@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-05-28
+
+### Fixed
+
+- Bound android kit upper version in expo config plugin ([#332](https://github.com/mParticle/react-native-mparticle/pull/332))
+
 ## [3.1.1] - 2026-05-27
 
 ### Fixed
@@ -399,7 +405,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.1.1...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.1.2...HEAD
+[3.1.2]: https://github.com/mParticle/react-native-mparticle/compare/3.1.1...3.1.2
 [3.1.1]: https://github.com/mParticle/react-native-mparticle/compare/3.1.0...3.1.1
 [3.1.0]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...3.1.0
 [3.0.0]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...3.0.0
