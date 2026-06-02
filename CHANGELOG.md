@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Expo config plugin: optional `pinningDisabled` for `MPNetworkOptions` / `NetworkOptions` at SDK startup
+
+### Fixed
+
+- iOS sample CI: pin `Rokt-Widget` to `5.2.0` and `DcuiSchema` to `2.7.0` (avoids `2.8.x` schema floating under Rokt’s `~> 2.6` and breaking `RoktUXHelper` Swift compile); GitHub Actions stays on Xcode 16.x
+
 ## [3.1.2] - 2026-05-28
 
 ### Fixed
