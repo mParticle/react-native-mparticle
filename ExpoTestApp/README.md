@@ -268,17 +268,18 @@ dependencies {
 
 ## Plugin Configuration Options
 
-| Option                    | Type     | Description                                               |
-| ------------------------- | -------- | --------------------------------------------------------- |
-| `iosApiKey`               | string   | mParticle iOS API key                                     |
-| `iosApiSecret`            | string   | mParticle iOS API secret                                  |
-| `androidApiKey`           | string   | mParticle Android API key                                 |
-| `androidApiSecret`        | string   | mParticle Android API secret                              |
-| `logLevel`                | string   | Log level: `none`, `error`, `warning`, `debug`, `verbose` |
-| `environment`             | string   | Environment: `development`, `production`, `autoDetect`    |
-| `useEmptyIdentifyRequest` | boolean  | Initialize with empty identify request (default: true)    |
-| `dataPlanId`              | string   | Data plan ID for validation                               |
-| `dataPlanVersion`         | number   | Data plan version                                         |
-| `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)            |
-| `customBaseUrl`           | string   | Custom base URL for global CNAME setup on iOS and Android |
-| `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)   |
+| Option                    | Type     | Description                                                                                               |
+| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `iosApiKey`               | string   | mParticle iOS API key                                                                                     |
+| `iosApiSecret`            | string   | mParticle iOS API secret                                                                                  |
+| `androidApiKey`           | string   | mParticle Android API key                                                                                 |
+| `androidApiSecret`        | string   | mParticle Android API secret                                                                              |
+| `logLevel`                | string   | Log level: `none`, `error`, `warning`, `debug`, `verbose`                                                 |
+| `environment`             | string   | Environment: `development`, `production`, `autoDetect`                                                    |
+| `useEmptyIdentifyRequest` | boolean  | Initialize with empty identify request (default: true)                                                    |
+| `dataPlanId`              | string   | Data plan ID for validation                                                                               |
+| `dataPlanVersion`         | number   | Data plan version                                                                                         |
+| `iosKits`                 | string[] | iOS kit pod names (e.g., `["mParticle-Rokt"]`)                                                            |
+| `customBaseUrl`           | string   | Custom base URL for global CNAME setup on iOS and Android                                                 |
+| `pinningDisabled`         | boolean  | Disable SSL pinning (iOS: `MPNetworkOptions.pinningDisabled`; Android: `setPinningDisabledInDevelopment`) |
+| `androidKits`             | string[] | Android kit dependencies (e.g., `["android-rokt-kit"]`)                                                   |

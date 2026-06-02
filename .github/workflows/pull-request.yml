@@ -128,7 +128,9 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
-          xcode-version: latest-stable
+          # Avoid `latest-stable` (Xcode 17+ / Swift 6 defaults) breaking RoktUXHelper
+          # source builds until Rokt pins are updated upstream.
+          xcode-version: '^16.0.0'
 
       - name: Set Xcode Toolchain
         run: echo "TOOLCHAINS=com.apple.dt.toolchain.XcodeDefault" >> $GITHUB_ENV

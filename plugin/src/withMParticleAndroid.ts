@@ -10,6 +10,10 @@ import { getCustomBaseUrl } from './customBaseUrl';
 // Tag used for mergeContents to identify code blocks added by this plugin
 const MPARTICLE_TAG = 'react-native-mparticle';
 
+function shouldEmitNetworkOptions(props: MParticlePluginProps): boolean {
+  return Boolean(getCustomBaseUrl(props) || props.pinningDisabled === true);
+}
+
 /**
  * Get the mParticle log level string for Android
  */
@@ -64,6 +68,7 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
     dataPlanVersion,
   } = props;
   const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -86,12 +91,17 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
   }
 
-  if (customBaseUrl) {
+  if (shouldEmitNetworkOptions(props)) {
     lines.push('    .networkOptions(');
     lines.push('        NetworkOptions.builder()');
-    lines.push(
-      `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
-    );
+    if (customBaseUrl) {
+      lines.push(
+        `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('            .setPinningDisabledInDevelopment(true)');
+    }
     lines.push('            .build()');
     lines.push('    )');
   }
@@ -120,6 +130,7 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     dataPlanVersion,
   } = props;
   const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -142,12 +153,17 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
   }
 
-  if (customBaseUrl) {
+  if (shouldEmitNetworkOptions(props)) {
     lines.push('    .networkOptions(');
     lines.push('        NetworkOptions.builder()');
-    lines.push(
-      `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
-    );
+    if (customBaseUrl) {
+      lines.push(
+        `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('            .setPinningDisabledInDevelopment(true)');
+    }
     lines.push('            .build()');
     lines.push('    )');
   }
@@ -173,7 +189,7 @@ function getKotlinImports(props: MParticlePluginProps): string {
     'import com.mparticle.identity.IdentityApiRequest',
   ];
 
-  if (getCustomBaseUrl(props)) {
+  if (shouldEmitNetworkOptions(props)) {
     imports.push('import com.mparticle.networking.NetworkOptions');
   }
 
@@ -190,7 +206,7 @@ function getJavaImports(props: MParticlePluginProps): string {
     'import com.mparticle.identity.IdentityApiRequest;',
   ];
 
-  if (getCustomBaseUrl(props)) {
+  if (shouldEmitNetworkOptions(props)) {
     imports.push('import com.mparticle.networking.NetworkOptions;');
   }
 

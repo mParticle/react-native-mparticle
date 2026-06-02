@@ -71,20 +71,21 @@ npx expo run:android
 
 ### Plugin Configuration Options
 
-| Option                    | Type     | Required | Description                                                         |
-| ------------------------- | -------- | -------- | ------------------------------------------------------------------- |
-| `iosApiKey`               | string   | Yes      | iOS API key from mParticle dashboard                                |
-| `iosApiSecret`            | string   | Yes      | iOS API secret from mParticle dashboard                             |
-| `androidApiKey`           | string   | Yes      | Android API key from mParticle dashboard                            |
-| `androidApiSecret`        | string   | Yes      | Android API secret from mParticle dashboard                         |
-| `logLevel`                | string   | No       | Log level: `'none'`, `'error'`, `'warning'`, `'debug'`, `'verbose'` |
-| `environment`             | string   | No       | Environment: `'development'`, `'production'`, `'autoDetect'`        |
-| `dataPlanId`              | string   | No       | Data plan ID for validation                                         |
-| `dataPlanVersion`         | number   | No       | Data plan version                                                   |
-| `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                      |
-| `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android           |
-| `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)           |
-| `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)           |
+| Option                    | Type     | Required | Description                                                                                   |
+| ------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------- |
+| `iosApiKey`               | string   | Yes      | iOS API key from mParticle dashboard                                                          |
+| `iosApiSecret`            | string   | Yes      | iOS API secret from mParticle dashboard                                                       |
+| `androidApiKey`           | string   | Yes      | Android API key from mParticle dashboard                                                      |
+| `androidApiSecret`        | string   | Yes      | Android API secret from mParticle dashboard                                                   |
+| `logLevel`                | string   | No       | Log level: `'none'`, `'error'`, `'warning'`, `'debug'`, `'verbose'`                           |
+| `environment`             | string   | No       | Environment: `'development'`, `'production'`, `'autoDetect'`                                  |
+| `dataPlanId`              | string   | No       | Data plan ID for validation                                                                   |
+| `dataPlanVersion`         | number   | No       | Data plan version                                                                             |
+| `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                                                |
+| `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android                                     |
+| `pinningDisabled`         | boolean  | No       | Disable SSL pinning (`MPNetworkOptions` on iOS; `setPinningDisabledInDevelopment` on Android) |
+| `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)                                     |
+| `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)                                     |
 
 ### Example with Kits
 
@@ -123,14 +124,14 @@ For global CNAME setup, add the optional shared `customBaseUrl` setting:
 **iOS:**
 
 - Adds mParticle SDK initialization to `AppDelegate` (supports both Swift and Objective-C)
-- Sets `MPNetworkOptions.customBaseURL` before startup when `customBaseUrl` is configured
+- Sets `MPNetworkOptions` (`customBaseURL` and/or `pinningDisabled`) before startup when those plugin options are configured
 - Configures `pre_install` hook in Podfile for dynamic framework linking
 - Adds specified kit pod dependencies
 
 **Android:**
 
 - Adds mParticle SDK initialization to `MainApplication` (supports both Kotlin and Java)
-- Sets `NetworkOptions.setCustomBaseURL` before startup when `customBaseUrl` is configured
+- Sets `NetworkOptions` (`setCustomBaseURL` and/or `setPinningDisabledInDevelopment`) before startup when those plugin options are configured
 - Adds specified kit Maven dependencies to `build.gradle`
 
 ### Version Support

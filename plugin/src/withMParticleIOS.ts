@@ -136,13 +136,19 @@ function generateSwiftInitCode(props: MParticlePluginProps): string {
   }
 
   const customBaseUrl = getCustomBaseUrl(props);
-  if (customBaseUrl) {
+  const pinningDisabled = props.pinningDisabled === true;
+  if (customBaseUrl || pinningDisabled) {
     lines.push('let networkOptions = MPNetworkOptions()');
-    lines.push(
-      `networkOptions.customBaseURL = URL(string: ${JSON.stringify(
-        customBaseUrl
-      )})`
-    );
+    if (customBaseUrl) {
+      lines.push(
+        `networkOptions.customBaseURL = URL(string: ${JSON.stringify(
+          customBaseUrl
+        )})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('networkOptions.pinningDisabled = true');
+    }
     lines.push('mParticleOptions.networkOptions = networkOptions');
   }
 
@@ -196,15 +202,21 @@ function generateObjcInitCode(props: MParticlePluginProps): string {
   }
 
   const customBaseUrl = getCustomBaseUrl(props);
-  if (customBaseUrl) {
+  const pinningDisabled = props.pinningDisabled === true;
+  if (customBaseUrl || pinningDisabled) {
     lines.push(
       'MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];'
     );
-    lines.push(
-      `networkOptions.customBaseURL = [NSURL URLWithString:@${JSON.stringify(
-        customBaseUrl
-      )}];`
-    );
+    if (customBaseUrl) {
+      lines.push(
+        `networkOptions.customBaseURL = [NSURL URLWithString:@${JSON.stringify(
+          customBaseUrl
+        )}];`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('networkOptions.pinningDisabled = YES;');
+    }
     lines.push('mParticleOptions.networkOptions = networkOptions;');
   }
 
