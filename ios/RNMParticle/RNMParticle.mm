@@ -19,6 +19,12 @@
 - (void)setUserId:(NSNumber *)userId;
 @end
 
+// Forward declare so New Arch `logCommerceEvent` can use the same JS→native
+// product action mapping as `RCTConvert MPCommerceEvent:` (defined later in this file).
+@interface RCTConvert (MPCommerceEvent)
++ (MPCommerceEventAction)MPCommerceEventAction:(id)json;
+@end
+
 @implementation RNMParticle
 
 RCT_EXTERN void RCTRegisterModule(Class);
@@ -447,7 +453,7 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     MPCommerceEvent *mpCommerceEvent = [[MPCommerceEvent alloc] init];
 
     if (commerceEvent.productActionType().has_value()) {
-        mpCommerceEvent.action = (MPCommerceEventAction)commerceEvent.productActionType().value();
+        mpCommerceEvent.action = [RCTConvert MPCommerceEventAction:@(commerceEvent.productActionType().value())];
     }
 
     if (commerceEvent.promotionActionType().has_value()) {
@@ -778,7 +784,7 @@ RCT_EXPORT_METHOD(setCCPAConsentState:(MPCCPAConsent *)consent)
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] init];
 
     if (dict[@"productActionType"] && dict[@"productActionType"] != [NSNull null]) {
-        commerceEvent.action = (MPCommerceEventAction)[dict[@"productActionType"] integerValue];
+        commerceEvent.action = [RCTConvert MPCommerceEventAction:dict[@"productActionType"]];
     }
 
     if (dict[@"products"] && dict[@"products"] != [NSNull null]) {
