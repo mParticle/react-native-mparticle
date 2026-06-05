@@ -20,9 +20,10 @@
 @end
 
 // Forward declare so New Arch `logCommerceEvent` can use the same JS→native
-// product action mapping as `RCTConvert MPCommerceEvent:` (defined later in this file).
+// mappings as `RCTConvert (MPCommerceEvent)` (defined later in this file).
 @interface RCTConvert (MPCommerceEvent)
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
++ (MPPromotionAction)MPPromotionAction:(id)json;
 @end
 
 @implementation RNMParticle
@@ -457,7 +458,10 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     }
 
     if (commerceEvent.promotionActionType().has_value()) {
-        mpCommerceEvent.promotionContainer = [[MPPromotionContainer alloc] initWithAction:(MPPromotionAction)commerceEvent.promotionActionType().value() promotion:nil];
+        MPPromotionAction promotionAction =
+            [RCTConvert MPPromotionAction:@(commerceEvent.promotionActionType().value())];
+        mpCommerceEvent.promotionContainer =
+            [[MPPromotionContainer alloc] initWithAction:promotionAction promotion:nil];
     }
 
     if (commerceEvent.products().has_value()) {
@@ -926,6 +930,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 + (MPTransactionAttributes *)MPTransactionAttributes:(id)json;
 + (MPProduct *)MPProduct:(id)json;
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
++ (MPPromotionAction)MPPromotionAction:(id)json;
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json;
 + (MPIdentityApiResult *)MPIdentityApiResult:(id)json;
 + (MPAliasRequest *)MPAliasRequest:(id)json;
@@ -995,7 +1000,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 }
 
 + (MPPromotionContainer *)MPPromotionContainer:(id)json {
-    MPPromotionAction promotionAction = (MPPromotionAction)[json[@"promotionActionType"] intValue];
+    MPPromotionAction promotionAction = [RCTConvert MPPromotionAction:json[@"promotionActionType"]];
     MPPromotionContainer *promotionContainer = [[MPPromotionContainer alloc] initWithAction:promotionAction promotion:nil];
     NSArray *jsonPromotions = json[@"promotions"];
     [jsonPromotions enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -1043,6 +1048,20 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
         [product setObject:value forKeyedSubscript:key];
     }
     return product;
+}
+
++ (MPPromotionAction)MPPromotionAction:(NSNumber *)json {
+    // JS `PromotionActionType`: View = 0, Click = 1 (js/index.tsx).
+    // Apple `MPPromotionAction`: Click = 0, View = 1 (MPPromotion.h).
+    switch ([json intValue]) {
+        case 0:
+            return MPPromotionActionView;
+        case 1:
+            return MPPromotionActionClick;
+        default:
+            // Match Android `convertPromotionActionType`: non-zero → Click
+            return MPPromotionActionClick;
+    }
 }
 
 + (MPCommerceEventAction)MPCommerceEventAction:(NSNumber *)json {
