@@ -114,7 +114,8 @@ jobs:
         run: ./gradlew assembleDebug
 
   ios-sample-app:
-    name: iOS Sample App & unit tests
+    # Keep this display name in sync with branch protection required checks ("iOS Sample App").
+    name: iOS Sample App
     runs-on: macos-15
     steps:
       - name: Checkout
