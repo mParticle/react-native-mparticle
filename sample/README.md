@@ -144,6 +144,21 @@ From the sample directory:
 - `yarn lint` - Run ESLint
 - `yarn test` - Run Jest tests
 
+## iOS native unit tests (SDK bridge)
+
+The sample Xcode project includes **`RCTConvertCommerceMappingTests`**, which asserts that JavaScript `ProductActionType` / `PromotionActionType` integers map to the correct Apple SDK enums, and that **`+[RCTConvert MPCommerceEvent:]`** builds `MPCommerceEvent` / `MPPromotionContainer` with those mappings (the object graph used before `-[MParticle logCommerceEvent:]`) — see comments in that file for scope vs. the TurboModule codegen path.
+
+From `sample/ios` after `pod install`:
+
+```bash
+xcodebuild -workspace MParticleSample.xcworkspace \
+  -scheme MParticleSample \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  test -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests
+```
+
+Pull requests run these tests in CI (see `.github/workflows/pull-request.yml`).
+
 ## Additional Resources
 
 - [mParticle Documentation](https://docs.mparticle.com/)
