@@ -114,6 +114,7 @@ jobs:
         run: ./gradlew assembleDebug
 
   ios-sample-app:
+    # Keep this display name in sync with branch protection required checks ("iOS Sample App").
     name: iOS Sample App
     runs-on: macos-15
     steps:
@@ -161,7 +162,7 @@ jobs:
         working-directory: sample
         run: bundle install
 
-      - name: Build iOS sample app
+      - name: Build iOS sample app and run commerce mapping unit tests
         working-directory: sample/ios
         run: |
           bundle exec pod install
@@ -171,7 +172,9 @@ jobs:
           -destination 'id=${{ steps.simulator.outputs.udid }}' \
           -derivedDataPath ios/build \
           -UseModernBuildSystem=YES \
-          build | bundle exec xcpretty -k
+          test \
+          -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
+          | bundle exec xcpretty -k
 
   pr-notify:
     if: >
