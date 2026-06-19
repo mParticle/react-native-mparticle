@@ -39,70 +39,70 @@ import com.mparticle.identity.IdentityApiRequest
  * a pure TurboModule, which is what the race depends on.)
  */
 class DeferredInitModule(private val reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext) {
+    ReactContextBaseJavaModule(reactContext) {
 
-  companion object {
-    const val TAG = "DeferredInitRepro"
+    companion object {
+        const val TAG = "DeferredInitRepro"
 
-    /**
-     * Master switch for the deferred-init edge case. Keep this `false` so the sample uses the
-     * standard eager init in MainApplication.onCreate(); set it to `true` to reproduce the
-     * late-init Activity-capture race described above.
-     */
-    const val DEFERRED_INIT_EXAMPLE = false
+        /**
+         * Master switch for the deferred-init edge case. Keep this `false` so the sample uses the
+         * standard eager init in MainApplication.onCreate(); set it to `true` to reproduce the
+         * late-init Activity-capture race described above.
+         */
+        const val DEFERRED_INIT_EXAMPLE = false
 
-    // Registered in Application.onCreate -- the eager path, for contrast.
-    var eagerTracker: ActivityTracker? = null
-  }
-
-  // Registered at deferred-start time, mirroring Rokt.init()'s late registration.
-  private val deferredTracker = ActivityTracker("DEFERRED")
-
-  override fun getName(): String = "DeferredInit"
-
-  @ReactMethod
-  fun startMParticle(promise: Promise) {
-    if (!DEFERRED_INIT_EXAMPLE) {
-      // Standard mode: mParticle was already started in Application.onCreate(); nothing to do.
-      promise.resolve("eager-init (deferred example disabled)")
-      return
+        // Registered in Application.onCreate -- the eager path, for contrast.
+        var eagerTracker: ActivityTracker? = null
     }
 
-    Log.i(TAG, "startMParticle() called from JS (post first-frame). MParticle.getInstance()=${MParticle.getInstance()}")
+    // Registered at deferred-start time, mirroring Rokt.init()'s late registration.
+    private val deferredTracker = ActivityTracker("DEFERRED")
 
-    val app = reactContext.applicationContext as Application
+    override fun getName(): String = "DeferredInit"
 
-    // Mirror Rokt SDK: register the activity observer at init time, NOT at process start.
-    app.registerActivityLifecycleCallbacks(deferredTracker)
-    Log.i(TAG, "[DEFERRED] tracker registered. currentActivity right now = ${deferredTracker.currentActivity}")
+    @ReactMethod
+    fun startMParticle(promise: Promise) {
+        if (!DEFERRED_INIT_EXAMPLE) {
+            // Standard mode: mParticle was already started in Application.onCreate(); nothing to do.
+            promise.resolve("eager-init (deferred example disabled)")
+            return
+        }
 
-    val identityRequest = IdentityApiRequest.withEmptyUser()
-    val options = MParticleOptions.builder(app)
-      .credentials("REPLACE_ME", "REPLACE_ME")
-      .logLevel(MParticle.LogLevel.VERBOSE)
-      .identify(identityRequest.build())
-      .build()
+        Log.i(TAG, "startMParticle() called from JS (post first-frame). MParticle.getInstance()=${MParticle.getInstance()}")
 
-    MParticle.start(options)
-    Log.i(TAG, "MParticle.start() invoked from native module. getInstance()=${MParticle.getInstance()}")
+        val app = reactContext.applicationContext as Application
 
-    // Snapshot the captured activity 2s later: did the deferred observer ever
-    // see a resume? (Rokt's currentActivity cache works exactly this way.)
-    Handler(Looper.getMainLooper()).postDelayed({
-      Log.i(
-        TAG,
-        "SNAPSHOT after 2s -> EAGER.currentActivity=${eagerTracker?.currentActivity?.localClassName} | " +
-          "DEFERRED.currentActivity=${deferredTracker.currentActivity?.localClassName}"
-      )
-    }, 2000)
+        // Mirror Rokt SDK: register the activity observer at init time, NOT at process start.
+        app.registerActivityLifecycleCallbacks(deferredTracker)
+        Log.i(TAG, "[DEFERRED] tracker registered. currentActivity right now = ${deferredTracker.currentActivity}")
 
-    promise.resolve("started")
-  }
+        val identityRequest = IdentityApiRequest.withEmptyUser()
+        val options = MParticleOptions.builder(app)
+            .credentials("REPLACE_ME", "REPLACE_ME")
+            .logLevel(MParticle.LogLevel.VERBOSE)
+            .identify(identityRequest.build())
+            .build()
 
-  @ReactMethod
-  fun reportActivityState(promise: Promise) {
-    val msg = "EAGER=${eagerTracker?.currentActivity?.localClassName} | DEFERRED=${deferredTracker.currentActivity?.localClassName}"
-    Log.i(TAG, "reportActivityState -> $msg")
-    promise.resolve(msg)
-  }
+        MParticle.start(options)
+        Log.i(TAG, "MParticle.start() invoked from native module. getInstance()=${MParticle.getInstance()}")
+
+        // Snapshot the captured activity 2s later: did the deferred observer ever
+        // see a resume? (Rokt's currentActivity cache works exactly this way.)
+        Handler(Looper.getMainLooper()).postDelayed({
+            Log.i(
+                TAG,
+                "SNAPSHOT after 2s -> EAGER.currentActivity=${eagerTracker?.currentActivity?.localClassName} | " +
+                    "DEFERRED.currentActivity=${deferredTracker.currentActivity?.localClassName}"
+            )
+        }, 2000)
+
+        promise.resolve("started")
+    }
+
+    @ReactMethod
+    fun reportActivityState(promise: Promise) {
+        val msg = "EAGER=${eagerTracker?.currentActivity?.localClassName} | DEFERRED=${deferredTracker.currentActivity?.localClassName}"
+        Log.i(TAG, "reportActivityState -> $msg")
+        promise.resolve(msg)
+    }
 }
