@@ -180,6 +180,13 @@ The `EAGER` tracker (registered at process start) captures `MainActivity`; the `
 tracker (registered when init runs at first frame) stays `null` until you background and
 reopen the app — demonstrating the race. See `DeferredInitModule.kt` for the full write-up.
 
+> **Note:** When the flag is enabled, mParticle is not started until first-frame paint, so any
+> mParticle JS calls made earlier (e.g. `Identity.login` in the component constructor,
+> `getSession` in `componentDidMount`) run before the SDK is started and are no-ops until then.
+> This is itself an inherent hazard of deferred initialisation and is expected in this example;
+> gate such calls behind init completion in a real deferred-init integration. With the flag off
+> (default) mParticle starts eagerly in `onCreate()`, so these calls behave normally.
+
 ## Additional Resources
 
 - [mParticle Documentation](https://docs.mparticle.com/)
