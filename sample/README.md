@@ -159,6 +159,27 @@ xcodebuild -workspace MParticleSample.xcworkspace \
 
 Pull requests run these tests in CI (see `.github/workflows/pull-request.yml`).
 
+## Deferred-init edge case (Android)
+
+The sample includes a small, opt-in example that reproduces a late-initialisation race on
+Android: starting mParticle from a native module at first-frame paint (a partner pattern used
+to cut startup cost) instead of in `MainApplication.onCreate()`. Because the Rokt SDK caches
+the current `Activity` only on `onActivityResumed` (≤ v5), deferring init past the host
+Activity's resume leaves overlay/bottom-sheet placements unable to display until the next
+resume. iOS is unaffected. Fixed upstream in the Rokt Android SDK (`sdk-android-source`
+[#1062](https://github.com/ROKT/sdk-android-source/pull/1062),
+[#1063](https://github.com/ROKT/sdk-android-source/pull/1063)).
+
+It is **disabled by default**. To reproduce:
+
+1. Set `DEFERRED_INIT_EXAMPLE = true` in
+   `android/app/src/main/java/com/mparticlesample/DeferredInitModule.kt`.
+2. Run the app and watch `adb logcat -s DeferredInitRepro`.
+
+The `EAGER` tracker (registered at process start) captures `MainActivity`; the `DEFERRED`
+tracker (registered when init runs at first frame) stays `null` until you background and
+reopen the app — demonstrating the race. See `DeferredInitModule.kt` for the full write-up.
+
 ## Additional Resources
 
 - [mParticle Documentation](https://docs.mparticle.com/)

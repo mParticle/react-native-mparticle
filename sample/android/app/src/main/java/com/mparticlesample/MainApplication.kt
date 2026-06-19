@@ -19,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
       packageList =
         PackageList(this).packages.apply {
           add(MParticlePackage())
+          add(DeferredInitPackage())
         },
     )
   }
@@ -27,14 +28,24 @@ class MainApplication : Application(), ReactApplication {
     super.onCreate()
     loadReactNative(this)
 
-    val identityRequest = IdentityApiRequest.withEmptyUser()
-
-    val options = MParticleOptions.builder(this)
-      .credentials("REPLACE_ME","REPLACE_ME")
-      .logLevel(MParticle.LogLevel.VERBOSE)
-      .identify(identityRequest.build())
-      .build()
-
-    MParticle.start(options)
+    if (DeferredInitModule.DEFERRED_INIT_EXAMPLE) {
+      // Deferred-init edge case (see DeferredInitModule for the full explanation).
+      // Register an eager activity tracker at process start -- before the first
+      // Activity is created -- so logcat can contrast it against the deferred path.
+      // MParticle.start() is intentionally NOT called here; DeferredInitModule
+      // starts it at first-frame paint instead (see index.js).
+      val eager = ActivityTracker("EAGER")
+      registerActivityLifecycleCallbacks(eager)
+      DeferredInitModule.eagerTracker = eager
+    } else {
+      // Standard, supported integration: start mParticle in Application.onCreate().
+      val identityRequest = IdentityApiRequest.withEmptyUser()
+      val options = MParticleOptions.builder(this)
+        .credentials("REPLACE_ME", "REPLACE_ME")
+        .logLevel(MParticle.LogLevel.VERBOSE)
+        .identify(identityRequest.build())
+        .build()
+      MParticle.start(options)
+    }
   }
 }
