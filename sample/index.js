@@ -171,22 +171,26 @@ export default class MParticleSample extends Component {
   }
 
   componentDidMount() {
-    // Deferred-init edge-case example (Android). When DeferredInitModule.DEFERRED_INIT_EXAMPLE
-    // is enabled, mParticle is started from the native module at the moment the first frame is
-    // painted, instead of in MainApplication.onCreate(). requestAnimationFrame fires after the
-    // first frame is committed -- by which point MainActivity has already RESUMED, which is what
-    // triggers the Rokt overlay Activity-capture race. When the flag is off (default) this is a
-    // no-op. See DeferredInitModule.kt for the full explanation.
-    requestAnimationFrame(() => {
-      const {DeferredInit} = NativeModules;
-      if (DeferredInit) {
-        DeferredInit.startMParticle()
-          .then(r => console.log('Deferred MParticle.start ->', r))
-          .catch(e => console.warn('Deferred start failed', e));
-      } else {
-        console.warn('DeferredInit native module not available');
-      }
-    });
+    // Deferred-init edge-case example (Android only). The DeferredInit native module exists only
+    // on Android; iOS resolves the presenter lazily and is unaffected, so we skip it there to keep
+    // iOS quiet. When DeferredInitModule.DEFERRED_INIT_EXAMPLE is enabled, mParticle is started
+    // from the native module at the moment the first frame is painted, instead of in
+    // MainApplication.onCreate(). requestAnimationFrame fires after the first frame is committed --
+    // by which point MainActivity has already RESUMED, which is what triggers the Rokt overlay
+    // Activity-capture race. When the flag is off (default) this is a no-op on the native side.
+    // See DeferredInitModule.kt for the full explanation.
+    if (Platform.OS === 'android') {
+      requestAnimationFrame(() => {
+        const {DeferredInit} = NativeModules;
+        if (DeferredInit) {
+          DeferredInit.startMParticle()
+            .then(r => console.log('Deferred MParticle.start ->', r))
+            .catch(e => console.warn('Deferred start failed', e));
+        } else {
+          console.warn('DeferredInit native module not available');
+        }
+      });
+    }
 
     MParticle.getSession(session => this.setState({session}));
 

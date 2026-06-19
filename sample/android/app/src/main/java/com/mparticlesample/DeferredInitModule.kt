@@ -68,6 +68,13 @@ class DeferredInitModule(private val reactContext: ReactApplicationContext) :
             return
         }
 
+        // Idempotent: JS may invoke this more than once (Fast Refresh, remounts). Once mParticle
+        // has started, skip re-registering the lifecycle observer and re-starting the SDK.
+        if (MParticle.getInstance() != null) {
+            promise.resolve("already started")
+            return
+        }
+
         Log.i(TAG, "startMParticle() called from JS (post first-frame). MParticle.getInstance()=${MParticle.getInstance()}")
 
         val app = reactContext.applicationContext as Application
