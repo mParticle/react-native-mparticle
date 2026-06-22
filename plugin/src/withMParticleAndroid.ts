@@ -385,7 +385,7 @@ const withMParticleAppBuildGradle: ConfigPlugin<MParticlePluginProps> = (
     // to a pre-release (e.g. 6.0.0-rc.1) and transitively drag the core past
     // the bridge's compiled-against API surface.
     const kitDependencies = props.androidKits
-      .map(kit => `    implementation "com.mparticle:${kit}:[5.79.0, 6.0)"`)
+      .map(kit => `    implementation "com.mparticle:${kit}:[5.79.2, 6.0)"`)
       .join('\n');
 
     // Use mergeContents for idempotent injection
