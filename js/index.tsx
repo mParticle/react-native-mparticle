@@ -13,6 +13,7 @@ import type {
   Spec as NativeMParticleInterface,
   CallbackError,
   UserAttributes as NativeUserAttributes,
+  DeviceConsentState,
 } from './codegenSpecs/NativeMParticle';
 import { getNativeModule } from './utils/architecture';
 
@@ -210,10 +211,7 @@ export const removeCCPAConsentState = (): void => {
   MParticleModule.removeCCPAConsentState();
 };
 
-export interface DeviceConsentState {
-  gdpr?: { [purpose: string]: GDPRConsent };
-  ccpa?: CCPAConsent | null;
-}
+export type { DeviceConsentState };
 
 export const setDeviceConsentState = (
   consentState: DeviceConsentState
