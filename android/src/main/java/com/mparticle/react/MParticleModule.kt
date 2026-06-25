@@ -540,7 +540,8 @@ class MParticleModule(
         if (consentState == null) {
             return
         }
-        convertToConsentState(consentState)?.let { instance.setDeviceConsentState(it) }
+        val state = convertToConsentState(consentState)
+        instance.setDeviceConsentState(if (isEmptyConsentState(state)) null else state)
     }
 
     @ReactMethod
@@ -998,7 +999,7 @@ class MParticleModule(
         return builder.build()
     }
 
-    private fun convertToConsentState(map: ReadableMap): ConsentState? {
+    private fun convertToConsentState(map: ReadableMap): ConsentState {
         val builder = ConsentState.builder()
         if (map.hasKey("gdpr")) {
             map.getMap("gdpr")?.let { gdprMap ->
@@ -1017,6 +1018,8 @@ class MParticleModule(
         }
         return builder.build()
     }
+
+    private fun isEmptyConsentState(state: ConsentState) = state.gdprConsentState.isEmpty() && state.ccpaConsentState == null
 
     private fun consentStateToMap(state: ConsentState?): WritableMap? {
         if (state == null) {

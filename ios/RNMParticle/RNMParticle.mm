@@ -31,6 +31,14 @@
 + (MPConsentState *)MPConsentState:(id)json;
 @end
 
+static BOOL RNMParticleIsEmptyConsentState(MPConsentState *state)
+{
+    if (state == nil) {
+        return YES;
+    }
+    return state.gdprConsentState.count == 0 && state.ccpaConsentState == nil;
+}
+
 @implementation RNMParticle
 
 RCT_EXTERN void RCTRegisterModule(Class);
@@ -600,7 +608,8 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     if (ccpa != nil && ccpa != [NSNull null]) {
         dict[@"ccpa"] = ccpa;
     }
-    [MParticle sharedInstance].deviceConsentState = [RCTConvert MPConsentState:dict];
+    MPConsentState *state = [RCTConvert MPConsentState:dict];
+    [MParticle sharedInstance].deviceConsentState = RNMParticleIsEmptyConsentState(state) ? nil : state;
 }
 
 - (void)clearDeviceConsentState {
@@ -651,7 +660,8 @@ RCT_EXPORT_METHOD(setDeviceConsentState:(NSDictionary *)consentState)
     if (consentState == nil || consentState == (id)[NSNull null]) {
         return;
     }
-    [MParticle sharedInstance].deviceConsentState = [RCTConvert MPConsentState:consentState];
+    MPConsentState *state = [RCTConvert MPConsentState:consentState];
+    [MParticle sharedInstance].deviceConsentState = RNMParticleIsEmptyConsentState(state) ? nil : state;
 }
 
 RCT_EXPORT_METHOD(clearDeviceConsentState)
