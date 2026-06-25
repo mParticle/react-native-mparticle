@@ -210,6 +210,27 @@ export const removeCCPAConsentState = (): void => {
   MParticleModule.removeCCPAConsentState();
 };
 
+export interface DeviceConsentState {
+  gdpr?: { [purpose: string]: GDPRConsent };
+  ccpa?: CCPAConsent | null;
+}
+
+export const setDeviceConsentState = (
+  consentState: DeviceConsentState
+): void => {
+  MParticleModule.setDeviceConsentState(consentState);
+};
+
+export const clearDeviceConsentState = (): void => {
+  MParticleModule.clearDeviceConsentState();
+};
+
+export const getDeviceConsentState = (
+  completion: CompletionCallback<DeviceConsentState | null>
+): void => {
+  MParticleModule.getDeviceConsentState(completion);
+};
+
 export const isKitActive = (
   kitId: number,
   completion: CompletionCallback<boolean>
@@ -930,6 +951,9 @@ const MParticle = {
   removeGDPRConsentStateWithPurpose,
   setCCPAConsentState,
   removeCCPAConsentState,
+  setDeviceConsentState,
+  clearDeviceConsentState,
+  getDeviceConsentState,
   isKitActive,
   getAttributions,
   logPushRegistration,

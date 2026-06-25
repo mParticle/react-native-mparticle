@@ -108,6 +108,29 @@ RCT_EXPORT_METHOD(removeCCPAConsentState)
     user.consentState = consentState;
 }
 
+RCT_EXPORT_METHOD(setDeviceConsentState:(NSDictionary *)consentState)
+{
+    if (consentState == nil || consentState == (id)[NSNull null]) {
+        return;
+    }
+    [MParticle sharedInstance].deviceConsentState = [RCTConvert MPConsentState:consentState];
+}
+
+RCT_EXPORT_METHOD(clearDeviceConsentState)
+{
+    [MParticle sharedInstance].deviceConsentState = nil;
+}
+
+RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
+{
+    MPConsentState *deviceConsent = [MParticle sharedInstance].deviceConsentState;
+    if (deviceConsent == nil) {
+        callback(@[[NSNull null]]);
+        return;
+    }
+    callback(@[[RNMParticle consentStateToDictionary:deviceConsent]]);
+}
+
 #if TARGET_OS_IOS == 1
 RCT_EXPORT_METHOD(logPushRegistration:(NSString *)token senderId:(NSString *)senderId)
 {
@@ -584,6 +607,68 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     [consentState setCCPAConsentState:ccpaConsent];
     user.consentState = consentState;
 }
+
+- (void)setDeviceConsentState:(JS::NativeMParticle::DeviceConsentState &)consentState {
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    if (consentState.gdpr().has_value()) {
+        NSMutableDictionary *gdprDict = [NSMutableDictionary dictionary];
+        for (const auto &entry : consentState.gdpr().value()) {
+            const auto &consent = entry.second;
+            NSMutableDictionary *consentDict = [NSMutableDictionary dictionary];
+            if (consent.consented().has_value()) {
+                consentDict[@"consented"] = @(consent.consented().value());
+            }
+            if (consent.document()) {
+                consentDict[@"document"] = consent.document();
+            }
+            if (consent.timestamp().has_value()) {
+                consentDict[@"timestamp"] = @(consent.timestamp().value());
+            }
+            if (consent.location()) {
+                consentDict[@"location"] = consent.location();
+            }
+            if (consent.hardwareId()) {
+                consentDict[@"hardwareId"] = consent.hardwareId();
+            }
+            gdprDict[[NSString stringWithUTF8String:entry.first.c_str()]] = consentDict;
+        }
+        dict[@"gdpr"] = gdprDict;
+    }
+    if (consentState.ccpa().has_value()) {
+        const auto &ccpa = consentState.ccpa().value();
+        NSMutableDictionary *ccpaDict = [NSMutableDictionary dictionary];
+        if (ccpa.consented().has_value()) {
+            ccpaDict[@"consented"] = @(ccpa.consented().value());
+        }
+        if (ccpa.document()) {
+            ccpaDict[@"document"] = ccpa.document();
+        }
+        if (ccpa.timestamp().has_value()) {
+            ccpaDict[@"timestamp"] = @(ccpa.timestamp().value());
+        }
+        if (ccpa.location()) {
+            ccpaDict[@"location"] = ccpa.location();
+        }
+        if (ccpa.hardwareId()) {
+            ccpaDict[@"hardwareId"] = ccpa.hardwareId();
+        }
+        dict[@"ccpa"] = ccpaDict;
+    }
+    [MParticle sharedInstance].deviceConsentState = [RCTConvert MPConsentState:dict];
+}
+
+- (void)clearDeviceConsentState {
+    [MParticle sharedInstance].deviceConsentState = nil;
+}
+
+- (void)getDeviceConsentState:(RCTResponseSenderBlock)callback {
+    MPConsentState *deviceConsent = [MParticle sharedInstance].deviceConsentState;
+    if (deviceConsent == nil) {
+        callback(@[[NSNull null]]);
+        return;
+    }
+    callback(@[[RNMParticle consentStateToDictionary:deviceConsent]]);
+}
 #else
 
 RCT_EXPORT_METHOD(logMPEvent:(MPEvent *)event)
@@ -907,6 +992,59 @@ RCT_EXPORT_METHOD(setCCPAConsentState:(MPCCPAConsent *)consent)
     return [MPAliasRequest requestWithSourceMPID:sourceMpid destinationMPID:destinationMpid startTime:startTime endTime:endTime];
 }
 
++ (NSDictionary *)consentStateToDictionary:(MPConsentState *)consentState
+{
+    if (consentState == nil) {
+        return nil;
+    }
+
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprState = consentState.gdprConsentState;
+    if (gdprState.count > 0) {
+        NSMutableDictionary *gdpr = [NSMutableDictionary dictionaryWithCapacity:gdprState.count];
+        for (NSString *purpose in gdprState) {
+            MPGDPRConsent *consent = gdprState[purpose];
+            NSMutableDictionary *consentDict = [NSMutableDictionary dictionary];
+            consentDict[@"consented"] = @(consent.consented);
+            if (consent.document) {
+                consentDict[@"document"] = consent.document;
+            }
+            if (consent.timestamp) {
+                consentDict[@"timestamp"] = @((long long)([consent.timestamp timeIntervalSince1970] * 1000));
+            }
+            if (consent.location) {
+                consentDict[@"location"] = consent.location;
+            }
+            if (consent.hardwareId) {
+                consentDict[@"hardwareId"] = consent.hardwareId;
+            }
+            gdpr[purpose] = consentDict;
+        }
+        result[@"gdpr"] = gdpr;
+    }
+
+    MPCCPAConsent *ccpa = consentState.ccpaConsentState;
+    if (ccpa != nil) {
+        NSMutableDictionary *ccpaDict = [NSMutableDictionary dictionary];
+        ccpaDict[@"consented"] = @(ccpa.consented);
+        if (ccpa.document) {
+            ccpaDict[@"document"] = ccpa.document;
+        }
+        if (ccpa.timestamp) {
+            ccpaDict[@"timestamp"] = @((long long)([ccpa.timestamp timeIntervalSince1970] * 1000));
+        }
+        if (ccpa.location) {
+            ccpaDict[@"location"] = ccpa.location;
+        }
+        if (ccpa.hardwareId) {
+            ccpaDict[@"hardwareId"] = ccpa.hardwareId;
+        }
+        result[@"ccpa"] = ccpaDict;
+    }
+
+    return result.count > 0 ? result : nil;
+}
+
 @end
 
 typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
@@ -938,6 +1076,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 + (MPEvent *)MPEvent:(id)json;
 + (MPGDPRConsent *)MPGDPRConsent:(id)json;
 + (MPCCPAConsent *)MPCCPAConsent:(id)json;
++ (MPConsentState *)MPConsentState:(id)json;
 
 @end
 
@@ -1223,6 +1362,39 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     mpConsent.hardwareId = json[@"hardwareId"];
 
     return mpConsent;
+}
+
++ (MPConsentState *)MPConsentState:(id)json
+{
+    if (![json isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSDictionary *dict = (NSDictionary *)json;
+    MPConsentState *state = [[MPConsentState alloc] init];
+    NSDictionary *gdpr = dict[@"gdpr"];
+    if ([gdpr isKindOfClass:[NSDictionary class]]) {
+        for (NSString *purpose in gdpr) {
+            id consentJson = gdpr[purpose];
+            if (consentJson == [NSNull null]) {
+                continue;
+            }
+            MPGDPRConsent *consent = [RCTConvert MPGDPRConsent:consentJson];
+            if (consent != nil) {
+                [state addGDPRConsentState:consent purpose:purpose];
+            }
+        }
+    }
+
+    id ccpaJson = dict[@"ccpa"];
+    if (ccpaJson != nil && ccpaJson != [NSNull null]) {
+        MPCCPAConsent *ccpa = [RCTConvert MPCCPAConsent:ccpaJson];
+        if (ccpa != nil) {
+            [state setCCPAConsentState:ccpa];
+        }
+    }
+
+    return state;
 }
 
 @end

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Expose device-level consent APIs: `setDeviceConsentState`, `clearDeviceConsentState`, and `getDeviceConsentState`, bridging to native `MParticle.deviceConsentState` (iOS) and `MParticle.setDeviceConsentState()` (Android). Requires mParticle Apple SDK 9.2+ with device consent; Android resolves `android-core` `[5.79.2, 6.0)` and picks up device consent APIs once published.
+
 - Expo config plugin: optional `pinningDisabled` for `MPNetworkOptions` / `NetworkOptions` at SDK startup
 
 ### Fixed

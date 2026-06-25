@@ -534,6 +534,30 @@ class MParticleModule(
         }
     }
 
+    @ReactMethod
+    override fun setDeviceConsentState(consentState: ReadableMap?) {
+        val instance = MParticle.getInstance() ?: return
+        if (consentState == null) {
+            return
+        }
+        convertToConsentState(consentState)?.let { instance.setDeviceConsentState(it) }
+    }
+
+    @ReactMethod
+    override fun clearDeviceConsentState() {
+        MParticle.getInstance()?.setDeviceConsentState(null)
+    }
+
+    @ReactMethod
+    override fun getDeviceConsentState(callback: Callback) {
+        val instance = MParticle.getInstance()
+        if (instance == null) {
+            callback.invoke(null)
+            return
+        }
+        callback.invoke(consentStateToMap(instance.getDeviceConsentState()))
+    }
+
     protected fun getWritableMap(): WritableMap = WritableNativeMap()
 
     private fun convertIdentityAPIRequest(map: ReadableMap?): IdentityApiRequest {
@@ -972,5 +996,61 @@ class MParticleModule(
             }
         }
         return builder.build()
+    }
+
+    private fun convertToConsentState(map: ReadableMap): ConsentState? {
+        val builder = ConsentState.builder()
+        if (map.hasKey("gdpr")) {
+            val gdprMap = map.getMap("gdpr") ?: return null
+            val iterator = gdprMap.keySetIterator()
+            while (iterator.hasNextKey()) {
+                val purpose = iterator.nextKey()
+                val consentMap = gdprMap.getMap(purpose) ?: continue
+                convertToGDPRConsent(consentMap)?.let { builder.addGDPRConsentState(purpose, it) }
+            }
+        }
+        if (map.hasKey("ccpa")) {
+            map.getMap("ccpa")?.let { ccpaMap ->
+                convertToCCPAConsent(ccpaMap)?.let { builder.setCCPAConsentState(it) }
+            }
+        }
+        return builder.build()
+    }
+
+    private fun consentStateToMap(state: ConsentState?): WritableMap? {
+        if (state == null) {
+            return null
+        }
+        val result = Arguments.createMap()
+        val gdprConsentState = state.gdprConsentState
+        if (gdprConsentState.isNotEmpty()) {
+            val gdprMap = Arguments.createMap()
+            for ((purpose, consent) in gdprConsentState) {
+                gdprMap.putMap(purpose, gdprConsentToMap(consent))
+            }
+            result.putMap("gdpr", gdprMap)
+        }
+        state.ccpaConsentState?.let { result.putMap("ccpa", ccpaConsentToMap(it)) }
+        return if (result.toHashMap().isEmpty()) null else result
+    }
+
+    private fun gdprConsentToMap(consent: GDPRConsent): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("consented", consent.isConsented)
+        consent.document?.let { map.putString("document", it) }
+        consent.location?.let { map.putString("location", it) }
+        consent.hardwareId?.let { map.putString("hardwareId", it) }
+        consent.timestamp?.let { map.putDouble("timestamp", it.toDouble()) }
+        return map
+    }
+
+    private fun ccpaConsentToMap(consent: CCPAConsent): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("consented", consent.isConsented)
+        consent.document?.let { map.putString("document", it) }
+        consent.location?.let { map.putString("location", it) }
+        consent.hardwareId?.let { map.putString("hardwareId", it) }
+        consent.timestamp?.let { map.putDouble("timestamp", it.toDouble()) }
+        return map
     }
 }
