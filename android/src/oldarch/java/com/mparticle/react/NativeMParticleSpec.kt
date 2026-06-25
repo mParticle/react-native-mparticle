@@ -57,6 +57,12 @@ abstract class NativeMParticleSpec(
 
     abstract fun removeCCPAConsentState()
 
+    abstract fun setDeviceConsentState(consentState: ReadableMap?)
+
+    abstract fun clearDeviceConsentState()
+
+    abstract fun getDeviceConsentState(callback: Callback)
+
     abstract fun isKitActive(
         kitId: Double,
         callback: Callback,

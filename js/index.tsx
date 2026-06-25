@@ -13,6 +13,7 @@ import type {
   Spec as NativeMParticleInterface,
   CallbackError,
   UserAttributes as NativeUserAttributes,
+  DeviceConsentState,
 } from './codegenSpecs/NativeMParticle';
 import { getNativeModule } from './utils/architecture';
 
@@ -208,6 +209,24 @@ export const setCCPAConsentState = (newConsentState: CCPAConsent): void => {
 
 export const removeCCPAConsentState = (): void => {
   MParticleModule.removeCCPAConsentState();
+};
+
+export type { DeviceConsentState };
+
+export const setDeviceConsentState = (
+  consentState: DeviceConsentState
+): void => {
+  MParticleModule.setDeviceConsentState(consentState);
+};
+
+export const clearDeviceConsentState = (): void => {
+  MParticleModule.clearDeviceConsentState();
+};
+
+export const getDeviceConsentState = (
+  completion: CompletionCallback<DeviceConsentState | null>
+): void => {
+  MParticleModule.getDeviceConsentState(completion);
 };
 
 export const isKitActive = (
@@ -930,6 +949,9 @@ const MParticle = {
   removeGDPRConsentStateWithPurpose,
   setCCPAConsentState,
   removeCCPAConsentState,
+  setDeviceConsentState,
+  clearDeviceConsentState,
+  getDeviceConsentState,
   isKitActive,
   getAttributions,
   logPushRegistration,
