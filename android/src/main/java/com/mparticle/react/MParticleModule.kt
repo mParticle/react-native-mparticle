@@ -1001,12 +1001,13 @@ class MParticleModule(
     private fun convertToConsentState(map: ReadableMap): ConsentState? {
         val builder = ConsentState.builder()
         if (map.hasKey("gdpr")) {
-            val gdprMap = map.getMap("gdpr") ?: return null
-            val iterator = gdprMap.keySetIterator()
-            while (iterator.hasNextKey()) {
-                val purpose = iterator.nextKey()
-                val consentMap = gdprMap.getMap(purpose) ?: continue
-                convertToGDPRConsent(consentMap)?.let { builder.addGDPRConsentState(purpose, it) }
+            map.getMap("gdpr")?.let { gdprMap ->
+                val iterator = gdprMap.keySetIterator()
+                while (iterator.hasNextKey()) {
+                    val purpose = iterator.nextKey()
+                    val consentMap = gdprMap.getMap(purpose) ?: continue
+                    convertToGDPRConsent(consentMap)?.let { builder.addGDPRConsentState(purpose, it) }
+                }
             }
         }
         if (map.hasKey("ccpa")) {
