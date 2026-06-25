@@ -953,15 +953,28 @@ class MParticleModule(
             map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
-            try {
-                val timestampString = map.getString("timestamp")
-                val timestamp = timestampString?.toLong()
-                timestamp?.let { builder.timestamp(it) }
-            } catch (ex: Exception) {
-                Logger.warning("failed to convert \"timestamp\" value to Long")
-            }
+            readConsentTimestampMillis(map, "timestamp")?.let { builder.timestamp(it) }
         }
         return builder.build()
+    }
+
+    private fun readConsentTimestampMillis(
+        map: ReadableMap,
+        key: String,
+    ): Long? {
+        if (!map.hasKey(key)) {
+            return null
+        }
+        return try {
+            when (map.getType(key)) {
+                ReadableType.Number -> map.getDouble(key).toLong()
+                ReadableType.String -> map.getString(key)?.toLongOrNull()
+                else -> null
+            }
+        } catch (ex: Exception) {
+            Logger.warning("failed to convert \"$key\" timestamp value to Long")
+            null
+        }
     }
 
     private fun convertToCCPAConsent(map: ReadableMap): CCPAConsent? {
@@ -988,13 +1001,7 @@ class MParticleModule(
             map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
-            try {
-                val timestampString = map.getString("timestamp")
-                val timestamp = timestampString?.toLong()
-                timestamp?.let { builder.timestamp(it) }
-            } catch (ex: Exception) {
-                Logger.warning("failed to convert \"timestamp\" value to Long")
-            }
+            readConsentTimestampMillis(map, "timestamp")?.let { builder.timestamp(it) }
         }
         return builder.build()
     }
