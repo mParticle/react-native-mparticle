@@ -613,7 +613,8 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
         callback(@[[NSNull null]]);
         return;
     }
-    callback(@[[RNMParticle consentStateToDictionary:deviceConsent]]);
+    NSDictionary *consentDict = [RNMParticle consentStateToDictionary:deviceConsent];
+    callback(@[consentDict ?: [NSNull null]]);
 }
 #else
 
@@ -665,7 +666,8 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
         callback(@[[NSNull null]]);
         return;
     }
-    callback(@[[RNMParticle consentStateToDictionary:deviceConsent]]);
+    NSDictionary *consentDict = [RNMParticle consentStateToDictionary:deviceConsent];
+    callback(@[consentDict ?: [NSNull null]]);
 }
 
 #endif
