@@ -1316,7 +1316,9 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 
     mpConsent.consented = [RCTConvert BOOL:json[@"consented"]];
     mpConsent.document = json[@"document"];
-    mpConsent.timestamp = [RCTConvert NSDate:json[@"timestamp"]];
+    if (json[@"timestamp"] && json[@"timestamp"] != [NSNull null]) {
+        mpConsent.timestamp = [NSDate dateWithTimeIntervalSince1970:[json[@"timestamp"] doubleValue] / 1000.0];
+    }
     mpConsent.location = json[@"location"];
     mpConsent.hardwareId = json[@"hardwareId"];
 
@@ -1328,7 +1330,9 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
 
     mpConsent.consented = [RCTConvert BOOL:json[@"consented"]];
     mpConsent.document = json[@"document"];
-    mpConsent.timestamp = [RCTConvert NSDate:json[@"timestamp"]];
+    if (json[@"timestamp"] && json[@"timestamp"] != [NSNull null]) {
+        mpConsent.timestamp = [NSDate dateWithTimeIntervalSince1970:[json[@"timestamp"] doubleValue] / 1000.0];
+    }
     mpConsent.location = json[@"location"];
     mpConsent.hardwareId = json[@"hardwareId"];
 
