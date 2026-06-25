@@ -24,6 +24,7 @@
 @interface RCTConvert (MPCommerceEvent)
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
 + (MPPromotionAction)MPPromotionAction:(id)json;
++ (MPConsentState *)MPConsentState:(id)json;
 @end
 
 @implementation RNMParticle
