@@ -120,7 +120,7 @@ dependencies {
     //
     // Bounded upper bound prevents resolving to 6.0.0-rc.1+ on Maven Central.
     // 6.x removed deprecated symbols (e.g. UserAttributeListener); see #710.
-    api 'com.mparticle:android-core:[5.79.2, 6.0)'
+    api 'com.mparticle:android-core:[5.80.0, 6.0)'
 
     //
     // And, if you want to include kits, you can do so as follows:
@@ -136,6 +136,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation files('libs/java-json.jar')
 
-    testImplementation 'com.mparticle:android-core:5.79.2'
+    testImplementation 'com.mparticle:android-core:5.80.0'
     testImplementation("com.facebook.react:react-android:+")
 }
