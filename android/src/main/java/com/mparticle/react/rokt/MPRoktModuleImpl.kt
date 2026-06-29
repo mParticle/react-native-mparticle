@@ -10,6 +10,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.mparticle.MParticle
@@ -23,6 +24,7 @@ import com.mparticle.rokt.RoktConfig
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
 class MPRoktModuleImpl(
     private val reactContext: ReactApplicationContext,
@@ -121,9 +123,29 @@ class MPRoktModuleImpl(
         reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)?.emit(eventName, params)
     }
 
-    fun readableMapToMapOfStrings(attributes: ReadableMap?): Map<String, String> =
-        attributes?.toHashMap()?.filter { it.value is String }?.mapValues { it.value as String }
-            ?: emptyMap()
+    fun readableMapToMapOfStrings(attributes: ReadableMap?): Map<String, String> {
+        if (attributes == null) {
+            return emptyMap()
+        }
+
+        val result = mutableMapOf<String, String>()
+        val iterator = attributes.keySetIterator()
+        while (iterator.hasNextKey()) {
+            val key = iterator.nextKey()
+            when (attributes.getType(key)) {
+                ReadableType.String -> attributes.getString(key)?.let { result[key] = it }
+                ReadableType.Number -> result[key] = formatNumberAttribute(attributes.getDouble(key))
+                ReadableType.Boolean ->
+                    result[key] = if (attributes.getBoolean(key)) "true" else "false"
+                ReadableType.Map ->
+                    attributes.getMap(key)?.toHashMap()?.let { result[key] = it.toString() }
+                ReadableType.Array ->
+                    attributes.getArray(key)?.toArrayList()?.let { result[key] = it.toString() }
+                ReadableType.Null -> Unit
+            }
+        }
+        return result
+    }
 
     fun String.toColorMode(): RoktConfig.ColorMode =
         when (this) {
@@ -274,5 +296,17 @@ class MPRoktModuleImpl(
     companion object {
         const val MAX_LISTENERS = 5
         const val MODULE_NAME = "RNMPRokt"
+
+        // Match iOS NSNumber stringValue: plain decimals, no trailing ".0", no scientific notation.
+        internal fun formatNumberAttribute(value: Double): String {
+            if (value.isNaN() || value.isInfinite()) {
+                return value.toString()
+            }
+            val longValue = value.toLong()
+            if (value == longValue.toDouble()) {
+                return longValue.toString()
+            }
+            return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString()
+        }
     }
 }

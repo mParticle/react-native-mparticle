@@ -51,12 +51,12 @@ public class MockMap implements WritableMap {
 
     @Override
     public boolean getBoolean(String name) {
-        return (boolean) map.get(name);
+        return (Boolean) map.get(name);
     }
 
     @Override
     public double getDouble(String name) {
-        return (double) map.get(name);
+        return ((Number) map.get(name)).doubleValue();
     }
 
     @Override

@@ -102,6 +102,10 @@ static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
     }
     _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: extracting config");
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
+    if (roktConfig.colorMode() != nil) {
+        roktConfigDict[@"colorMode"] = roktConfig.colorMode();
+        _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: colorMode present");
+    }
     if (roktConfig.cacheConfig().has_value()) {
         NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
         auto cacheConfig = roktConfig.cacheConfig().value();
@@ -274,19 +278,36 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
                                                  success:success];
 }
 
-- (NSMutableDictionary*)convertToMutableDictionaryOfStrings:(NSDictionary*)attributes
+// Coerces React Native attribute values to strings, matching mParticle-Rokt kit
+// transformValuesToString behavior (MPKitRokt.m).
+- (NSMutableDictionary<NSString *, NSString *> *)convertToMutableDictionaryOfStrings:(NSDictionary *)attributes
 {
-    NSMutableDictionary *finalAttributes = [attributes mutableCopy];
-    NSArray *keysForNullValues = [finalAttributes allKeysForObject:[NSNull null]];
-    [finalAttributes removeObjectsForKeys:keysForNullValues];
+    NSMutableDictionary<NSString *, NSString *> *finalAttributes = [[NSMutableDictionary alloc] init];
+    if (!attributes) {
+        return finalAttributes;
+    }
 
-    NSSet *keys = [finalAttributes keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return ![obj isKindOfClass:[NSString class]];
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if (![key isKindOfClass:[NSString class]] || obj == nil || obj == [NSNull null]) {
+            return;
+        }
+
+        NSString *stringKey = (NSString *)key;
+        if ([obj isKindOfClass:[NSString class]]) {
+            finalAttributes[stringKey] = obj;
+        } else if ([obj isKindOfClass:[NSNumber class]]) {
+            NSNumber *numberAttribute = (NSNumber *)obj;
+            if (numberAttribute == (id)kCFBooleanTrue || numberAttribute == (id)kCFBooleanFalse) {
+                finalAttributes[stringKey] = [numberAttribute boolValue] ? @"true" : @"false";
+            } else {
+                finalAttributes[stringKey] = [numberAttribute stringValue];
+            }
+        } else if ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSArray class]]) {
+            finalAttributes[stringKey] = [obj description];
+        }
     }];
 
-    [finalAttributes removeObjectsForKeys:[keys allObjects]];
     return finalAttributes;
-
 }
 
 - (RoktConfig *)buildRoktConfigFromDict:(NSDictionary<NSString *, id> *)configMap {
