@@ -31,6 +31,7 @@ class MPRoktModule(
             Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
+        impl.setWrapperSdk()
         val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)
         MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
