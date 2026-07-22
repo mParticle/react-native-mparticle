@@ -67,9 +67,11 @@ pod install
 The sample Podfile pins `mParticle-Rokt` `~> 9.2`, **`Rokt-Widget` `5.2.0`**, and **`DcuiSchema` `2.7.0`**. Rokt’s pods allow `DcuiSchema` to float within `~> 2.6`; when CocoaPods resolves **2.8.0+**, the schema adds `image` styling that can desync from the `RoktUXHelper` sources in that widget line and break Swift compile (`StyleTransformer` / `BaseStyles`). Bump these pins together when you adopt a newer Rokt iOS stack.
 
 The sample Android app pins `com.mparticle:android-core` and
-`com.mparticle:android-rokt-kit` to `5.79.2` so the Rokt session APIs and
-Android CNAME support are available. Payment-extension installation and native
-URL callback forwarding are not configured in this release.
+`com.mparticle:android-rokt-kit` to `[6.0.0, 7.0)` so the Rokt session APIs and
+Android CNAME support are available. Apps that include `android-rokt-kit`
+`6.0.0` must build with `compileSdk` 35+ and Android Gradle Plugin 8.6+; the
+sample uses `compileSdk` 36. Payment-extension installation and native URL
+callback forwarding are not configured in this release.
 
 ## Running the Sample App
 

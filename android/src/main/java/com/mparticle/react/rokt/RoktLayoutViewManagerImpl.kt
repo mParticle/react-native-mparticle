@@ -4,8 +4,8 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.events.RCTEventEmitter
-import com.mparticle.rokt.RoktEmbeddedView
-import com.mparticle.rokt.RoktLayoutDimensionCallBack
+import com.mparticle.kits.RoktEmbeddedView
+import com.mparticle.kits.RoktLayoutDimensionCallBack
 
 class RoktLayoutViewManagerImpl {
     companion object {
@@ -34,15 +34,6 @@ class RoktLayoutViewManagerImpl {
             object : RoktLayoutDimensionCallBack {
                 override fun onHeightChanged(height: Int) {
                     changeHeight(widget.context as ReactContext, height, widget.id)
-                }
-
-                override fun onMarginChanged(
-                    start: Int,
-                    top: Int,
-                    end: Int,
-                    bottom: Int,
-                ) {
-                    changeMargin(widget.context as ReactContext, widget.id, start, top, end, bottom)
                 }
             }
     }

@@ -9,8 +9,9 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.uimanager.UIManagerHelper
 import com.mparticle.MParticle
 import com.mparticle.internal.Logger
+import com.mparticle.kits.RoktEmbeddedView
+import com.mparticle.kits.rokt
 import com.mparticle.react.NativeMPRoktSpec
-import com.mparticle.rokt.RoktEmbeddedView
 import java.lang.ref.WeakReference
 import java.util.concurrent.CountDownLatch
 
@@ -33,7 +34,7 @@ class MPRoktModule(
             Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
-        MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
+        MParticle.getInstance()?.rokt?.events(identifier)?.let {
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
         }
 
@@ -41,10 +42,9 @@ class MPRoktModule(
         val placeholdersMap = processPlaceholders(placeholders)
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
 
-        MParticle.getInstance()?.Rokt()?.selectPlacements(
+        MParticle.getInstance()?.rokt?.selectPlacements(
             identifier = identifier,
             attributes = impl.readableMapToMapOfStrings(attributes),
-            callbacks = impl.createRoktCallback(),
             embeddedViews = placeholdersMap,
             fontTypefaces = null, // TODO
             config = config,

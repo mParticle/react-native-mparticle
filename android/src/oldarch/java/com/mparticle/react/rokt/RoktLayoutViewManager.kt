@@ -3,7 +3,7 @@ package com.mparticle.react.rokt
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
-import com.mparticle.rokt.RoktEmbeddedView
+import com.mparticle.kits.RoktEmbeddedView
 
 class RoktLayoutViewManager : ViewGroupManager<RoktEmbeddedView>() {
     private val impl = RoktLayoutViewManagerImpl()

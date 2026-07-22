@@ -4,9 +4,10 @@ import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.RoktNativeLayoutManagerInterface
-import com.mparticle.rokt.RoktEmbeddedView
+import com.mparticle.kits.RoktEmbeddedView
 
-class RoktLayoutViewManager : SimpleViewManager<RoktEmbeddedView>(),
+class RoktLayoutViewManager :
+    SimpleViewManager<RoktEmbeddedView>(),
     RoktNativeLayoutManagerInterface<RoktEmbeddedView> {
     private val impl = RoktLayoutViewManagerImpl()
 
