@@ -18,9 +18,6 @@ class RoktLayoutViewManager : ViewGroupManager<RoktEmbeddedView>() {
             .put(
                 RoktLayoutViewManagerImpl.EVENT_HEIGHT_CHANGED,
                 MapBuilder.of("registrationName", RoktLayoutViewManagerImpl.EVENT_HEIGHT_CHANGED),
-            ).put(
-                RoktLayoutViewManagerImpl.EVENT_MARGIN_CHANGED,
-                MapBuilder.of("registrationName", RoktLayoutViewManagerImpl.EVENT_MARGIN_CHANGED),
             ).build()
 
     override fun needsCustomLayoutForChildren(): Boolean = false

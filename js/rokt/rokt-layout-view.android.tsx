@@ -16,10 +16,6 @@ export interface RoktLayoutViewProps {
 export interface RoktLayoutViewState {
   height: number;
   placeholderName: string;
-  marginTop: number;
-  marginRight: number;
-  marginLeft: number;
-  marginBottom: number;
 }
 
 /**
@@ -28,15 +24,6 @@ export interface RoktLayoutViewState {
 interface HeightChangedEvent {
   nativeEvent: {
     height: string;
-  };
-}
-
-interface MarginChangedEvent {
-  nativeEvent: {
-    marginTop?: string;
-    marginLeft?: string;
-    marginRight?: string;
-    marginBottom?: string;
   };
 }
 
@@ -62,10 +49,6 @@ export class RoktLayoutView extends Component<
     this.state = {
       height: 0,
       placeholderName: this.props.placeholderName,
-      marginTop: 0,
-      marginRight: 0,
-      marginLeft: 0,
-      marginBottom: 0,
     };
   }
 
@@ -76,23 +59,6 @@ export class RoktLayoutView extends Component<
   private handleHeightChanged = (event: HeightChangedEvent) => {
     if (event && event.nativeEvent && event.nativeEvent.height) {
       this.setState({ height: parseInt(event.nativeEvent.height) });
-    }
-  };
-
-  /**
-   * Handles the margin changed event from the native component
-   * This is an internal implementation detail not exposed to users
-   */
-  private handleMarginChanged = (event: MarginChangedEvent) => {
-    if (event && event.nativeEvent) {
-      const { marginTop, marginLeft, marginRight, marginBottom } =
-        event.nativeEvent;
-      this.setState({
-        marginTop: parseInt(marginTop || '0'),
-        marginLeft: parseInt(marginLeft || '0'),
-        marginRight: parseInt(marginRight || '0'),
-        marginBottom: parseInt(marginBottom || '0'),
-      });
     }
   };
 
@@ -114,14 +80,9 @@ export class RoktLayoutView extends Component<
             styles.widget,
             {
               height: this.state.height,
-              marginTop: this.state.marginTop,
-              marginLeft: this.state.marginLeft,
-              marginRight: this.state.marginRight,
-              marginBottom: this.state.marginBottom,
             },
           ]}
           onLayoutHeightChanged={this.handleHeightChanged}
-          onLayoutMarginChanged={this.handleMarginChanged}
         />
       );
     } catch (error) {

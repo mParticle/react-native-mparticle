@@ -16,13 +16,6 @@ export interface HeightChangedEvent extends Event {
   height: string;
 }
 
-export interface MarginChangedEvent extends Event {
-  marginTop: string;
-  marginRight: string;
-  marginLeft: string;
-  marginBottom: string;
-}
-
 export interface WidgetChangeEvent {
   selectedPlacement: string;
   height: string;
@@ -35,17 +28,12 @@ export interface RoktLayoutViewProps {
 export interface RoktLayoutViewState {
   height: number;
   placeholderName: string;
-  marginTop: number;
-  marginRight: number;
-  marginLeft: number;
-  marginBottom: number;
 }
 
 // Define the native component props interface
 interface RoktNativeLayoutProps extends ViewProps {
   placeholderName?: string;
   onLayoutHeightChanged?: (event: HeightChangedEvent) => void;
-  onLayoutMarginChanged?: (event: MarginChangedEvent) => void;
 }
 
 // Use the appropriate component based on architecture
@@ -76,10 +64,6 @@ export class RoktLayoutView extends Component<
     this.state = {
       height: 0,
       placeholderName: this.props.placeholderName,
-      marginTop: 0,
-      marginRight: 0,
-      marginLeft: 0,
-      marginBottom: 0,
     };
   }
 
@@ -92,14 +76,6 @@ export class RoktLayoutView extends Component<
           if (event.height) {
             this.setState({ height: parseInt(event.height) });
           }
-        }}
-        onLayoutMarginChanged={(event: MarginChangedEvent) => {
-          this.setState({
-            marginTop: parseInt(event.marginTop || '0'),
-            marginRight: parseInt(event.marginRight || '0'),
-            marginLeft: parseInt(event.marginLeft || '0'),
-            marginBottom: parseInt(event.marginBottom || '0'),
-          });
         }}
       />
     );

@@ -2,8 +2,10 @@ package com.mparticle.react.rokt
 
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
-import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.uimanager.UIManagerHelper
+import com.facebook.react.uimanager.events.Event
 import com.mparticle.kits.RoktEmbeddedView
 import com.mparticle.kits.RoktLayoutDimensionCallBack
 
@@ -11,7 +13,6 @@ class RoktLayoutViewManagerImpl {
     companion object {
         const val REACT_CLASS = "RoktNativeLayout"
         const val EVENT_HEIGHT_CHANGED = "onLayoutHeightChanged"
-        const val EVENT_MARGIN_CHANGED = "onLayoutMarginChanged"
     }
 
     fun getName(): String = REACT_CLASS
@@ -43,28 +44,22 @@ class RoktLayoutViewManagerImpl {
         height: Int,
         id: Int,
     ) {
-        val event = Arguments.createMap()
-        event.putString("height", height.toString())
-        context
-            .getJSModule(RCTEventEmitter::class.java)
-            .receiveEvent(id, EVENT_HEIGHT_CHANGED, event)
+        // Use the EventDispatcher API instead of getJSModule(RCTEventEmitter), which is
+        // unsupported under the New Architecture bridgeless runtime (RN >= 0.76). This path
+        // works on both Paper and Fabric across all supported RN versions.
+        val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(context, id) ?: return
+        val surfaceId = UIManagerHelper.getSurfaceId(context)
+        dispatcher.dispatchEvent(OnLayoutHeightChangedEvent(surfaceId, id, height))
     }
 
-    fun changeMargin(
-        context: ReactContext,
-        id: Int,
-        start: Int,
-        top: Int,
-        end: Int,
-        bottom: Int,
-    ) {
-        val event = Arguments.createMap()
-        event.putString("marginLeft", start.toString())
-        event.putString("marginTop", top.toString())
-        event.putString("marginRight", end.toString())
-        event.putString("marginBottom", bottom.toString())
-        context
-            .getJSModule(RCTEventEmitter::class.java)
-            .receiveEvent(id, EVENT_MARGIN_CHANGED, event)
+    private class OnLayoutHeightChangedEvent(
+        surfaceId: Int,
+        viewId: Int,
+        private val height: Int,
+    ) : Event<OnLayoutHeightChangedEvent>(surfaceId, viewId) {
+        override fun getEventName(): String = RoktLayoutViewManagerImpl.EVENT_HEIGHT_CHANGED
+
+        override fun getEventData(): WritableMap =
+            Arguments.createMap().apply { putString("height", height.toString()) }
     }
 }
