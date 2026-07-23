@@ -71,15 +71,15 @@ export abstract class Rokt {
     getMPRokt().purchaseFinalized(placementId, catalogItemId, success);
   }
 
-  static close(): Promise<void> {
+  static async close(): Promise<void> {
     return getMPRokt().close();
   }
 
-  static setSessionId(sessionId: string): Promise<void> {
+  static async setSessionId(sessionId: string): Promise<void> {
     return getMPRokt().setSessionId(sessionId);
   }
 
-  static getSessionId(): Promise<string | null> {
+  static async getSessionId(): Promise<string | null> {
     return getMPRokt().getSessionId();
   }
 
