@@ -10,6 +10,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.mparticle.MParticle
@@ -51,8 +52,11 @@ class MPRoktModuleImpl(
     }
 
     fun close(promise: Promise) {
-        MParticle.getInstance()?.rokt?.close()
-        promise.resolve(null)
+        // rokt.close() dismisses/detaches Compose overlay views, which must happen on the main thread.
+        UiThreadUtil.runOnUiThread {
+            MParticle.getInstance()?.rokt?.close()
+            promise.resolve(null)
+        }
     }
 
     fun setSessionId(

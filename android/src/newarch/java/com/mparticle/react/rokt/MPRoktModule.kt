@@ -13,7 +13,6 @@ import com.mparticle.kits.RoktEmbeddedView
 import com.mparticle.kits.rokt
 import com.mparticle.react.NativeMPRoktSpec
 import java.lang.ref.WeakReference
-import java.util.concurrent.CountDownLatch
 
 class MPRoktModule(
     private val reactContext: ReactApplicationContext,
@@ -38,17 +37,22 @@ class MPRoktModule(
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
         }
 
-        // Process placeholders for Fabric
-        val placeholdersMap = processPlaceholders(placeholders)
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
+        val attributeMap = impl.readableMapToMapOfStrings(attributes)
 
-        MParticle.getInstance()?.rokt?.selectPlacements(
-            identifier = identifier,
-            attributes = impl.readableMapToMapOfStrings(attributes),
-            embeddedViews = placeholdersMap,
-            fontTypefaces = null, // TODO
-            config = config,
-        )
+        // Rokt SDK 6's selectPlacements clears prior placeholder content via removeAllViews(),
+        // which detaches Compose views and must run on the main thread. Resolve the placeholder
+        // views and invoke the SDK together on the UI thread. (oldarch uses UIManager.addUIBlock;
+        // iOS uses the uiManager methodQueue — same intent.)
+        UiThreadUtil.runOnUiThread {
+            MParticle.getInstance()?.rokt?.selectPlacements(
+                identifier = identifier,
+                attributes = attributeMap,
+                embeddedViews = resolvePlaceholders(placeholders),
+                fontTypefaces = null, // TODO
+                config = config,
+            )
+        }
     }
 
     @ReactMethod
@@ -88,66 +92,46 @@ class MPRoktModule(
     }
 
     /**
-     * Process placeholders from ReadableMap to a map of Widgets for use with Rokt.
-     * This method handles the Fabric-specific view resolution.
+     * Resolve placeholders from a ReadableMap of react tags to their RoktEmbeddedView instances.
+     * Must be called on the UI thread — it resolves live views via the UIManager.
      */
-    private fun processPlaceholders(placeholders: ReadableMap?): Map<String, WeakReference<RoktEmbeddedView>> {
+    private fun resolvePlaceholders(placeholders: ReadableMap?): Map<String, WeakReference<RoktEmbeddedView>> {
         val placeholdersMap = HashMap<String, WeakReference<RoktEmbeddedView>>()
+        if (placeholders == null) {
+            return placeholdersMap
+        }
 
-        if (placeholders != null) {
-            // Use CountDownLatch to wait for UI thread processing
-            val latch = CountDownLatch(1)
+        val iterator = placeholders.keySetIterator()
+        while (iterator.hasNextKey()) {
+            val key = iterator.nextKey()
+            try {
+                val reactTag =
+                    when {
+                        placeholders.getType(key) == ReadableType.Number -> {
+                            placeholders.getDouble(key).toInt()
+                        }
 
-            // Run view resolution on UI thread
-            UiThreadUtil.runOnUiThread {
-                try {
-                    val iterator = placeholders.keySetIterator()
-                    while (iterator.hasNextKey()) {
-                        val key = iterator.nextKey()
-                        try {
-                            // Get the tag value as an integer
-                            val reactTag =
-                                when {
-                                    placeholders.getType(key) == ReadableType.Number -> {
-                                        placeholders.getDouble(key).toInt()
-                                    }
-
-                                    else -> {
-                                        Logger.warning("Invalid view tag for key: $key")
-                                        continue
-                                    }
-                                }
-
-                            // Get the UIManager for this specific tag
-                            val uiManager =
-                                UIManagerHelper.getUIManagerForReactTag(reactContext, reactTag)
-                            if (uiManager == null) {
-                                Logger.warning("UIManager not found for tag: $reactTag")
-                                continue
-                            }
-
-                            // Resolve the view using the manager (now on UI thread)
-                            val view = uiManager.resolveView(reactTag)
-                            if (view is RoktEmbeddedView) {
-                                placeholdersMap[key] = WeakReference(view)
-                                Logger.debug("Successfully found Widget for key: $key with tag: $reactTag")
-                            } else {
-                                Logger.warning("View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
-                            }
-                        } catch (e: Exception) {
-                            Logger.warning("Error processing placeholder for key $key: ${e.message}")
+                        else -> {
+                            Logger.warning("Invalid view tag for key: $key")
+                            continue
                         }
                     }
-                } finally {
-                    latch.countDown()
-                }
-            }
 
-            try {
-                // Wait for UI thread to finish processing
-                latch.await()
-            } catch (e: InterruptedException) {
-                Logger.warning("Interrupted while waiting for UI thread: ${e.message}")
+                val uiManager = UIManagerHelper.getUIManagerForReactTag(reactContext, reactTag)
+                if (uiManager == null) {
+                    Logger.warning("UIManager not found for tag: $reactTag")
+                    continue
+                }
+
+                val view = uiManager.resolveView(reactTag)
+                if (view is RoktEmbeddedView) {
+                    placeholdersMap[key] = WeakReference(view)
+                    Logger.debug("Successfully found Widget for key: $key with tag: $reactTag")
+                } else {
+                    Logger.warning("View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
+                }
+            } catch (e: Exception) {
+                Logger.warning("Error processing placeholder for key $key: ${e.message}")
             }
         }
 
