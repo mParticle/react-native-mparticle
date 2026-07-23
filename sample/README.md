@@ -69,8 +69,7 @@ The sample Podfile pins `mParticle-Rokt` `~> 9.2`, **`Rokt-Widget` `5.2.0`**, an
 The sample Android app pins both `com.mparticle:android-core` and
 `com.mparticle:android-rokt-kit` to `[6.0.0, 7.0)` so the Rokt session APIs are
 available. Apps that include `android-rokt-kit` `6.0.0` must build with
-`compileSdk` 35+ and Android Gradle Plugin 8.6+; the sample uses `compileSdk`
-36. Payment-extension installation and native URL callback forwarding are not
+`compileSdk` 35+ and Android Gradle Plugin 8.6+; the sample uses `compileSdk` 36. Payment-extension installation and native URL callback forwarding are not
 configured in this release.
 
 ## Running the Sample App
