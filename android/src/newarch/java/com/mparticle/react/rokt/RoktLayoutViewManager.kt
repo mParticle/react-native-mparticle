@@ -20,10 +20,12 @@ class RoktLayoutViewManager :
 
     override fun getName(): String = impl.getName()
 
-    override fun createViewInstance(reactContext: ThemedReactContext): RoktEmbeddedView =
-        impl.createViewInstance(reactContext)
+    override fun createViewInstance(reactContext: ThemedReactContext): RoktEmbeddedView = impl.createViewInstance(reactContext)
 
-    override fun setPlaceholderName(view: RoktEmbeddedView?, value: String?) {
+    override fun setPlaceholderName(
+        view: RoktEmbeddedView?,
+        value: String?,
+    ) {
         impl.setPlaceholderName(view, value)
     }
 }

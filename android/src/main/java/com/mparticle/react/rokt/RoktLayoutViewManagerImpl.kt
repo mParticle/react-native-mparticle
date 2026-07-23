@@ -59,7 +59,6 @@ class RoktLayoutViewManagerImpl {
     ) : Event<OnLayoutHeightChangedEvent>(surfaceId, viewId) {
         override fun getEventName(): String = RoktLayoutViewManagerImpl.EVENT_HEIGHT_CHANGED
 
-        override fun getEventData(): WritableMap =
-            Arguments.createMap().apply { putString("height", height.toString()) }
+        override fun getEventData(): WritableMap = Arguments.createMap().apply { putString("height", height.toString()) }
     }
 }
