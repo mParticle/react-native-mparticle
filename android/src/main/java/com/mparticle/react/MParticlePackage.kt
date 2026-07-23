@@ -21,7 +21,7 @@ class MParticlePackage : TurboReactPackage() {
             }
 
             ROKT_MODULE_NAME -> {
-                if (isRoktKitAvailable()) {
+                if (isRoktKitAvailable) {
                     MPRoktModule(reactContext)
                 } else {
                     null
@@ -32,7 +32,7 @@ class MParticlePackage : TurboReactPackage() {
         }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
-        if (isRoktKitAvailable()) {
+        if (isRoktKitAvailable) {
             listOf(RoktLayoutViewManager())
         } else {
             emptyList()
@@ -54,7 +54,7 @@ class MParticlePackage : TurboReactPackage() {
                     BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, // isTurboModule
                 ),
             )
-            if (isRoktKitAvailable()) {
+            if (isRoktKitAvailable) {
                 moduleInfos.put(
                     ROKT_MODULE_NAME,
                     ReactModuleInfo(
@@ -72,7 +72,7 @@ class MParticlePackage : TurboReactPackage() {
         }
 
     override fun getViewManagers(reactContext: ReactApplicationContext): List<ModuleSpec> =
-        if (isRoktKitAvailable()) {
+        if (isRoktKitAvailable) {
             listOf(
                 ModuleSpec.viewManagerSpec { RoktLayoutViewManager() },
             )
@@ -80,7 +80,9 @@ class MParticlePackage : TurboReactPackage() {
             emptyList()
         }
 
-    private fun isRoktKitAvailable(): Boolean =
+    // The Rokt kit's presence on the classpath is fixed for the app's lifetime; compute the
+    // reflective check once instead of on every module/view-manager registration call.
+    private val isRoktKitAvailable: Boolean by lazy {
         try {
             Class.forName("com.mparticle.kits.RoktEmbeddedView")
             true
@@ -89,6 +91,7 @@ class MParticlePackage : TurboReactPackage() {
         } catch (_: LinkageError) {
             false
         }
+    }
 
     private companion object {
         const val ROKT_MODULE_NAME = "RNMPRokt"
