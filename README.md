@@ -433,6 +433,16 @@ To log screen events:
 MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' });
 ```
 
+### Null Custom Attribute Values
+
+Custom event and product attributes accept `null`. The React Native SDK
+preserves an explicitly null attribute as an empty string on both platforms, so
+`{ coupon_code: null }` appears as `{ coupon_code: "" }` in Live Stream. Omit
+the key when the attribute should be absent.
+
+Because `null` and `""` intentionally produce the same output, use a separate
+boolean or status attribute when analytics must distinguish those states.
+
 ## User
 
 To set, remove, and get user details, call the `User` or `Identity` methods as follows:
