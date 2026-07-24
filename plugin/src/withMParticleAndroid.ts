@@ -381,11 +381,9 @@ const withMParticleAppBuildGradle: ConfigPlugin<MParticlePluginProps> = (
 
     // Generate kit dependency lines
     // Bounded range matches the core SDK range in android/build.gradle so the
-    // kit and core stay paired on a 5.x line. An unbounded `+` would resolve
-    // to a pre-release (e.g. 6.0.0-rc.1) and transitively drag the core past
-    // the bridge's compiled-against API surface.
+    // kit and core stay paired on a supported 6.x line.
     const kitDependencies = props.androidKits
-      .map(kit => `    implementation "com.mparticle:${kit}:[5.79.2, 6.0)"`)
+      .map(kit => `    implementation "com.mparticle:${kit}:[6.0.0, 7.0)"`)
       .join('\n');
 
     // Use mergeContents for idempotent injection

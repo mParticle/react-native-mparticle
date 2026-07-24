@@ -10,16 +10,16 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.mparticle.MParticle
-import com.mparticle.MpRoktEventCallback
-import com.mparticle.RoktEvent
-import com.mparticle.UnloadReasons
 import com.mparticle.WrapperSdk
 import com.mparticle.internal.Logger
-import com.mparticle.rokt.CacheConfig
-import com.mparticle.rokt.RoktConfig
+import com.mparticle.kits.rokt
+import com.rokt.roktsdk.CacheConfig
+import com.rokt.roktsdk.RoktConfig
+import com.rokt.roktsdk.RoktEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -31,13 +31,7 @@ class MPRoktModuleImpl(
         MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
     }
 
-    private var roktEventHandler: MpRoktEventCallback? = null
-
     private val eventSubscriptions = mutableMapOf<String, Job?>()
-    private val listeners: MutableMap<Long, MpRoktEventCallback> =
-        object : LinkedHashMap<Long, MpRoktEventCallback>() {
-            override fun removeEldestEntry(eldest: Map.Entry<Long, MpRoktEventCallback>): Boolean = this.size > MAX_LISTENERS
-        }
 
     fun getName(): String = MODULE_NAME
 
@@ -54,56 +48,32 @@ class MPRoktModuleImpl(
         catalogItemId: String,
         success: Boolean,
     ) {
-        MParticle.getInstance()?.Rokt()?.purchaseFinalized(placementId, catalogItemId, success)
+        MParticle.getInstance()?.rokt?.purchaseFinalized(placementId, catalogItemId, success)
     }
 
     fun close(promise: Promise) {
-        MParticle.getInstance()?.Rokt()?.close()
-        promise.resolve(null)
+        // rokt.close() dismisses/detaches Compose overlay views, which must happen on the main thread.
+        UiThreadUtil.runOnUiThread {
+            MParticle.getInstance()?.rokt?.close()
+            promise.resolve(null)
+        }
     }
 
     fun setSessionId(
         sessionId: String,
         promise: Promise,
     ) {
-        MParticle.getInstance()?.Rokt()?.setSessionId(sessionId)
+        MParticle.getInstance()?.rokt?.setSessionId(sessionId)
         promise.resolve(null)
     }
 
     fun getSessionId(promise: Promise) {
-        promise.resolve(MParticle.getInstance()?.Rokt()?.getSessionId())
-    }
-
-    fun setRoktEventHandler(roktEventHandler: MpRoktEventCallback) {
-        this.roktEventHandler = roktEventHandler
-    }
-
-    fun createRoktCallback(): MpRoktEventCallback {
-        val callback: MpRoktEventCallback =
-            object : MpRoktEventCallback {
-                override fun onLoad() {
-                    sendCallback("onLoad", null)
-                }
-
-                override fun onUnload(reason: UnloadReasons) {
-                    sendCallback("onUnLoad", reason.toString())
-                }
-
-                override fun onShouldShowLoadingIndicator() {
-                    sendCallback("onShouldShowLoadingIndicator", null)
-                }
-
-                override fun onShouldHideLoadingIndicator() {
-                    sendCallback("onShouldHideLoadingIndicator", null)
-                }
-            }
-        listeners[System.currentTimeMillis()] = callback
-        return callback
+        promise.resolve(MParticle.getInstance()?.rokt?.getSessionId())
     }
 
     fun sendCallback(
         eventValue: String,
-        reason: String?,
+        reason: String? = null,
     ) {
         val params = Arguments.createMap()
         params.putString("callbackValue", eventValue)
@@ -153,7 +123,11 @@ class MPRoktModuleImpl(
             }
         val cacheAttributes =
             if (cacheConfigMap?.hasKey("cacheAttributes") == true) {
-                cacheConfigMap.getMap("cacheAttributes")?.toHashMap()?.mapValues { it.value as String }
+                cacheConfigMap
+                    .getMap("cacheAttributes")
+                    ?.toHashMap()
+                    ?.mapNotNull { (key, value) -> (value as? String)?.let { key to it } }
+                    ?.toMap()
             } else {
                 null
             }
@@ -182,51 +156,55 @@ class MPRoktModuleImpl(
                             when (event) {
                                 is RoktEvent.FirstPositiveEngagement -> {
                                     eventName = "FirstPositiveEngagement"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 RoktEvent.HideLoadingIndicator -> {
                                     eventName = "HideLoadingIndicator"
+                                    sendCallback("onShouldHideLoadingIndicator")
                                     null
                                 }
 
                                 is RoktEvent.OfferEngagement -> {
                                     eventName = "OfferEngagement"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PlacementClosed -> {
                                     eventName = "PlacementClosed"
-                                    event.placementId
+                                    sendCallback("onUnLoad")
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PlacementCompleted -> {
                                     eventName = "PlacementCompleted"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PlacementFailure -> {
                                     eventName = "PlacementFailure"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PlacementInteractive -> {
                                     eventName = "PlacementInteractive"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PlacementReady -> {
                                     eventName = "PlacementReady"
-                                    event.placementId
+                                    sendCallback("onLoad")
+                                    event.identifier
                                 }
 
                                 is RoktEvent.PositiveEngagement -> {
                                     eventName = "PositiveEngagement"
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 RoktEvent.ShowLoadingIndicator -> {
                                     eventName = "ShowLoadingIndicator"
+                                    sendCallback("onShouldShowLoadingIndicator")
                                     null
                                 }
 
@@ -239,7 +217,7 @@ class MPRoktModuleImpl(
                                 is RoktEvent.OpenUrl -> {
                                     eventName = "OpenUrl"
                                     params.putString("url", event.url)
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 is RoktEvent.CartItemInstantPurchase -> {
@@ -252,7 +230,7 @@ class MPRoktModuleImpl(
                                     params.putDouble("totalPrice", event.totalPrice)
                                     params.putInt("quantity", event.quantity)
                                     params.putDouble("unitPrice", event.unitPrice)
-                                    event.placementId
+                                    event.identifier
                                 }
 
                                 else -> {
@@ -272,7 +250,6 @@ class MPRoktModuleImpl(
     }
 
     companion object {
-        const val MAX_LISTENERS = 5
         const val MODULE_NAME = "RNMPRokt"
     }
 }
