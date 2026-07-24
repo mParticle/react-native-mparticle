@@ -162,7 +162,7 @@ const normalizeCustomAttributes = (
 
 const normalizeProduct = (product: Product): NativeProduct => {
   const { customAttributes, ...productProperties } = product;
-  if (customAttributes === undefined) {
+  if (customAttributes == null) {
     return productProperties;
   }
   return {
@@ -178,7 +178,7 @@ const normalizeImpression = (impression: Impression): NativeImpression => ({
 
 const normalizeMPEvent = (event: Event): NativeEvent => {
   const { info, ...eventProperties } = event;
-  if (info === undefined) {
+  if (info == null) {
     return eventProperties;
   }
   return {
@@ -195,15 +195,13 @@ const normalizeCommerceEvent = (
 
   return {
     ...eventProperties,
-    ...(customAttributes === undefined
+    ...(customAttributes == null
       ? {}
       : {
           customAttributes: normalizeCustomAttributes(customAttributes),
         }),
-    ...(products === undefined
-      ? {}
-      : { products: products.map(normalizeProduct) }),
-    ...(impressions === undefined
+    ...(products == null ? {} : { products: products.map(normalizeProduct) }),
+    ...(impressions == null
       ? {}
       : { impressions: impressions.map(normalizeImpression) }),
   };

@@ -140,4 +140,31 @@ describe('custom attribute normalization', () => {
     expect(productAttributes.coupon_code).toBeNull();
     expect(impressionAttributes.placement).toBeNull();
   });
+
+  it('treats null attribute containers as omitted without throwing', () => {
+    const event = new Event().setName('Purchase').setType(4);
+    (event as unknown as { info: unknown }).info = null;
+
+    const product = new Product('Shirt', 'shirt-1', 25);
+    (product as unknown as { customAttributes: unknown }).customAttributes =
+      null;
+
+    const commerceEvent = CommerceEvent.createProductActionEvent(1, [product]);
+    const mutableCommerceEvent = commerceEvent as unknown as {
+      customAttributes: unknown;
+      impressions: unknown;
+    };
+    mutableCommerceEvent.customAttributes = null;
+    mutableCommerceEvent.impressions = null;
+
+    expect(() => logMPEvent(event)).not.toThrow();
+    expect(() => logCommerceEvent(commerceEvent)).not.toThrow();
+
+    expect(mockNativeModule.logMPEvent.mock.calls[0][0].info).toBeUndefined();
+    const normalizedCommerce =
+      mockNativeModule.logCommerceEvent.mock.calls[0][0];
+    expect(normalizedCommerce.customAttributes).toBeUndefined();
+    expect(normalizedCommerce.impressions).toBeUndefined();
+    expect(normalizedCommerce.products[0].customAttributes).toBeUndefined();
+  });
 });
