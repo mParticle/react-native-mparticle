@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <React/RCTConvert.h>
+#import "../../../ios/RNMParticle/RNMParticle.h"
 
 // Match RNMParticle.mm / pod umbrella so tests compile against the same SDK the library uses.
 #if defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/mParticle.h>)
@@ -15,6 +16,12 @@
 + (MPCommerceEvent *)MPCommerceEvent:(id)json;
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
 + (MPPromotionAction)MPPromotionAction:(id)json;
++ (MPProduct *)MPProduct:(id)json;
++ (MPEvent *)MPEvent:(id)json;
+@end
+
+@interface RNMParticle (ProductMappingTests)
+- (MPProduct *)createMPProductFromDict:(NSDictionary *)productDict;
 @end
 
 /**
@@ -25,8 +32,8 @@
  * JSON → `MPCommerceEvent` tests below exercise the same `+[RCTConvert MPCommerceEvent:]` pipeline
  * used to assemble an `MPCommerceEvent` before `-[MParticle logCommerceEvent:]` (legacy bridge path),
  * including `MPPromotionContainer:` wiring. That catches regressions such as casting JS ints in
- * those helpers instead of calling the mappers. The New Architecture TurboModule `logCommerceEvent`
- * codegen struct path is still not invoked here (would require generated C++ types in this target).
+ * those helpers instead of calling the mappers. Product tests invoke the helper used by the New
+ * Architecture codegen struct path without requiring generated C++ values in this target.
  */
 @interface RCTConvertCommerceMappingTests : XCTestCase
 @end
@@ -68,16 +75,80 @@
     };
 }
 
+- (NSDictionary *)productJSONWithCustomAttributes
+{
+    return @{
+        @"name" : @"Test Product",
+        @"sku" : @"SKU-1",
+        @"price" : @19.99,
+        @"quantity" : @1,
+        @"customAttributes" : @{
+            @"string" : @"value",
+            @"integer" : @42,
+            @"decimal" : @3.5,
+            @"true" : @YES,
+            @"false" : @NO,
+            @"null" : [NSNull null],
+        },
+    };
+}
+
+- (void)assertCustomAttributesForProduct:(MPProduct *)product
+{
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"string"], @"value");
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"integer"], @"42");
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"decimal"], @"3.5");
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"true"], @"true");
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"false"], @"false");
+    XCTAssertEqualObjects([product objectForKeyedSubscript:@"null"], @"");
+}
+
+- (void)testCreateMPProductFromDict_normalizesCustomAttributesForNewArchitecture
+{
+    RNMParticle *module = [[RNMParticle alloc] init];
+    MPProduct *product = [module createMPProductFromDict:[self productJSONWithCustomAttributes]];
+
+    [self assertCustomAttributesForProduct:product];
+}
+
+- (void)testMPProductFromJSON_normalizesCustomAttributesForLegacyArchitecture
+{
+    MPProduct *product = [RCTConvert MPProduct:[self productJSONWithCustomAttributes]];
+
+    [self assertCustomAttributesForProduct:product];
+}
+
+- (void)testLegacyEventConvertersNormalizeNullCustomAttributes
+{
+    MPEvent *event = [RCTConvert MPEvent:@{
+        @"name" : @"Test Event",
+        @"type" : @(8),
+        @"info" : @{ @"coupon_code" : [NSNull null], @"count" : @42 },
+    }];
+    MPCommerceEvent *commerceEvent = [RCTConvert MPCommerceEvent:@{
+        @"productActionType" : @(7),
+        @"products" : @[ [self minimalProductJSON] ],
+        @"impressions" : @[],
+        @"customAttributes" : @{ @"coupon_code" : [NSNull null] },
+    }];
+
+    XCTAssertEqualObjects(event.customAttributes[@"coupon_code"], @"");
+    XCTAssertEqualObjects(commerceEvent.customAttributes[@"coupon_code"], @"");
+    // Event-level values keep their type on iOS; only explicit null becomes "".
+    XCTAssertEqualObjects(event.customAttributes[@"count"], @42);
+}
+
 - (void)testMPCommerceEventFromJSON_productActionFlowsThroughRCTConvertCommerceEvent
 {
     NSDictionary *json = @{
         @"productActionType" : @(7), // Purchase in js/index.tsx
-        @"products" : @[ [self minimalProductJSON] ],
+        @"products" : @[ [self productJSONWithCustomAttributes] ],
         @"impressions" : @[],
     };
 
     MPCommerceEvent *event = [RCTConvert MPCommerceEvent:json];
     XCTAssertEqual(event.action, MPCommerceEventActionPurchase);
+    [self assertCustomAttributesForProduct:event.products.firstObject];
 }
 
 - (void)testMPCommerceEventFromJSON_promotionActionFlowsThroughMPPromotionContainer

@@ -13,6 +13,11 @@ import type {
   Spec as NativeMParticleInterface,
   CallbackError,
   UserAttributes as NativeUserAttributes,
+  CustomAttributes as NativeCustomAttributes,
+  CommerceEvent as NativeCommerceEvent,
+  Event as NativeEvent,
+  Impression as NativeImpression,
+  Product as NativeProduct,
   DeviceConsentState,
 } from './codegenSpecs/NativeMParticle';
 import { getNativeModule } from './utils/architecture';
@@ -30,7 +35,7 @@ export interface UserIdentities {
 }
 
 export interface CustomAttributes {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | null;
 }
 
 export interface MParticleErrorResponse {
@@ -144,20 +149,84 @@ export const setUploadInterval = (uploadInterval: number): void => {
   MParticleModule.setUploadInterval(uploadInterval);
 };
 
+const normalizeCustomAttributes = (
+  attributes: CustomAttributes
+): NativeCustomAttributes => {
+  const normalizedAttributes: NativeCustomAttributes = {};
+  for (const key of Object.keys(attributes)) {
+    const value = attributes[key];
+    normalizedAttributes[key] = value === null ? '' : value;
+  }
+  return normalizedAttributes;
+};
+
+const normalizeProduct = (product: Product): NativeProduct => {
+  const { customAttributes, ...productProperties } = product;
+  if (customAttributes === undefined) {
+    return productProperties;
+  }
+  return {
+    ...productProperties,
+    customAttributes: normalizeCustomAttributes(customAttributes),
+  };
+};
+
+const normalizeImpression = (impression: Impression): NativeImpression => ({
+  ...impression,
+  products: impression.products.map(normalizeProduct),
+});
+
+const normalizeMPEvent = (event: Event): NativeEvent => {
+  const { info, ...eventProperties } = event;
+  if (info === undefined) {
+    return eventProperties;
+  }
+  return {
+    ...eventProperties,
+    info: normalizeCustomAttributes(info),
+  };
+};
+
+const normalizeCommerceEvent = (
+  commerceEvent: CommerceEvent
+): NativeCommerceEvent => {
+  const { customAttributes, products, impressions, ...eventProperties } =
+    commerceEvent;
+
+  return {
+    ...eventProperties,
+    ...(customAttributes === undefined
+      ? {}
+      : {
+          customAttributes: normalizeCustomAttributes(customAttributes),
+        }),
+    ...(products === undefined
+      ? {}
+      : { products: products.map(normalizeProduct) }),
+    ...(impressions === undefined
+      ? {}
+      : { impressions: impressions.map(normalizeImpression) }),
+  };
+};
+
 export const logEvent = (
   eventName: string,
   type: number = EventType.Other,
   attributes: CustomAttributes | null = null
 ): void => {
-  MParticleModule.logEvent(eventName, type, attributes);
+  MParticleModule.logEvent(
+    eventName,
+    type,
+    attributes === null ? null : normalizeCustomAttributes(attributes)
+  );
 };
 
 export const logMPEvent = (event: Event): void => {
-  MParticleModule.logMPEvent(event);
+  MParticleModule.logMPEvent(normalizeMPEvent(event));
 };
 
 export const logCommerceEvent = (commerceEvent: CommerceEvent): void => {
-  MParticleModule.logCommerceEvent(commerceEvent);
+  MParticleModule.logCommerceEvent(normalizeCommerceEvent(commerceEvent));
 };
 
 export const logScreenEvent = (
@@ -165,7 +234,11 @@ export const logScreenEvent = (
   attributes: CustomAttributes | null = null,
   shouldUploadEvent = true
 ): void => {
-  MParticleModule.logScreenEvent(screenName, attributes, shouldUploadEvent);
+  MParticleModule.logScreenEvent(
+    screenName,
+    attributes === null ? null : normalizeCustomAttributes(attributes),
+    shouldUploadEvent
+  );
 };
 
 // ATT Status methods - iOS only, will be no-op on Android
