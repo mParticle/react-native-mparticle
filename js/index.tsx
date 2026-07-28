@@ -799,12 +799,15 @@ export class CommerceEvent {
   static createProductActionEvent(
     productActionType: number,
     products: Product[],
-    transactionAttributes: TransactionAttributes = new TransactionAttributes('')
+    transactionAttributes?: TransactionAttributes
   ): CommerceEvent {
-    return new CommerceEvent()
+    const commerceEvent = new CommerceEvent()
       .setProductActionType(productActionType)
-      .setProducts(products)
-      .setTransactionAttributes(transactionAttributes);
+      .setProducts(products);
+
+    return transactionAttributes == null
+      ? commerceEvent
+      : commerceEvent.setTransactionAttributes(transactionAttributes);
   }
 
   static createPromotionEvent(
