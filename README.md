@@ -386,17 +386,17 @@ To log commerce events:
 
 ```js
 const product = new MParticle.Product('Test product for cart', '1234', 19.99);
-const transactionAttributes = new MParticle.TransactionAttributes(
-  'Test transaction id'
-);
 const event = MParticle.CommerceEvent.createProductActionEvent(
   MParticle.ProductActionType.AddToCart,
-  [product],
-  transactionAttributes
+  [product]
 );
 
 MParticle.logCommerceEvent(event);
 ```
+
+Transaction attributes are optional for product actions such as AddToCart.
+Purchase and Refund events must include `TransactionAttributes` with a unique
+transaction ID.
 
 ```js
 const promotion = new MParticle.Promotion(
