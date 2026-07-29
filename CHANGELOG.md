@@ -25,6 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - iOS sample CI: GitHub Actions stays on Xcode 16.x
 - Android: raise the `com.mparticle:android-core` / `android-rokt-kit` dependency floor to `[5.79.2, 6.0)` (Expo plugin kit injection and bridge `android/build.gradle`), and bump the sample app to `5.79.2`. This guarantees consumers resolve a Rokt kit built against `com.rokt:roktsdk` `4.14.5`, which observes the Activity lifecycle from process start so overlay/bottom-sheet placements display even when `Rokt.init()` runs after the host Activity has resumed (deferred / late RN initialisation)
 
+## [3.3.2] - 2026-07-29
+
+### Fixed
+
+- Prevent Rokt layout views from collapsing to zero height ([#368](https://github.com/mParticle/react-native-mparticle/pull/368))
+- Report React Native wrapper type on every selectPlacements call ([#357](https://github.com/mParticle/react-native-mparticle/pull/357))
+- Log commerce events without transaction attributes ([#367](https://github.com/mParticle/react-native-mparticle/pull/367))
+
+### Changed
+
+- Raise Rokt iOS floor to 5.3 via mParticle-Rokt 9.3.1 ([#369](https://github.com/mParticle/react-native-mparticle/pull/369))
+
 ## [3.3.1] - 2026-07-24
 
 ### Fixed
@@ -461,7 +473,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.1...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...HEAD
+[3.3.2]: https://github.com/mParticle/react-native-mparticle/compare/3.3.1...3.3.2
 [3.3.1]: https://github.com/mParticle/react-native-mparticle/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/mParticle/react-native-mparticle/compare/3.2.0...3.3.0
 [3.2.0]: https://github.com/mParticle/react-native-mparticle/compare/3.1.5...3.2.0
