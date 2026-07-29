@@ -29,7 +29,13 @@ interface HeightChangedEvent {
 
 const styles = StyleSheet.create({
   widget: {
-    flex: 1,
+    // Do NOT use `flex: 1` here. It expands to `flexBasis: 0%`, which takes
+    // precedence over `height` on the parent's main axis, so inside any
+    // auto-height column parent the layout collapses to 0 and the placement is
+    // never visible even though it was selected and reported its height.
+    // `alignSelf: 'stretch'` gives the full available width without touching the
+    // main axis, leaving the measured `height` free to apply.
+    alignSelf: 'stretch',
     backgroundColor: 'transparent',
   },
 });
