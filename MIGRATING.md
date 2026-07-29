@@ -41,16 +41,11 @@ For standard Rokt placements on iOS, use:
 
 ```ruby
 pod 'mParticle-Rokt', '~> 9.3'
-pod 'Rokt-Widget', '~> 5.3'
 ```
 
-Kit `9.3.2+` already enforces the `5.3` floor transitively, so the explicit
-`Rokt-Widget` line is not required to prevent `5.2.x`. Declaring it keeps the
-floor visible in the Podfile and forces a resolve even when an existing
-`Podfile.lock` still holds a `5.2.x` build.
-
-Do not add `Rokt-Widget` to this React Native wrapper's podspec — apps receive
-it through `mParticle-Rokt`.
+Do not add `Rokt-Widget` yourself — apps receive it through `mParticle-Rokt`,
+which requires `~> 5.3`. Run `pod update` so an existing `Podfile.lock` does not
+hold an older Rokt iOS build.
 
 `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact
 `DcuiSchema` version. Remove any `DcuiSchema` pin (for example the previously
@@ -86,9 +81,8 @@ Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
 ]
 ```
 
-The plugin pins generated `mParticle-Rokt` pods to `~> 9.3` and companion
-`Rokt-Widget` to `~> 5.3`. It does not add payment-extension pods or URL
-callback forwarding in this release.
+The plugin pins generated `mParticle-Rokt` pods to `~> 9.3`. It does not add
+payment-extension pods or URL callback forwarding in this release.
 
 For global CNAME setup, configure the shared `customBaseUrl` setting:
 

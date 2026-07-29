@@ -64,7 +64,7 @@ cd sample/ios
 pod install
 ```
 
-The sample Podfile pins `mParticle-Rokt` `~> 9.3` and **`Rokt-Widget` `~> 5.3`**. Kit `9.3+` requires Rokt iOS `5.3+`, so CocoaPods does not resolve older `5.2.x`.
+The sample Podfile pins `mParticle-Rokt` `~> 9.3`. That kit requires `Rokt-Widget` `~> 5.3`, so Rokt iOS resolves transitively and the Podfile does not declare it.
 
 There is no longer a `DcuiSchema` pin. `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema cannot float out of sync with the `RoktUXHelper` sources. The previous `2.7.0` pin guarded against that float (schema `2.8.x` added `image` styling APIs that older `RoktUXHelper` Swift did not pass through, breaking `StyleTransformer` / `BaseStyles`) and now conflicts with the exact version `RoktUXHelper` requires.
 

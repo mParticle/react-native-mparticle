@@ -295,10 +295,11 @@ For standard Rokt placements, add the mParticle Rokt kit:
 
 ```ruby
 pod 'mParticle-Rokt', '~> 9.3'
-pod 'Rokt-Widget', '~> 5.3'
 ```
 
-In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin pins `mParticle-Rokt` to `~> 9.3` and `Rokt-Widget` to `~> 5.3`. It does not add payment-extension pods or URL callback forwarding in this release.
+The kit requires `Rokt-Widget` `~> 5.3`, so Rokt iOS resolves transitively — do not declare it yourself.
+
+In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin pins `mParticle-Rokt` to `~> 9.3`. It does not add payment-extension pods or URL callback forwarding in this release.
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 

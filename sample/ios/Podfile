@@ -33,12 +33,11 @@ target 'MParticleSample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  # 9.3+ requires Rokt-Widget ~> 5.3 (mParticle-Rokt 9.3.2+).
-  pod 'mParticle-Rokt', '~> 9.3'
-  pod 'Rokt-Widget', '~> 5.3'
-  # No DcuiSchema pin: Rokt-Widget 5.3 resolves RoktUXHelper 1.0.0, which requires an
+  # The kit requires Rokt-Widget ~> 5.3, so Rokt iOS resolves transitively. No
+  # DcuiSchema pin either: Rokt-Widget 5.3 resolves RoktUXHelper 1.0.0, which requires an
   # exact `DcuiSchema` version, so the schema can no longer float out of sync with the
   # RoktUXHelper sources (the desync that the previous 2.7.0 pin guarded against).
+  pod 'mParticle-Rokt', '~> 9.3'
 
   target 'MParticleSampleTests' do
     inherit! :complete

@@ -15,14 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- iOS: require `mParticle-Rokt ~> 9.3` (kit declares `Rokt-Widget ~> 5.3`) and declare companion `Rokt-Widget ~> 5.3` in the sample Podfile and Expo config plugin, so consumers cannot resolve Rokt iOS `5.2.x`
-- iOS: drop the sample `DcuiSchema` `2.7.0` pin. `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema can no longer float out of sync and the old pin now conflicts during resolution
+- iOS: require `mParticle-Rokt ~> 9.3` (kit declares `Rokt-Widget ~> 5.3`)
+- iOS: no `Rokt-Widget` or `DcuiSchema` pins in the sample Podfile or Expo config plugin. Rokt iOS resolves through `mParticle-Rokt`, and `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema can no longer float out of sync. Remove any `DcuiSchema` pin, which now conflicts during resolution
 
 ### Fixed
 
 - Preserve explicitly null custom event and product attributes as empty strings on iOS and Android, including product attributes with iOS New Architecture
 - iOS: raise the `mParticle-Apple-SDK-ObjC` floor to `>= 9.2.2` (was `~> 9.2`); the device-consent bridge uses `MParticle.deviceConsentState`, added in SDK `9.2.2`, so the previous floor permitted `9.2.0`/`9.2.1` which fail to compile
-- iOS sample CI: pin `DcuiSchema` to `2.7.0` (avoids `2.8.x` schema floating under Rokt’s `~> 2.6` and breaking `RoktUXHelper` Swift compile); GitHub Actions stays on Xcode 16.x
+- iOS sample CI: GitHub Actions stays on Xcode 16.x
 - Android: raise the `com.mparticle:android-core` / `android-rokt-kit` dependency floor to `[5.79.2, 6.0)` (Expo plugin kit injection and bridge `android/build.gradle`), and bump the sample app to `5.79.2`. This guarantees consumers resolve a Rokt kit built against `com.rokt:roktsdk` `4.14.5`, which observes the Activity lifecycle from process start so overlay/bottom-sheet placements display even when `Rokt.init()` runs after the host Activity has resumed (deferred / late RN initialisation)
 
 ## [3.3.1] - 2026-07-24
