@@ -33,12 +33,13 @@ target 'MParticleSample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  pod 'mParticle-Rokt', '~> 9.2'
-  # Exact Rokt-Widget keeps RoktUXHelper on the same version (Rokt pins them together).
-  pod 'Rokt-Widget', '5.2.0'
+  # 9.3+ requires Rokt-Widget ~> 5.3 (mParticle-Rokt 9.3.2+).
+  pod 'mParticle-Rokt', '~> 9.3'
+  pod 'Rokt-Widget', '~> 5.3'
   # RoktUXHelper declares `DcuiSchema` `~> 2.6`, which otherwise floats to 2.8.x; that
-  # schema release adds `image` styling APIs that the shipped RoktUXHelper 5.2.x Swift
-  # does not pass through yet (CI: StyleTransformer.swift / BaseStyles "missing image").
+  # schema release adds `image` styling APIs that older RoktUXHelper Swift does not
+  # pass through yet (CI: StyleTransformer.swift / BaseStyles "missing image").
+  # Retune this pin when validating a new Rokt-Widget line if schema APIs drift again.
   pod 'DcuiSchema', '2.7.0'
 
   target 'MParticleSampleTests' do

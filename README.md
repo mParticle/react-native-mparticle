@@ -294,10 +294,11 @@ Next, you'll need to start the SDK:
 For standard Rokt placements, add the mParticle Rokt kit:
 
 ```ruby
-pod 'mParticle-Rokt', '~> 9.2'
+pod 'mParticle-Rokt', '~> 9.3'
+pod 'Rokt-Widget', '~> 5.3'
 ```
 
-In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin does not add payment-extension pods or URL callback forwarding in this release.
+In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin pins `mParticle-Rokt` to `~> 9.3` and `Rokt-Widget` to `~> 5.3`. It does not add payment-extension pods or URL callback forwarding in this release.
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 

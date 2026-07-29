@@ -64,7 +64,7 @@ cd sample/ios
 pod install
 ```
 
-The sample Podfile pins `mParticle-Rokt` `~> 9.2`, **`Rokt-Widget` `5.2.0`**, and **`DcuiSchema` `2.7.0`**. Rokt’s pods allow `DcuiSchema` to float within `~> 2.6`; when CocoaPods resolves **2.8.0+**, the schema adds `image` styling that can desync from the `RoktUXHelper` sources in that widget line and break Swift compile (`StyleTransformer` / `BaseStyles`). Bump these pins together when you adopt a newer Rokt iOS stack.
+The sample Podfile pins `mParticle-Rokt` `~> 9.3`, **`Rokt-Widget` `~> 5.3`**, and **`DcuiSchema` `2.7.0`**. Kit `9.3+` requires Rokt iOS `5.3+`, so CocoaPods does not resolve older `5.2.x`. Rokt’s pods allow `DcuiSchema` to float within `~> 2.6`; when CocoaPods resolves **2.8.0+**, the schema can add APIs that desync from the shipped `RoktUXHelper` and break Swift compile (`StyleTransformer` / `BaseStyles`). Retune the schema pin when validating a new Rokt iOS line.
 
 The sample Android app pins both `com.mparticle:android-core` and
 `com.mparticle:android-rokt-kit` to `[6.0.0, 7.0)` so the Rokt session APIs are

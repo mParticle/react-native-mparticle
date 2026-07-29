@@ -204,7 +204,8 @@ Check `ios/Podfile` for:
 - Kit pods (if specified):
 
   ```ruby
-  pod 'mParticle-Rokt', '~> 9.2'
+  pod 'mParticle-Rokt', '~> 9.3'
+  pod 'Rokt-Widget', '~> 5.3'
   ```
 
 ### Verify Android Integration

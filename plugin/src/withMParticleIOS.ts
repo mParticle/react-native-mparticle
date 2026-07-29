@@ -387,8 +387,18 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
 };
 
 const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
-  'mParticle-Rokt': "'~> 9.2'",
+  // 9.3+ declares Rokt-Widget ~> 5.3 (mParticle Apple SDK #796 / kit 9.3.2).
+  'mParticle-Rokt': "'~> 9.3'",
 };
+
+/**
+ * Extra pods declared alongside a kit to keep an explicit Rokt iOS floor even when
+ * CocoaPods would otherwise satisfy the kit with an older locked Widget build.
+ */
+const KIT_COMPANION_PODS: Record<string, Array<{ name: string; version: string }>> =
+  {
+    'mParticle-Rokt': [{ name: 'Rokt-Widget', version: "'~> 5.3'" }],
+  };
 
 /**
  * Get all pods that need dynamic framework linking
@@ -419,6 +429,20 @@ function getKitPodDeclaration(kit: string): string {
   return versionRequirement
     ? `  pod '${kit}', ${versionRequirement}`
     : `  pod '${kit}'`;
+}
+
+function getKitPodDeclarations(kits: string[]): string[] {
+  const lines: string[] = [];
+  for (const kit of kits) {
+    lines.push(getKitPodDeclaration(kit));
+    const companions = KIT_COMPANION_PODS[kit];
+    if (companions) {
+      for (const companion of companions) {
+        lines.push(`  pod '${companion.name}', ${companion.version}`);
+      }
+    }
+  }
+  return lines;
 }
 
 /**
@@ -475,7 +499,7 @@ end
 
       // Add kit pods if specified
       if (props.iosKits && props.iosKits.length > 0) {
-        const kitPods = props.iosKits.map(getKitPodDeclaration).join('\n');
+        const kitPods = getKitPodDeclarations(props.iosKits).join('\n');
 
         // Check if kits are already added
         const kitsAlreadyAdded = props.iosKits.every(kit =>

@@ -28,22 +28,24 @@ dependencies with the `[6.0.0, 7.0)` range.
 
 `selectShoppableAds` remains a no-op on Android in this release.
 
-## Migrating to the mParticle Apple SDK 9.2.0 Rokt update
+## Migrating to mParticle-Rokt 9.3+ (Rokt iOS 5.3 floor)
 
-This update aligns the React Native wrapper with `mParticle-Apple-SDK` and
-`mParticle-Rokt` `9.2.0`. The Apple Rokt kit now resolves `Rokt-Widget` `~> 5.2`
-and `RoktContracts` `~> 2.0`.
+This update aligns the React Native wrapper with `mParticle-Rokt` **9.3+**,
+which requires `Rokt-Widget` `~> 5.3` (and `RoktContracts` `~> 2.0`). Use kit
+`9.3.2` or newer so CocoaPods cannot resolve Rokt iOS `5.2.x`.
 
 ### Dependency Changes
 
 For standard Rokt placements on iOS, use:
 
 ```ruby
-pod 'mParticle-Rokt', '~> 9.2'
+pod 'mParticle-Rokt', '~> 9.3'
+pod 'Rokt-Widget', '~> 5.3'
 ```
 
-Do not add `Rokt-Widget` directly to this React Native wrapper's podspec. Apps
-receive it transitively through `mParticle-Rokt`.
+Do not add `Rokt-Widget` to this React Native wrapper's podspec. Apps receive
+it through `mParticle-Rokt` `9.3+`; the companion `Rokt-Widget` pin makes the
+5.3 floor explicit in app Podfiles / Expo-generated Podfiles.
 
 ### React Native Rokt API
 
@@ -74,8 +76,9 @@ Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
 ]
 ```
 
-The plugin pins generated `mParticle-Rokt` pods to `~> 9.2`. It does not add
-payment-extension pods or URL callback forwarding in this release.
+The plugin pins generated `mParticle-Rokt` pods to `~> 9.3` and companion
+`Rokt-Widget` to `~> 5.3`. It does not add payment-extension pods or URL
+callback forwarding in this release.
 
 For global CNAME setup, configure the shared `customBaseUrl` setting:
 
