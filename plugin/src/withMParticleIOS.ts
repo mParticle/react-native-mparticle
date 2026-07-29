@@ -387,7 +387,8 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
 };
 
 const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
-  'mParticle-Rokt': "'~> 9.2'",
+  // 9.3.1 is the first kit declaring Rokt-Widget ~> 5.3; 9.3.0 still allows ~> 5.2.
+  'mParticle-Rokt': "'>= 9.3.1', '< 10.0'",
 };
 
 /**
@@ -473,16 +474,16 @@ end
         }
       }
 
-      // Add kit pods if specified
+      // Add kit pods if specified. Kits are matched individually so a Podfile that
+      // already declares one kit does not get it re-injected alongside a missing one.
       if (props.iosKits && props.iosKits.length > 0) {
-        const kitPods = props.iosKits.map(getKitPodDeclaration).join('\n');
-
-        // Check if kits are already added
-        const kitsAlreadyAdded = props.iosKits.every(kit =>
-          podfileContent.includes(`pod '${kit}'`)
+        const missingKits = props.iosKits.filter(
+          kit => !podfileContent.includes(`pod '${kit}'`)
         );
 
-        if (!kitsAlreadyAdded) {
+        if (missingKits.length > 0) {
+          const kitPods = missingKits.map(getKitPodDeclaration).join('\n');
+
           // Add kit pods inside the main target block
           // Look for use_react_native! and add after it
           const useReactNativeRegex = /(use_react_native!\([^)]*\))/s;
