@@ -33,6 +33,7 @@ class MPRoktModule(
             Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
+        impl.setWrapperSdk()
         MParticle.getInstance()?.rokt?.events(identifier)?.let {
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
         }
