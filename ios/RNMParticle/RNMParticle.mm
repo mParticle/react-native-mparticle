@@ -39,6 +39,48 @@ static BOOL RNMParticleIsEmptyConsentState(MPConsentState *state)
     return state.gdprConsentState.count == 0 && state.ccpaConsentState == nil;
 }
 
+static NSDictionary<NSString *, NSString *> *RNMParticleStringAttributes(id attributes)
+{
+    if (![attributes isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSMutableDictionary<NSString *, NSString *> *normalizedAttributes = [NSMutableDictionary dictionary];
+    [(NSDictionary *)attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        if (![key isKindOfClass:[NSString class]]) {
+            return;
+        }
+
+        if (value == [NSNull null]) {
+            normalizedAttributes[key] = @"";
+        } else if ([value isKindOfClass:[NSString class]]) {
+            normalizedAttributes[key] = value;
+        } else if ([value isKindOfClass:[NSNumber class]]) {
+            if (CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) {
+                normalizedAttributes[key] = [value boolValue] ? @"true" : @"false";
+            } else {
+                normalizedAttributes[key] = [value stringValue];
+            }
+        }
+    }];
+    return normalizedAttributes;
+}
+
+// Event/commerce-event level: preserve value types (matches pre-existing iOS
+// behaviour); only normalise explicit null to "" for Live Stream parity.
+static NSDictionary *RNMParticleEventAttributes(id attributes)
+{
+    if (![attributes isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSMutableDictionary *normalizedAttributes = [NSMutableDictionary dictionary];
+    [(NSDictionary *)attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        normalizedAttributes[key] = (value == [NSNull null]) ? @"" : value;
+    }];
+    return normalizedAttributes;
+}
+
 #ifdef RCT_NEW_ARCH_ENABLED
 static NSMutableDictionary *RNMParticleCCPAConsentStructToDict(const JS::NativeMParticle::CCPAConsent &consent)
 {
@@ -92,12 +134,16 @@ RCT_EXPORT_METHOD(setUploadInterval:(double)uploadInterval)
 
 RCT_EXPORT_METHOD(logEvent:(NSString *)eventName eventType:(double)eventType attributes:(NSDictionary *)attributes)
 {
-    [[MParticle sharedInstance] logEvent:eventName eventType:(MPEventType)eventType eventInfo:attributes];
+    [[MParticle sharedInstance] logEvent:eventName
+                              eventType:(MPEventType)eventType
+                              eventInfo:RNMParticleEventAttributes(attributes)];
 }
 
 RCT_EXPORT_METHOD(logScreenEvent:(NSString *)screenName attributes:(NSDictionary *)attributes shouldUploadEvent:(BOOL)shouldUploadEvent)
 {
-    [[MParticle sharedInstance] logScreen:screenName eventInfo:attributes shouldUploadEvent:shouldUploadEvent];
+    [[MParticle sharedInstance] logScreen:screenName
+                               eventInfo:RNMParticleEventAttributes(attributes)
+                       shouldUploadEvent:shouldUploadEvent];
 }
 
 RCT_EXPORT_METHOD(setATTStatus:(double)status withATTStatusTimestampMillis:(nonnull NSNumber *)timestamp)
@@ -455,7 +501,7 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     MPEvent *mpEvent = [[MPEvent alloc] initWithName:eventName type:eventType];
 
     if (event.info()) {
-        mpEvent.customAttributes = (NSDictionary *)event.info();
+        mpEvent.customAttributes = RNMParticleEventAttributes((NSDictionary *)event.info());
     }
 
     if (event.duration().has_value()) {
@@ -555,7 +601,8 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
     }
 
     if (commerceEvent.customAttributes()) {
-        mpCommerceEvent.customAttributes = (NSDictionary *)commerceEvent.customAttributes();
+        mpCommerceEvent.customAttributes =
+            RNMParticleEventAttributes((NSDictionary *)commerceEvent.customAttributes());
     }
 
     [[MParticle sharedInstance] logEvent:mpCommerceEvent];
@@ -734,6 +781,11 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
     if (productDict[@"variant"]) {
         product.variant = productDict[@"variant"];
     }
+    NSDictionary<NSString *, NSString *> *customAttributes =
+        RNMParticleStringAttributes(productDict[@"customAttributes"]);
+    for (NSString *key in customAttributes) {
+        [product setObject:customAttributes[key] forKeyedSubscript:key];
+    }
 
     return product;
 }
@@ -891,7 +943,7 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
     MPEvent *event = [[MPEvent alloc] initWithName:dict[@"name"] type:(MPEventType)[dict[@"type"] integerValue]];
 
     if (dict[@"info"] && dict[@"info"] != [NSNull null]) {
-        event.customAttributes = dict[@"info"];
+        event.customAttributes = RNMParticleEventAttributes(dict[@"info"]);
     }
 
     if (dict[@"duration"] && dict[@"duration"] != [NSNull null]) {
@@ -940,6 +992,11 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
                                                              sku:productDict[@"sku"]
                                                         quantity:productDict[@"quantity"]
                                                            price:productDict[@"price"]];
+            NSDictionary<NSString *, NSString *> *customAttributes =
+                RNMParticleStringAttributes(productDict[@"customAttributes"]);
+            for (NSString *key in customAttributes) {
+                [product setObject:customAttributes[key] forKeyedSubscript:key];
+            }
             [products addObject:product];
         }
         [commerceEvent addProducts:products];
@@ -970,7 +1027,8 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
     }
 
     if (dict[@"customAttributes"] && dict[@"customAttributes"] != [NSNull null]) {
-        commerceEvent.customAttributes = dict[@"customAttributes"];
+        commerceEvent.customAttributes =
+            RNMParticleEventAttributes(dict[@"customAttributes"]);
     }
 
     if (dict[@"shouldUploadEvent"] && dict[@"shouldUploadEvent"] != [NSNull null]) {
@@ -1117,7 +1175,8 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
         commerceEvent.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue];
     }
     if (json[@"customAttributes"] != nil) {
-        commerceEvent.customAttributes = json[@"customAttributes"];
+        commerceEvent.customAttributes =
+            RNMParticleEventAttributes(json[@"customAttributes"]);
     }
 
     NSMutableArray *products = [NSMutableArray array];
@@ -1185,9 +1244,10 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     product.position = [json[@"position"] intValue];
     product.quantity = @([json[@"quantity"] intValue]);
     NSDictionary *jsonAttributes = json[@"customAttributes"];
-    for (NSString *key in jsonAttributes) {
-        NSString *value = jsonAttributes[key];
-        [product setObject:value forKeyedSubscript:key];
+    NSDictionary<NSString *, NSString *> *customAttributes =
+        RNMParticleStringAttributes(jsonAttributes);
+    for (NSString *key in customAttributes) {
+        [product setObject:customAttributes[key] forKeyedSubscript:key];
     }
     return product;
 }
@@ -1326,7 +1386,7 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     event.category = json[@"category"];
     event.duration = json[@"duration"];
     event.endTime = json[@"endTime"];
-    event.customAttributes = json[@"info"];
+    event.customAttributes = RNMParticleEventAttributes(json[@"info"]);
     event.name = json[@"name"];
     event.startTime = json[@"startTime"];
     [event setType:(MPEventType)[json[@"type"] intValue]];

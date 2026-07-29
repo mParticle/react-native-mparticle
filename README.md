@@ -301,10 +301,11 @@ In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. Th
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 
-For Android integrations that use `MParticle.Rokt.setSessionId()` or
-`MParticle.Rokt.getSessionId()`, `android-core` and `android-rokt-kit`
-`5.79.0` or newer are required. Android CNAME setup through
-`customBaseUrl` also requires `android-core` `5.79.0` or newer.
+For Android Rokt integrations, including `MParticle.Rokt.*` APIs and
+`RoktLayoutView`, `android-core` and `android-rokt-kit` `6.0.0` or newer are
+required. Apps that include `android-rokt-kit` `6.0.0` must build with
+`compileSdk` 35+ and Android Gradle Plugin 8.6+. Android CNAME setup through
+`customBaseUrl` also requires `android-core` `6.0.0` or newer.
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
@@ -431,6 +432,16 @@ To log screen events:
 ```js
 MParticle.logScreenEvent('Test screen', { 'Test key': 'Test value' });
 ```
+
+### Null Custom Attribute Values
+
+Custom event and product attributes accept `null`. The React Native SDK
+preserves an explicitly null attribute as an empty string on both platforms, so
+`{ coupon_code: null }` appears as `{ coupon_code: "" }` in Live Stream. Omit
+the key when the attribute should be absent.
+
+Because `null` and `""` intentionally produce the same output, use a separate
+boolean or status attribute when analytics must distinguish those states.
 
 ## User
 
