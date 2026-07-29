@@ -36,11 +36,9 @@ target 'MParticleSample' do
   # 9.3+ requires Rokt-Widget ~> 5.3 (mParticle-Rokt 9.3.2+).
   pod 'mParticle-Rokt', '~> 9.3'
   pod 'Rokt-Widget', '~> 5.3'
-  # RoktUXHelper declares `DcuiSchema` `~> 2.6`, which otherwise floats to 2.8.x; that
-  # schema release adds `image` styling APIs that older RoktUXHelper Swift does not
-  # pass through yet (CI: StyleTransformer.swift / BaseStyles "missing image").
-  # Retune this pin when validating a new Rokt-Widget line if schema APIs drift again.
-  pod 'DcuiSchema', '2.7.0'
+  # No DcuiSchema pin: Rokt-Widget 5.3 resolves RoktUXHelper 1.0.0, which requires an
+  # exact `DcuiSchema` version, so the schema can no longer float out of sync with the
+  # RoktUXHelper sources (the desync that the previous 2.7.0 pin guarded against).
 
   target 'MParticleSampleTests' do
     inherit! :complete

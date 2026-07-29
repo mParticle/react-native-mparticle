@@ -31,8 +31,9 @@ dependencies with the `[6.0.0, 7.0)` range.
 ## Migrating to mParticle-Rokt 9.3+ (Rokt iOS 5.3 floor)
 
 This update aligns the React Native wrapper with `mParticle-Rokt` **9.3+**,
-which requires `Rokt-Widget` `~> 5.3` (and `RoktContracts` `~> 2.0`). Use kit
-`9.3.2` or newer so CocoaPods cannot resolve Rokt iOS `5.2.x`.
+which requires `Rokt-Widget` `~> 5.3` (and `RoktContracts` `~> 2.0`), so the
+Rokt iOS floor is enforced by the kit's own dependency graph rather than only by
+an app-level pin.
 
 ### Dependency Changes
 
@@ -43,9 +44,18 @@ pod 'mParticle-Rokt', '~> 9.3'
 pod 'Rokt-Widget', '~> 5.3'
 ```
 
-Do not add `Rokt-Widget` to this React Native wrapper's podspec. Apps receive
-it through `mParticle-Rokt` `9.3+`; the companion `Rokt-Widget` pin makes the
-5.3 floor explicit in app Podfiles / Expo-generated Podfiles.
+Kit `9.3.2+` already enforces the `5.3` floor transitively, so the explicit
+`Rokt-Widget` line is not required to prevent `5.2.x`. Declaring it keeps the
+floor visible in the Podfile and forces a resolve even when an existing
+`Podfile.lock` still holds a `5.2.x` build.
+
+Do not add `Rokt-Widget` to this React Native wrapper's podspec — apps receive
+it through `mParticle-Rokt`.
+
+`Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact
+`DcuiSchema` version. Remove any `DcuiSchema` pin (for example the previously
+recommended `2.7.0`), otherwise CocoaPods reports conflicting `DcuiSchema`
+requirements.
 
 ### React Native Rokt API
 
