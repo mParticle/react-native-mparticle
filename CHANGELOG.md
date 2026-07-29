@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- iOS: require `mParticle-Rokt ~> 9.3` (kit declares `Rokt-Widget ~> 5.3`)
+- iOS: require `mParticle-Rokt >= 9.3.1, < 10.0`. `9.3.1` is the first kit release declaring `Rokt-Widget ~> 5.3`; `9.3.0` still allows `~> 5.2`
 - iOS: no `Rokt-Widget` or `DcuiSchema` pins in the sample Podfile or Expo config plugin. Rokt iOS resolves through `mParticle-Rokt`, and `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema can no longer float out of sync. Remove any `DcuiSchema` pin, which now conflicts during resolution
 
 ### Fixed

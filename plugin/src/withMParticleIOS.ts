@@ -387,8 +387,8 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
 };
 
 const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
-  // 9.3+ declares Rokt-Widget ~> 5.3 (mParticle Apple SDK #796 / kit 9.3.2).
-  'mParticle-Rokt': "'~> 9.3'",
+  // 9.3.1 is the first kit declaring Rokt-Widget ~> 5.3; 9.3.0 still allows ~> 5.2.
+  'mParticle-Rokt': "'>= 9.3.1', '< 10.0'",
 };
 
 /**

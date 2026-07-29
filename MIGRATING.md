@@ -28,24 +28,25 @@ dependencies with the `[6.0.0, 7.0)` range.
 
 `selectShoppableAds` remains a no-op on Android in this release.
 
-## Migrating to mParticle-Rokt 9.3+ (Rokt iOS 5.3 floor)
+## Migrating to mParticle-Rokt 9.3.1+ (Rokt iOS 5.3 floor)
 
-This update aligns the React Native wrapper with `mParticle-Rokt` **9.3+**,
+This update aligns the React Native wrapper with `mParticle-Rokt` **9.3.1+**,
 which requires `Rokt-Widget` `~> 5.3` (and `RoktContracts` `~> 2.0`), so the
 Rokt iOS floor is enforced by the kit's own dependency graph rather than only by
-an app-level pin.
+an app-level pin. `9.3.0` is excluded because it still allows `Rokt-Widget`
+`~> 5.2`.
 
 ### Dependency Changes
 
 For standard Rokt placements on iOS, use:
 
 ```ruby
-pod 'mParticle-Rokt', '~> 9.3'
+pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'
 ```
 
-Do not add `Rokt-Widget` yourself — apps receive it through `mParticle-Rokt`,
-which requires `~> 5.3`. Run `pod update` so an existing `Podfile.lock` does not
-hold an older Rokt iOS build.
+Do not add `Rokt-Widget` yourself — apps receive it through `mParticle-Rokt`.
+Run `pod update` so an existing `Podfile.lock` does not hold an older Rokt iOS
+build.
 
 `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact
 `DcuiSchema` version. Remove any `DcuiSchema` pin (for example the previously
@@ -81,8 +82,8 @@ Use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements:
 ]
 ```
 
-The plugin pins generated `mParticle-Rokt` pods to `~> 9.3`. It does not add
-payment-extension pods or URL callback forwarding in this release.
+The plugin pins generated `mParticle-Rokt` pods to `>= 9.3.1, < 10.0`. It does
+not add payment-extension pods or URL callback forwarding in this release.
 
 For global CNAME setup, configure the shared `customBaseUrl` setting:
 
