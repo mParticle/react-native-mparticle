@@ -572,6 +572,37 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
         }
         [mpCommerceEvent addProducts:productsArray];
     }
+    
+    if (commerceEvent.impressions().has_value()) {
+        auto impressionsVector = commerceEvent.impressions().value();
+        for (size_t j = 0; j < impressionsVector.size(); j++) {
+            auto impressionStruct = impressionsVector[j];
+            NSString *listName = impressionStruct.impressionListName();
+            if (!listName) {
+                continue;
+            }
+            auto productsInImpression = impressionStruct.products();
+            for (size_t k = 0; k < productsInImpression.size(); k++) {
+                auto productStruct = productsInImpression[k];
+                NSMutableDictionary *productDict = [[NSMutableDictionary alloc] init];
+                if (productStruct.name()) productDict[@"name"] = productStruct.name();
+                if (productStruct.sku()) productDict[@"sku"] = productStruct.sku();
+                productDict[@"price"] = @(productStruct.price());
+                if (productStruct.quantity().has_value()) productDict[@"quantity"] = @(productStruct.quantity().value());
+                if (productStruct.brand()) productDict[@"brand"] = productStruct.brand();
+                if (productStruct.couponCode()) productDict[@"couponCode"] = productStruct.couponCode();
+                if (productStruct.position().has_value()) productDict[@"position"] = @(productStruct.position().value());
+                if (productStruct.category()) productDict[@"category"] = productStruct.category();
+                if (productStruct.variant()) productDict[@"variant"] = productStruct.variant();
+                if (productStruct.customAttributes()) productDict[@"customAttributes"] = productStruct.customAttributes();
+
+                MPProduct *product = [self createMPProductFromDict:productDict];
+                if (product) {
+                    [mpCommerceEvent addImpression:product listName:listName];
+                }
+            }
+        }
+    }
 
     if (commerceEvent.transactionAttributes().has_value()) {
         // Create transaction attributes from the struct
