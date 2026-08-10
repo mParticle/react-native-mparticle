@@ -34,6 +34,9 @@ target 'MParticleSample' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
   pod 'mParticle-Rokt', '~> 9.2'
+  # deviceConsentState is on Apple SDK 9.2.2+; without this floor, CocoaPods can
+  # resolve 9.2.1 and the RN bridge fails to compile.
+  pod 'mParticle-Apple-SDK-ObjC', '>= 9.2.2', '< 10.0'
   # Exact Rokt-Widget keeps RoktUXHelper on the same version (Rokt pins them together).
   pod 'Rokt-Widget', '5.2.0'
   # RoktUXHelper declares `DcuiSchema` `~> 2.6`, which otherwise floats to 2.8.x; that

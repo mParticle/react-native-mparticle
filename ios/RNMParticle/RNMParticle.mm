@@ -510,7 +510,7 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
             NSMutableDictionary *productDict = [[NSMutableDictionary alloc] init];
             if (productStruct.name()) productDict[@"name"] = productStruct.name();
             if (productStruct.sku()) productDict[@"sku"] = productStruct.sku();
-            productDict[@"price"] = @(productStruct.price());
+            if (productStruct.price()) productDict[@"price"] = @(productStruct.price());
             if (productStruct.quantity().has_value()) productDict[@"quantity"] = @(productStruct.quantity().value());
             if (productStruct.brand()) productDict[@"brand"] = productStruct.brand();
             if (productStruct.couponCode()) productDict[@"couponCode"] = productStruct.couponCode();
@@ -541,7 +541,7 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
                 NSMutableDictionary *productDict = [[NSMutableDictionary alloc] init];
                 if (productStruct.name()) productDict[@"name"] = productStruct.name();
                 if (productStruct.sku()) productDict[@"sku"] = productStruct.sku();
-                productDict[@"price"] = @(productStruct.price());
+                if (productStruct.price()) productDict[@"price"] = @(productStruct.price());
                 if (productStruct.quantity().has_value()) productDict[@"quantity"] = @(productStruct.quantity().value());
                 if (productStruct.brand()) productDict[@"brand"] = productStruct.brand();
                 if (productStruct.couponCode()) productDict[@"couponCode"] = productStruct.couponCode();

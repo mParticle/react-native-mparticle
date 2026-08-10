@@ -25,6 +25,7 @@ Pod::Spec.new do |s|
     s.dependency "React-Core"
   end
 
-  s.dependency 'mParticle-Apple-SDK-ObjC', '~> 9.2'
+  # deviceConsentState exists on Apple SDK 9.2.2+ (not 9.2.0/9.2.1).
+  s.dependency 'mParticle-Apple-SDK-ObjC', '>= 9.2.2', '< 10.0'
   s.dependency 'RoktContracts', '~> 2.0'
 end
