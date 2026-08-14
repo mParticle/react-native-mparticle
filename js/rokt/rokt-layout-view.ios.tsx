@@ -2,15 +2,13 @@ import {
   requireNativeComponent,
   StyleSheet,
   NativeEventEmitter,
-  NativeModules,
   ViewProps,
   NativeModule,
 } from 'react-native';
 import React, { Component } from 'react';
 import { isFabricEnabled } from '../utils/architecture';
 import RoktLayoutNativeComponent from '../codegenSpecs/rokt/RoktLayoutNativeComponent';
-
-const RoktEventManager = NativeModules.RoktEventManager as NativeModule;
+import { RoktEventManager } from './rokt-event-manager';
 
 export interface HeightChangedEvent extends Event {
   height: string;
@@ -43,13 +41,25 @@ const LayoutNativeComponent = (
     : requireNativeComponent<RoktNativeLayoutProps>('RoktLegacyLayout')
 ) as any;
 
-const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
+// Built on first use rather than at module scope: constructing a NativeEventEmitter with a
+// missing native module throws on iOS, which would take down the bundle at import time
+// instead of degrading to a placement that never resizes.
+let eventManagerEmitter: NativeEventEmitter | undefined;
+
+function getEventManagerEmitter(): NativeEventEmitter {
+  if (!eventManagerEmitter) {
+    eventManagerEmitter = new NativeEventEmitter(
+      RoktEventManager as NativeModule
+    );
+  }
+  return eventManagerEmitter;
+}
 
 export class RoktLayoutView extends Component<
   RoktLayoutViewProps,
   RoktLayoutViewState
 > {
-  subscription = eventManagerEmitter.addListener(
+  subscription = getEventManagerEmitter().addListener(
     'LayoutHeightChanges',
     (widgetChanges: WidgetChangeEvent) => {
       if (widgetChanges.selectedPlacement == this.state.placeholderName) {

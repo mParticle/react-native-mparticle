@@ -1,6 +1,7 @@
 import { NativeModules, Platform, TurboModuleRegistry } from 'react-native';
 import { getNativeModule, isNewArchitecture } from '../utils/architecture';
 import type { Spec as NativeMPRoktInterface } from '../codegenSpecs/rokt/NativeMPRokt';
+import { RoktEventManager } from './rokt-event-manager';
 
 const ROKT_MODULE_NAME = 'RNMPRokt';
 const MPRokt =
@@ -124,8 +125,6 @@ class RoktConfig implements IRoktConfig {
     this.cacheConfig = cacheConfig;
   }
 }
-const { RoktEventManager } = NativeModules;
-
 export { RoktEventManager };
 
 export type ColorMode = 'light' | 'dark' | 'system';
