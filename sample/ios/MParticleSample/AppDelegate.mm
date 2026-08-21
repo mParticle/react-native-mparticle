@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 #import "mParticle.h"
 
 @implementation AppDelegate
@@ -18,6 +19,11 @@
 {
   self.moduleName = @"MParticleSample";
   self.initialProps = @{};
+
+  // Required since React Native 0.76. Without it no third-party Fabric component is
+  // registered, so <RoktLayoutView> mounts as RCTUnimplementedViewComponentView and
+  // embedded placements resolve no placeholder view.
+  self.dependencyProvider = [RCTAppDependencyProvider new];
   
   MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
   networkOptions.pinningDisabled = true;
