@@ -336,7 +336,7 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
         UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
 #ifdef RCT_NEW_ARCH_ENABLED
         if (![view isKindOfClass:[RoktNativeLayoutComponentView class]]) {
-            RCTLogError(@"Cannot find RoktNativeWidgetComponentView with tag #%@", key);
+            RCTLogError(@"Cannot find RoktNativeLayoutComponentView for placeholder %@ (reactTag %@)", key, reactTag);
             continue;
         }
         nativePlaceholders[key] = ((RoktNativeLayoutComponentView *)view).roktEmbeddedView;
