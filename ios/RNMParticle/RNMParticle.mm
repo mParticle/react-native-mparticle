@@ -23,11 +23,17 @@
 + (NSDictionary *)consentStateToDictionary:(MPConsentState *)consentState;
 @end
 
+@interface RNMParticle (CommerceMapping)
+- (void)applyCommerceEventMetadata:(MPCommerceEvent *)event fromDictionary:(NSDictionary *)dict;
+- (void)addPromotionsFromDicts:(NSArray *)promotionDicts toCommerceEvent:(MPCommerceEvent *)event;
+@end
+
 // Forward declare so New Arch `logCommerceEvent` can use the same JS→native
 // mappings as `RCTConvert (MPCommerceEvent)` (defined later in this file).
 @interface RCTConvert (MPCommerceEvent)
 + (MPCommerceEventAction)MPCommerceEventAction:(id)json;
 + (MPPromotionAction)MPPromotionAction:(id)json;
++ (MPPromotion *)MPPromotion:(id)json;
 + (MPConsentState *)MPConsentState:(id)json;
 @end
 
@@ -544,6 +550,21 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
             [RCTConvert MPPromotionAction:@(commerceEvent.promotionActionType().value())];
         mpCommerceEvent.promotionContainer =
             [[MPPromotionContainer alloc] initWithAction:promotionAction promotion:nil];
+
+        if (commerceEvent.promotions().has_value()) {
+            auto promotionsVector = commerceEvent.promotions().value();
+            NSMutableArray *promotionDicts = [[NSMutableArray alloc] init];
+            for (size_t i = 0; i < promotionsVector.size(); i++) {
+                auto promotionStruct = promotionsVector[i];
+                NSMutableDictionary *promotionDict = [[NSMutableDictionary alloc] init];
+                if (promotionStruct.id_()) promotionDict[@"id"] = promotionStruct.id_();
+                if (promotionStruct.name()) promotionDict[@"name"] = promotionStruct.name();
+                if (promotionStruct.creative()) promotionDict[@"creative"] = promotionStruct.creative();
+                if (promotionStruct.position()) promotionDict[@"position"] = promotionStruct.position();
+                [promotionDicts addObject:promotionDict];
+            }
+            [self addPromotionsFromDicts:promotionDicts toCommerceEvent:mpCommerceEvent];
+        }
     }
 
     if (commerceEvent.products().has_value()) {
@@ -635,6 +656,17 @@ RCT_EXPORT_METHOD(getSession:(RCTResponseSenderBlock)completion)
         mpCommerceEvent.customAttributes =
             RNMParticleEventAttributes((NSDictionary *)commerceEvent.customAttributes());
     }
+
+    NSMutableDictionary *metadata = [[NSMutableDictionary alloc] init];
+    if (commerceEvent.currency()) metadata[@"currency"] = commerceEvent.currency();
+    if (commerceEvent.checkoutOptions()) metadata[@"checkoutOptions"] = commerceEvent.checkoutOptions();
+    if (commerceEvent.productActionListName()) metadata[@"productActionListName"] = commerceEvent.productActionListName();
+    if (commerceEvent.productActionListSource()) metadata[@"productActionListSource"] = commerceEvent.productActionListSource();
+    if (commerceEvent.screenName()) metadata[@"screenName"] = commerceEvent.screenName();
+    if (commerceEvent.checkoutStep().has_value()) metadata[@"checkoutStep"] = @(commerceEvent.checkoutStep().value());
+    if (commerceEvent.nonInteractive().has_value()) metadata[@"nonInteractive"] = @(commerceEvent.nonInteractive().value());
+    if (commerceEvent.shouldUploadEvent().has_value()) metadata[@"shouldUploadEvent"] = @(commerceEvent.shouldUploadEvent().value());
+    [self applyCommerceEventMetadata:mpCommerceEvent fromDictionary:metadata];
 
     [[MParticle sharedInstance] logEvent:mpCommerceEvent];
 }
@@ -819,6 +851,50 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
     }
 
     return product;
+}
+
+- (void)applyCommerceEventMetadata:(MPCommerceEvent *)event fromDictionary:(NSDictionary *)dict {
+    if (event == nil || ![dict isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+
+    if (dict[@"checkoutOptions"] && dict[@"checkoutOptions"] != [NSNull null]) {
+        event.checkoutOptions = dict[@"checkoutOptions"];
+    }
+    if (dict[@"currency"] && dict[@"currency"] != [NSNull null]) {
+        event.currency = dict[@"currency"];
+    }
+    if (dict[@"productActionListName"] && dict[@"productActionListName"] != [NSNull null]) {
+        event.productListName = dict[@"productActionListName"];
+    }
+    if (dict[@"productActionListSource"] && dict[@"productActionListSource"] != [NSNull null]) {
+        event.productListSource = dict[@"productActionListSource"];
+    }
+    if (dict[@"screenName"] && dict[@"screenName"] != [NSNull null]) {
+        event.screenName = dict[@"screenName"];
+    }
+    if (dict[@"checkoutStep"] && dict[@"checkoutStep"] != [NSNull null]) {
+        event.checkoutStep = [dict[@"checkoutStep"] intValue];
+    }
+    if (dict[@"nonInteractive"] && dict[@"nonInteractive"] != [NSNull null]) {
+        event.nonInteractive = [dict[@"nonInteractive"] boolValue];
+    }
+    if (dict[@"shouldUploadEvent"] && dict[@"shouldUploadEvent"] != [NSNull null]) {
+        event.shouldUploadEvent = [dict[@"shouldUploadEvent"] boolValue];
+    }
+}
+
+- (void)addPromotionsFromDicts:(NSArray *)promotionDicts toCommerceEvent:(MPCommerceEvent *)event {
+    if (event.promotionContainer == nil || ![promotionDicts isKindOfClass:[NSArray class]]) {
+        return;
+    }
+
+    for (id promotionJSON in promotionDicts) {
+        MPPromotion *promotion = [RCTConvert MPPromotion:promotionJSON];
+        if (promotion) {
+            [event.promotionContainer addPromotion:promotion];
+        }
+    }
 }
 
 - (MPIdentityApiRequest *)MPIdentityApiRequestFromDict:(NSDictionary *)dict {
