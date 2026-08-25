@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.3] - 2026-08-25
+
+### Fixed
+
+- Map All Commerce Fields on iOS New Architecture ([#378](https://github.com/mParticle/react-native-mparticle/pull/378))
+- Resolve Rokt placeholders via RCTViewRegistry ([#377](https://github.com/mParticle/react-native-mparticle/pull/377))
+- Forward impression events instead of null events ([#375](https://github.com/mParticle/react-native-mparticle/pull/375))
+
+### Changed
+
+- Bump com.mparticle:android-rokt-kit from 6.0.0 to 6.0.1 in /android ([#373](https://github.com/mParticle/react-native-mparticle/pull/373))
+
 ## [3.3.2] - 2026-07-29
 
 ### Fixed
@@ -455,7 +467,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...HEAD
+[3.3.3]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...3.3.3
 [3.3.2]: https://github.com/mParticle/react-native-mparticle/compare/3.3.1...3.3.2
 [3.3.1]: https://github.com/mParticle/react-native-mparticle/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/mParticle/react-native-mparticle/compare/3.2.0...3.3.0
