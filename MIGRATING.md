@@ -163,7 +163,7 @@ JavaScript API needs no change.
   `RNMPRokt is unavailable` error, instead of the undefined-property error 2.x
   produced.
 - **Queued events can be dropped once, on the first launch after upgrading** —
-  but only if your `Podfile.lock` held an Apple SDK older than 8.27.0 (August
+  but only if your `Podfile.lock` held an Apple SDK older than 8.27.0 (September
   2024), since 9.x dropped migration from those database versions. Identity and
   session state re-establish on the next launch. Most 2.9.x apps resolved a
   newer 8.x and are unaffected.
