@@ -19,10 +19,9 @@ three at once.
 
 #### iOS deployment target raised to 15.6
 
-The podspec now declares `ios 15.6`
-/ `tvos 15.6`, above React Native's own `min_ios_version_supported` (15.1), so
-set it explicitly in `ios/Podfile` — along with any app target or extension
-pinned lower:
+The podspec now declares `ios 15.6` / `tvos 15.6`, above React Native's own
+`min_ios_version_supported` (15.1), so set it explicitly in `ios/Podfile` —
+along with any app target or extension pinned lower:
 
 ```ruby
 platform :ios, '15.6'
@@ -37,8 +36,7 @@ config plugin does not set it:
 
 #### Apple SDK split into ObjC and Swift pods
 
-9.0 split
-`mParticle-Apple-SDK` into `mParticle-Apple-SDK-ObjC` (module
+9.0 split `mParticle-Apple-SDK` into `mParticle-Apple-SDK-ObjC` (module
 `mParticle_Apple_SDK_ObjC`) and `mParticle-Apple-SDK-Swift`. This wrapper now
 depends on the ObjC pod plus `RoktContracts`, so:
 
@@ -94,10 +92,12 @@ which resolves from the ObjC pod.
 
 #### Fabric dependency provider must be set
 
-Required since React Native 0.76, and
-easy to miss because it fails at runtime rather than at build time: without it no
-third-party Fabric component is registered, so `<RoktLayoutView>` mounts as
-`RCTUnimplementedViewComponentView` and embedded placements never appear.
+Required from React Native 0.77, which is where `RCTAppDependencyProvider` was
+introduced. On 0.76 third-party Fabric components are still registered without
+it, so this step does not apply. Easy to miss because it fails at runtime rather
+than at build time: without it no third-party Fabric component is registered, so
+`<RoktLayoutView>` mounts as `RCTUnimplementedViewComponentView` and embedded
+placements never appear.
 
 ```objective-c
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
@@ -109,9 +109,11 @@ self.dependencyProvider = [RCTAppDependencyProvider new];
 #### Removed AppDelegateProxy
 
 If your app handles push or deep links, you must now forward the delegate
-callbacks yourself. Apple SDK 9.0 removed `AppDelegateProxy`, which used to intercept
-`UIApplicationDelegate` messages automatically, and nothing in this wrapper
-replaces it. Apps that already set `proxyAppDelegate = NO` need no change. See [Removed AppDelegateProxy](https://github.com/mParticle/mparticle-apple-sdk/blob/main/MIGRATING.md#removed-appdelegateproxy)
+callbacks yourself. Apple SDK 9.0 removed `AppDelegateProxy`, which used to
+intercept `UIApplicationDelegate` messages automatically, and nothing in this
+wrapper replaces it. Apps that already set `proxyAppDelegate = NO` need no new
+forwarding, but must still delete the assignment — 9.0 removed the property, so
+leaving it in place fails to compile. See [Removed AppDelegateProxy](https://github.com/mParticle/mparticle-apple-sdk/blob/main/MIGRATING.md#removed-appdelegateproxy)
 and [Removed Deprecated UIApplicationDelegate Methods](https://github.com/mParticle/mparticle-apple-sdk/blob/main/MIGRATING.md#removed-deprecated-uiapplicationdelegate-methods)
 in the Apple SDK migration guide for the replacements. `logPushRegistration()`
 from JavaScript is unaffected.
@@ -120,9 +122,8 @@ from JavaScript is unaffected.
 
 #### Rokt API moved from `android-core` to `android-rokt-kit`
 
-The
-Rokt API surface moved out of `android-core` into `android-rokt-kit`, which this
-wrapper declares `compileOnly`. A 2.x app that reached Rokt through
+The Rokt API surface moved out of `android-core` into `android-rokt-kit`, which
+this wrapper declares `compileOnly`. A 2.x app that reached Rokt through
 `android-core` alone still compiles and installs, then throws on the first
 `MParticle.Rokt.*` call — the most likely silent breakage in this upgrade.
 
