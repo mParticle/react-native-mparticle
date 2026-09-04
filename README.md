@@ -231,7 +231,7 @@ The `startWithOptions` method requires an options argument containing your key a
 
 For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
 
-> **React Native 0.76+ requires a Fabric dependency provider.** Set it in `application:didFinishLaunchingWithOptions:` before starting mParticle. Without it no third-party Fabric component is registered, so `<RoktLayoutView>` mounts as `RCTUnimplementedViewComponentView` and embedded placements never appear. This fails at runtime, not at build time. See `sample/ios/MParticleSample/AppDelegate.mm`.
+> **React Native 0.77+ requires a Fabric dependency provider.** Set it in `application:didFinishLaunchingWithOptions:` before starting mParticle. Without it no third-party Fabric component is registered, so `<RoktLayoutView>` mounts as `RCTUnimplementedViewComponentView` and embedded placements never appear. This fails at runtime, not at build time. See `sample/ios/MParticleSample/AppDelegate.mm`.
 >
 > ```objective-c
 > #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
