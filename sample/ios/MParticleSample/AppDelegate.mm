@@ -20,7 +20,7 @@
   self.moduleName = @"MParticleSample";
   self.initialProps = @{};
 
-  // Required since React Native 0.76. Without it no third-party Fabric component is
+  // Required since React Native 0.77. Without it no third-party Fabric component is
   // registered, so <RoktLayoutView> mounts as RCTUnimplementedViewComponentView and
   // embedded placements resolve no placeholder view.
   self.dependencyProvider = [RCTAppDependencyProvider new];
