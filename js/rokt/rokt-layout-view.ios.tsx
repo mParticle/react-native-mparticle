@@ -81,7 +81,7 @@ function getEventManagerEmitter(): NativeEventEmitter | NoopEventEmitter {
     if (!warnedMissingModule) {
       warnedMissingModule = true;
       console.warn(
-        '[ROKT] RoktEventManager native module is unavailable; RoktLayoutView will not receive height updates.'
+        '[ROKT] RoktEventManager native module is unavailable; RoktLayoutView will not receive Rokt events (including height updates).'
       );
     }
     return noopEventEmitter;
