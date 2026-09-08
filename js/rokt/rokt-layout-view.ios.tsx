@@ -46,7 +46,46 @@ const LayoutNativeComponent = (
 // instead of degrading to a placement that never resizes.
 let eventManagerEmitter: NativeEventEmitter | undefined;
 
-function getEventManagerEmitter(): NativeEventEmitter {
+// A subscription-shaped stand-in for when `RoktEventManager` is unavailable. Height
+// updates never arrive, but nothing downstream has to know the difference.
+interface NoopSubscription {
+  remove(): void;
+}
+interface NoopEventEmitter {
+  addListener(
+    eventType: string,
+    listener: (widgetChanges: WidgetChangeEvent) => void
+  ): NoopSubscription;
+}
+const noopSubscription: NoopSubscription = {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  remove: () => {},
+};
+const noopEventEmitter: NoopEventEmitter = {
+  addListener: () => noopSubscription,
+};
+
+/**
+ * `RoktEventManager` resolves to `null` when neither the TurboModule registry nor
+ * `NativeModules` has it -- e.g. bridgeless with TurboModule interop disabled and no
+ * old-architecture fallback registered. RN's `NativeEventEmitter` constructor throws
+ * an invariant on iOS in that case (`` `new NativeEventEmitter()` requires a non-null
+ * argument ``), which would crash every screen that mounts a `RoktLayoutView` instead
+ * of just leaving that one placement un-resizable. Guard it here and hand back a
+ * no-op emitter so the view still renders; it just never receives
+ * `LayoutHeightChanges`.
+ */
+let warnedMissingModule = false;
+function getEventManagerEmitter(): NativeEventEmitter | NoopEventEmitter {
+  if (!RoktEventManager) {
+    if (!warnedMissingModule) {
+      warnedMissingModule = true;
+      console.warn(
+        '[ROKT] RoktEventManager native module is unavailable; RoktLayoutView will not receive height updates.'
+      );
+    }
+    return noopEventEmitter;
+  }
   if (!eventManagerEmitter) {
     eventManagerEmitter = new NativeEventEmitter(
       RoktEventManager as NativeModule
