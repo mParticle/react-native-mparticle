@@ -1,6 +1,7 @@
 import { NativeModules, Platform, TurboModuleRegistry } from 'react-native';
 import { getNativeModule, isNewArchitecture } from '../utils/architecture';
 import type { Spec as NativeMPRoktInterface } from '../codegenSpecs/rokt/NativeMPRokt';
+import { RoktEventManager } from './rokt-event-manager';
 
 const ROKT_MODULE_NAME = 'RNMPRokt';
 const MPRokt =
@@ -28,12 +29,14 @@ function getMPRokt(): NativeMPRoktInterface {
   );
 }
 
+export type RoktAttributeValue = string | number | boolean;
+
 export abstract class Rokt {
   /**
    * Selects placements with a [identifier], [attributes], optional [placeholders], optional [roktConfig], and optional [fontFilePathMap].
    *
    * @param {string} identifier - The page identifier for the placement.
-   * @param {Record<string, string>} attributes - Attributes to be associated with the placement.
+   * @param {Record<string, RoktAttributeValue>} attributes - Attributes to be associated with the placement.
    * @param {Record<string, number | null>} [placeholders] - Optional placeholders for dynamic content.
    * @param {IRoktConfig} [roktConfig] - Optional configuration settings for Rokt.
    * @param {Record<string, string>} [fontFilesMap] - Optional mapping of font files.
@@ -41,7 +44,7 @@ export abstract class Rokt {
    */
   static async selectPlacements(
     identifier: string,
-    attributes: Record<string, string>,
+    attributes: Record<string, RoktAttributeValue>,
     placeholders?: Record<string, number | null>,
     roktConfig?: IRoktConfig,
     fontFilesMap?: Record<string, string>
@@ -57,7 +60,7 @@ export abstract class Rokt {
 
   static async selectShoppableAds(
     identifier: string,
-    attributes: Record<string, string>,
+    attributes: Record<string, RoktAttributeValue>,
     roktConfig?: IRoktConfig
   ): Promise<void> {
     getMPRokt().selectShoppableAds(identifier, attributes, roktConfig);
@@ -124,8 +127,6 @@ class RoktConfig implements IRoktConfig {
     this.cacheConfig = cacheConfig;
   }
 }
-const { RoktEventManager } = NativeModules;
-
 export { RoktEventManager };
 
 export type ColorMode = 'light' | 'dark' | 'system';
