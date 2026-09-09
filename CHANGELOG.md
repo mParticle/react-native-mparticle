@@ -7,6 +7,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.3] - 2026-08-25
+
+### Fixed
+
+- Map All Commerce Fields on iOS New Architecture ([#378](https://github.com/mParticle/react-native-mparticle/pull/378))
+- Resolve Rokt placeholders via RCTViewRegistry ([#377](https://github.com/mParticle/react-native-mparticle/pull/377))
+- Forward impression events instead of null events ([#375](https://github.com/mParticle/react-native-mparticle/pull/375))
+
+### Changed
+
+- Bump com.mparticle:android-rokt-kit from 6.0.0 to 6.0.1 in /android ([#373](https://github.com/mParticle/react-native-mparticle/pull/373))
+
+## [3.3.2] - 2026-07-29
+
+### Fixed
+
+- Prevent Rokt layout views from collapsing to zero height ([#368](https://github.com/mParticle/react-native-mparticle/pull/368))
+- Report React Native wrapper type on every selectPlacements call ([#357](https://github.com/mParticle/react-native-mparticle/pull/357))
+- Log commerce events without transaction attributes ([#367](https://github.com/mParticle/react-native-mparticle/pull/367))
+
+### Changed
+
+- Raise Rokt iOS floor to 5.3 via mParticle-Rokt 9.3.1 ([#369](https://github.com/mParticle/react-native-mparticle/pull/369))
+
+## [3.3.1] - 2026-07-24
+
+### Fixed
+
+- Preserve null custom attributes and iOS New Arch product attributes ([#362](https://github.com/mParticle/react-native-mparticle/pull/362))
+
+## [3.3.0] - 2026-07-24
+
+### Added
+
+- Support mParticle Android SDK 6 ([#358](https://github.com/mParticle/react-native-mparticle/pull/358))
+
+## [3.2.0] - 2026-06-25
+
+### Added
+
+- Expose device-based consent APIs in React Native bridge ([#351](https://github.com/mParticle/react-native-mparticle/pull/351))
+
+## [3.1.5] - 2026-06-22
+
+### Changed
+
+- Bump mParticle core/rokt-kit floor to 5.79.2 (carries roktsdk 4.14.5 deferred-init fix) ([#344](https://github.com/mParticle/react-native-mparticle/pull/344))
+- Add opt-in deferred-init edge-case example (Android) ([#341](https://github.com/mParticle/react-native-mparticle/pull/341))
+- Add iOS Integration Style Unit Tests ([#338](https://github.com/mParticle/react-native-mparticle/pull/338))
+
+## [3.1.4] - 2026-06-05
+
+### Added
+
+- Java enum for MPCommerceEventActionType was base 1 ([#336](https://github.com/mParticle/react-native-mparticle/pull/336))
+
+## [3.1.3] - 2026-06-02
+
+### Added
+
+- Add pinningDisabled option in Expo ([#334](https://github.com/mParticle/react-native-mparticle/pull/334))
+
+## [3.1.2] - 2026-05-28
+
+### Fixed
+
+- Bound android kit upper version in expo config plugin ([#332](https://github.com/mParticle/react-native-mparticle/pull/332))
+
+## [3.1.1] - 2026-05-27
+
+### Fixed
+
+- Pin android-core upper bound to prevent 6.0.0-rc.1 pull (#710) ([#329](https://github.com/mParticle/react-native-mparticle/pull/329))
+
+### Changed
+
+- Bump @tootallnate/once from 2.0.0 to 2.0.1 ([#328](https://github.com/mParticle/react-native-mparticle/pull/328))
+- Bump actions/create-github-app-token from 3.1.1 to 3.2.0 ([#327](https://github.com/mParticle/react-native-mparticle/pull/327))
+
+## [3.1.0] - 2026-05-14
+
+### Added
+
+- Support mParticle Apple SDK 9.2 ([#324](https://github.com/mParticle/react-native-mparticle/pull/324))
+
+## [3.0.0] - 2026-04-16
+
+### Added
+
+- Support Shoppable ads and v9 of mParticle iOS SDK ([#311](https://github.com/mParticle/react-native-mparticle/pull/311))
+
+For a full guide on Shoppable ads, see [Implementation guide: Shoppable Ads (`selectShoppableAds`) and iOS payment extensions](./ExpoTestApp/README.md#implementation-guide-shoppable-ads-selectshoppableads-and-ios-payment-extensions) in the Expo test app README.
+
+### Changed
+
+- Add --allow-same-version to draft release workflow ([#312](https://github.com/mParticle/react-native-mparticle/pull/312))
+
+## [2.9.2] - 2026-04-15
+
+### Fixed
+
+- Remove SPM duplicate for mParticle-Apple-SDK ([#309](https://github.com/mParticle/react-native-mparticle/pull/309))
+
+### Changed
+
+- Bump peter-evans/create-pull-request from 8.1.0 to 8.1.1 ([#307](https://github.com/mParticle/react-native-mparticle/pull/307))
+- Bump actions/create-github-app-token from 3.0.0 to 3.1.1 ([#306](https://github.com/mParticle/react-native-mparticle/pull/306))
+- Bump maxim-lobanov/setup-xcode from 1.6.0 to 1.7.0 ([#299](https://github.com/mParticle/react-native-mparticle/pull/299))
+
 ## [2.9.1] - 2026-03-18
 
 ### Changed
@@ -358,7 +467,20 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...HEAD
+[3.3.3]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...3.3.3
+[3.3.2]: https://github.com/mParticle/react-native-mparticle/compare/3.3.1...3.3.2
+[3.3.1]: https://github.com/mParticle/react-native-mparticle/compare/3.3.0...3.3.1
+[3.3.0]: https://github.com/mParticle/react-native-mparticle/compare/3.2.0...3.3.0
+[3.2.0]: https://github.com/mParticle/react-native-mparticle/compare/3.1.5...3.2.0
+[3.1.5]: https://github.com/mParticle/react-native-mparticle/compare/3.1.4...3.1.5
+[3.1.4]: https://github.com/mParticle/react-native-mparticle/compare/3.1.3...3.1.4
+[3.1.3]: https://github.com/mParticle/react-native-mparticle/compare/3.1.2...3.1.3
+[3.1.2]: https://github.com/mParticle/react-native-mparticle/compare/3.1.1...3.1.2
+[3.1.1]: https://github.com/mParticle/react-native-mparticle/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/mParticle/react-native-mparticle/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/mParticle/react-native-mparticle/compare/2.9.2...3.0.0
+[2.9.2]: https://github.com/mParticle/react-native-mparticle/compare/2.9.1...2.9.2
 [2.9.1]: https://github.com/mParticle/react-native-mparticle/compare/2.9.0...2.9.1
 [2.9.0]: https://github.com/mParticle/react-native-mparticle/compare/2.8.1...2.9.0
 [2.8.1]: https://github.com/mParticle/react-native-mparticle/compare/2.8.0...2.8.1

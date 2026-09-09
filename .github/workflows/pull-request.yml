@@ -24,7 +24,14 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: Install node modules
+        run: yarn install --frozen-lockfile
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1
 
@@ -33,8 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: yarn
@@ -53,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 'Run Android Unit Tests'
         working-directory: android
         run: ./gradlew test
@@ -63,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 'Run Android lint'
         working-directory: android
         run: ./gradlew lint
@@ -73,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 'Run Android kotlin lint'
         working-directory: android
         run: ./gradlew ktlintCheck
@@ -83,8 +90,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: yarn
@@ -107,12 +114,13 @@ jobs:
         run: ./gradlew assembleDebug
 
   ios-sample-app:
+    # Keep this display name in sync with branch protection required checks ("iOS Sample App").
     name: iOS Sample App
     runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: yarn
@@ -121,7 +129,9 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
-          xcode-version: latest-stable
+          # Avoid `latest-stable` (Xcode 17+ / Swift 6 defaults) breaking RoktUXHelper
+          # source builds until Rokt pins are updated upstream.
+          xcode-version: '^16.0.0'
 
       - name: Set Xcode Toolchain
         run: echo "TOOLCHAINS=com.apple.dt.toolchain.XcodeDefault" >> $GITHUB_ENV
@@ -152,7 +162,7 @@ jobs:
         working-directory: sample
         run: bundle install
 
-      - name: Build iOS sample app
+      - name: Build iOS sample app and run commerce mapping unit tests
         working-directory: sample/ios
         run: |
           bundle exec pod install
@@ -162,7 +172,9 @@ jobs:
           -destination 'id=${{ steps.simulator.outputs.udid }}' \
           -derivedDataPath ios/build \
           -UseModernBuildSystem=YES \
-          build | bundle exec xcpretty -k
+          test \
+          -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
+          | bundle exec xcpretty -k
 
   pr-notify:
     if: >
