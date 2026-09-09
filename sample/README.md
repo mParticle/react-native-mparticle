@@ -64,12 +64,15 @@ cd sample/ios
 pod install
 ```
 
-The sample Podfile pins `mParticle-Rokt` `~> 9.2`, **`Rokt-Widget` `5.2.0`**, and **`DcuiSchema` `2.7.0`**. Rokt’s pods allow `DcuiSchema` to float within `~> 2.6`; when CocoaPods resolves **2.8.0+**, the schema adds `image` styling that can desync from the `RoktUXHelper` sources in that widget line and break Swift compile (`StyleTransformer` / `BaseStyles`). Bump these pins together when you adopt a newer Rokt iOS stack.
+The sample Podfile pins `mParticle-Rokt` `>= 9.3.1, < 10.0`. Kit `9.3.1` is the first release requiring `Rokt-Widget` `~> 5.3` (`9.3.0` still allows `~> 5.2`), so Rokt iOS resolves transitively and the Podfile does not declare it.
 
-The sample Android app pins `com.mparticle:android-core` and
-`com.mparticle:android-rokt-kit` to `5.79.2` so the Rokt session APIs and
-Android CNAME support are available. Payment-extension installation and native
-URL callback forwarding are not configured in this release.
+There is no longer a `DcuiSchema` pin. `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema cannot float out of sync with the `RoktUXHelper` sources. The previous `2.7.0` pin guarded against that float (schema `2.8.x` added `image` styling APIs that older `RoktUXHelper` Swift did not pass through, breaking `StyleTransformer` / `BaseStyles`) and now conflicts with the exact version `RoktUXHelper` requires.
+
+The sample Android app pins both `com.mparticle:android-core` and
+`com.mparticle:android-rokt-kit` to `[6.0.0, 7.0)` so the Rokt session APIs are
+available. Apps that include `android-rokt-kit` `6.0.0` must build with
+`compileSdk` 35+ and Android Gradle Plugin 8.6+; the sample uses `compileSdk` 36. Payment-extension installation and native URL callback forwarding are not
+configured in this release.
 
 ## Running the Sample App
 
