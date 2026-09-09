@@ -28,6 +28,14 @@
     },
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.6"
+          }
+        }
+      ],
+      [
         "react-native-mparticle",
         {
           "iosApiKey": "YOUR_IOS_API_KEY",

@@ -26,6 +26,13 @@ const { RoktLayoutView, RoktEventManager } = MParticle;
 // Create event emitter for Rokt events
 const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
 
+const generateGuid = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === 'x' ? random : 8 + (random % 4);
+    return value.toString(16);
+  });
+
 export default function App() {
   const [eventName, setEventName] = useState('Test Event');
   const [status, setStatus] = useState('SDK initialized via native code');
@@ -219,6 +226,69 @@ export default function App() {
   const handleRoktBottomSheet = () =>
     handleRoktSelectPlacements('MSDKBottomSheetLayout');
 
+  const handleRoktShoppableAds = () => {
+    const attributes = {
+      country: 'US',
+      shippingstate: 'NY',
+      shippingzipcode: '10001',
+      firstname: 'Jenny',
+      stripeApplePayAvailable: 'true',
+      last4digits: '4444',
+      shippingaddress1: '123 Main St',
+      colormode: 'LIGHT',
+      billingzipcode: '07762',
+      paymenttype: 'ApplePay',
+      shippingcountry: 'US',
+      sandbox: 'true',
+      shippingaddress2: 'Apt 4B',
+      confirmationref: 'ORD-12345',
+      shippingcity: 'New York',
+      newToApplePay: 'false',
+      applePayCapabilities: 'true',
+      lastname: 'Smith',
+      email: 'jenny.smith@example.com',
+    };
+
+    const config = MParticle.Rokt.createRoktConfig('system');
+
+    addLog('Rokt: Calling selectShoppableAds');
+
+    MParticle.Rokt.selectShoppableAds('StgRoktShoppableAds', attributes, config)
+      .then((result: any) => {
+        addLog(`Rokt selectShoppableAds success: ${JSON.stringify(result)}`);
+        setStatus('Rokt: Shoppable Ads loaded');
+      })
+      .catch((error: any) => {
+        addLog(`Rokt selectShoppableAds error: ${JSON.stringify(error)}`);
+        setStatus(`Rokt error: ${error.message || 'Unknown error'}`);
+      });
+  };
+
+  const handleRoktClose = () => {
+    MParticle.Rokt.close()
+      .then(() => {
+        addLog('Rokt close called');
+        setStatus('Rokt close called');
+      })
+      .catch((error: any) => {
+        addLog(`Rokt close error: ${JSON.stringify(error)}`);
+      });
+  };
+
+  const handleRoktSession = () => {
+    const sessionId = generateGuid();
+
+    MParticle.Rokt.setSessionId(sessionId)
+      .then(() => MParticle.Rokt.getSessionId())
+      .then((currentSessionId: string | null) => {
+        addLog(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+        setStatus(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+      })
+      .catch((error: any) => {
+        addLog(`Rokt session error: ${JSON.stringify(error)}`);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -322,6 +392,27 @@ export default function App() {
               onPress={handleRoktBottomSheet}
             >
               <Text style={styles.buttonText}>Bottom Sheet</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButtonAlt]}
+              onPress={handleRoktShoppableAds}
+            >
+              <Text style={styles.buttonText}>Shoppable Ads</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButton]}
+              onPress={handleRoktClose}
+            >
+              <Text style={styles.buttonText}>Close Rokt</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButtonAlt]}
+              onPress={handleRoktSession}
+            >
+              <Text style={styles.buttonText}>Rokt Session</Text>
             </TouchableOpacity>
           </View>
 
