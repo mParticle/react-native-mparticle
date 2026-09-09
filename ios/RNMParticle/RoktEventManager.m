@@ -1,5 +1,23 @@
 #import "RoktEventManager.h"
-#import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
+@import RoktContracts;
+#import <os/log.h>
+
+static os_log_t _rokt_events_os_log(void) {
+  static os_log_t log;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    log = os_log_create("com.mparticle.react-native", "rokt-events");
+  });
+  return log;
+}
+
+static void _rokt_events_log(NSString *format, ...) {
+  va_list args;
+  va_start(args, format);
+  NSString *msg = [[NSString alloc] initWithFormat:format arguments:args];
+  va_end(args);
+  os_log_with_type(_rokt_events_os_log(), OS_LOG_TYPE_INFO, "%{public}s", [msg UTF8String]);
+}
 
 @implementation RoktEventManager
 {
@@ -13,17 +31,20 @@ RCT_EXPORT_MODULE(RoktEventManager);
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [super allocWithZone:zone];
+        _rokt_events_log(@"[mParticle-Rokt] RoktEventManager module alloc");
     });
     return sharedInstance;
 }
 
 // Will be called when this module's first listener is added.
 -(void)startObserving {
+    _rokt_events_log(@"[mParticle-Rokt] RoktEventManager startObserving (JS listener added)");
     hasListeners = YES;
 }
 
 // Will be called when this module's last listener is removed, or on dealloc.
 -(void)stopObserving {
+    _rokt_events_log(@"[mParticle-Rokt] RoktEventManager stopObserving (no JS listeners)");
     hasListeners = NO;
 }
 
@@ -51,13 +72,16 @@ RCT_EXPORT_MODULE(RoktEventManager);
 
 - (void)onRoktCallbackReceived:(NSString*)eventValue
 {
+    _rokt_events_log(@"[mParticle-Rokt] RoktEventManager onRoktCallbackReceived: %@", eventValue ?: @"(nil)");
     if (hasListeners) {
         [self sendEventWithName:@"RoktCallback" body:@{@"callbackValue": eventValue}];
     }
 }
 
-- (void)onRoktEvents:(MPRoktEvent * _Nonnull)event viewName:(NSString * _Nullable)viewName
+- (void)onRoktEvents:(RoktEvent * _Nonnull)event viewName:(NSString * _Nullable)viewName
 {
+     NSString *eventClass = event ? NSStringFromClass([event class]) : @"nil";
+     _rokt_events_log(@"[mParticle-Rokt] RoktEventManager onRoktEvents: %@ viewName: %@", eventClass, viewName ?: @"(nil)");
      if (hasListeners) {
          NSString *placementId;
          NSString *eventName = @"";
@@ -72,60 +96,92 @@ RCT_EXPORT_MODULE(RoktEventManager);
          NSDecimalNumber *quantity;
          NSDecimalNumber *totalPrice;
          NSDecimalNumber *unitPrice;
-         
-         if ([event isKindOfClass:[MPRoktShowLoadingIndicator class]]) {
+         NSString *error;
+         NSString *paymentProvider;
+
+         if ([event isKindOfClass:[RoktShowLoadingIndicator class]]) {
              eventName = @"ShowLoadingIndicator";
-         } else if ([event isKindOfClass:[MPRoktHideLoadingIndicator class]]) {
+             [self onRoktCallbackReceived:@"onShouldShowLoadingIndicator"];
+         } else if ([event isKindOfClass:[RoktHideLoadingIndicator class]]) {
              eventName = @"HideLoadingIndicator";
-         } else if ([event isKindOfClass:[MPRoktPlacementInteractive class]]) {
-             placementId = ((MPRoktPlacementInteractive *)event).placementId;
+             [self onRoktCallbackReceived:@"onShouldHideLoadingIndicator"];
+         } else if ([event isKindOfClass:[RoktPlacementInteractive class]]) {
+             placementId = ((RoktPlacementInteractive *)event).identifier;
              eventName = @"PlacementInteractive";
-         } else if ([event isKindOfClass:[MPRoktPlacementReady class]]) {
-             placementId = ((MPRoktPlacementReady *)event).placementId;
+         } else if ([event isKindOfClass:[RoktPlacementReady class]]) {
+             placementId = ((RoktPlacementReady *)event).identifier;
              eventName = @"PlacementReady";
-         } else if ([event isKindOfClass:[MPRoktOfferEngagement class]]) {
-             placementId = ((MPRoktOfferEngagement *)event).placementId;
+             [self onRoktCallbackReceived:@"onLoad"];
+         } else if ([event isKindOfClass:[RoktOfferEngagement class]]) {
+             placementId = ((RoktOfferEngagement *)event).identifier;
              eventName = @"OfferEngagement";
-         } else if ([event isKindOfClass:[MPRoktPositiveEngagement class]]) {
-             placementId = ((MPRoktPositiveEngagement *)event).placementId;
+         } else if ([event isKindOfClass:[RoktPositiveEngagement class]]) {
+             placementId = ((RoktPositiveEngagement *)event).identifier;
              eventName = @"PositiveEngagement";
-         } else if ([event isKindOfClass:[MPRoktPlacementClosed class]]) {
-             placementId = ((MPRoktPlacementClosed *)event).placementId;
+         } else if ([event isKindOfClass:[RoktPlacementClosed class]]) {
+             placementId = ((RoktPlacementClosed *)event).identifier;
              eventName = @"PlacementClosed";
-         } else if ([event isKindOfClass:[MPRoktPlacementCompleted class]]) {
-             placementId = ((MPRoktPlacementCompleted *)event).placementId;
+             [self onRoktCallbackReceived:@"onUnLoad"];
+         } else if ([event isKindOfClass:[RoktPlacementCompleted class]]) {
+             placementId = ((RoktPlacementCompleted *)event).identifier;
              eventName = @"PlacementCompleted";
-         } else if ([event isKindOfClass:[MPRoktPlacementFailure class]]) {
-             placementId = ((MPRoktPlacementFailure *)event).placementId;
+         } else if ([event isKindOfClass:[RoktPlacementFailure class]]) {
+             placementId = ((RoktPlacementFailure *)event).identifier;
              eventName = @"PlacementFailure";
-         } else if ([event isKindOfClass:[MPRoktFirstPositiveEngagement class]]) {
-             placementId = ((MPRoktFirstPositiveEngagement *)event).placementId;
+         } else if ([event isKindOfClass:[RoktFirstPositiveEngagement class]]) {
+             placementId = ((RoktFirstPositiveEngagement *)event).identifier;
              eventName = @"FirstPositiveEngagement";
-         } else if ([event isKindOfClass:[MPRoktInitComplete class]]) {
+         } else if ([event isKindOfClass:[RoktInitComplete class]]) {
              eventName = @"InitComplete";
-             status = ((MPRoktInitComplete *)event).success ? @"true" : @"false";
-         } else if ([event isKindOfClass:[MPRoktOpenUrl class]]) {
+             status = ((RoktInitComplete *)event).success ? @"true" : @"false";
+         } else if ([event isKindOfClass:[RoktOpenUrl class]]) {
              eventName = @"OpenUrl";
-             placementId = ((MPRoktOpenUrl *)event).placementId;
-             url = ((MPRoktOpenUrl *)event).url;
-         } else if ([event isKindOfClass:[MPRoktCartItemInstantPurchase class]]) {
-             MPRoktCartItemInstantPurchase *cartEvent = (MPRoktCartItemInstantPurchase *)event;
+             placementId = ((RoktOpenUrl *)event).identifier;
+             url = ((RoktOpenUrl *)event).url;
+         } else if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
+             RoktEmbeddedSizeChanged *sizeEvent = (RoktEmbeddedSizeChanged *)event;
+             placementId = sizeEvent.identifier;
+             eventName = @"EmbeddedSizeChanged";
+             [self onWidgetHeightChanges:sizeEvent.updatedHeight placement:sizeEvent.identifier];
+         } else if ([event isKindOfClass:[RoktCartItemInstantPurchase class]]) {
+             RoktCartItemInstantPurchase *cartEvent = (RoktCartItemInstantPurchase *)event;
              eventName = @"CartItemInstantPurchase";
-             // Required properties
-             placementId = cartEvent.placementId;
+             placementId = cartEvent.identifier;
              cartItemId = cartEvent.cartItemId;
              catalogItemId = cartEvent.catalogItemId;
              currency = cartEvent.currency;
              providerData = cartEvent.providerData;
-             // Optional properties
              linkedProductId = cartEvent.linkedProductId;
-             // Overridden description property
              itemDescription = cartEvent.description;
-             // Decimal properties
              quantity = cartEvent.quantity;
              totalPrice = cartEvent.totalPrice;
              unitPrice = cartEvent.unitPrice;
+         } else if ([event isKindOfClass:[RoktCartItemInstantPurchaseInitiated class]]) {
+             RoktCartItemInstantPurchaseInitiated *initiatedEvent = (RoktCartItemInstantPurchaseInitiated *)event;
+             eventName = @"CartItemInstantPurchaseInitiated";
+             placementId = initiatedEvent.identifier;
+             catalogItemId = initiatedEvent.catalogItemId;
+             cartItemId = initiatedEvent.cartItemId;
+         } else if ([event isKindOfClass:[RoktCartItemInstantPurchaseFailure class]]) {
+             RoktCartItemInstantPurchaseFailure *failureEvent = (RoktCartItemInstantPurchaseFailure *)event;
+             eventName = @"CartItemInstantPurchaseFailure";
+             placementId = failureEvent.identifier;
+             catalogItemId = failureEvent.catalogItemId;
+             cartItemId = failureEvent.cartItemId;
+             error = failureEvent.error;
+         } else if ([event isKindOfClass:[RoktInstantPurchaseDismissal class]]) {
+             RoktInstantPurchaseDismissal *dismissalEvent = (RoktInstantPurchaseDismissal *)event;
+             eventName = @"InstantPurchaseDismissal";
+             placementId = dismissalEvent.identifier;
+         } else if ([event isKindOfClass:[RoktCartItemDevicePay class]]) {
+             RoktCartItemDevicePay *devicePayEvent = (RoktCartItemDevicePay *)event;
+             eventName = @"CartItemDevicePay";
+             placementId = devicePayEvent.identifier;
+             catalogItemId = devicePayEvent.catalogItemId;
+             cartItemId = devicePayEvent.cartItemId;
+             paymentProvider = devicePayEvent.paymentProvider;
          }
+
          NSMutableDictionary *payload = [@{@"event": eventName} mutableCopy];
          if (viewName != nil) {
              [payload setObject:viewName forKey:@"viewName"];
@@ -165,6 +221,12 @@ RCT_EXPORT_MODULE(RoktEventManager);
          }
          if (unitPrice != nil) {
              [payload setObject:unitPrice forKey:@"unitPrice"];
+         }
+         if (error != nil) {
+             [payload setObject:error forKey:@"error"];
+         }
+         if (paymentProvider != nil) {
+             [payload setObject:paymentProvider forKey:@"paymentProvider"];
          }
 
          [self sendEventWithName:@"RoktEvents" body:payload];

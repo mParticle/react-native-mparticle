@@ -1,4 +1,3 @@
-ENV['RCT_NEW_ARCH_ENABLED'] = '1'
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -6,12 +5,13 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+# react-native-mparticle.podspec requires iOS 15.6+; RN's min_ios_version_supported is still 15.1.
+platform :ios, '15.6'
 prepare_react_native_project!
 
 pre_install do |installer|
   installer.pod_targets.each do |pod|
-    if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget'
+    if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Apple-SDK-ObjC' || pod.name == 'mParticle-Apple-SDK-Swift' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget' || pod.name == 'RoktContracts' || pod.name == 'RoktUXHelper' || pod.name == 'DcuiSchema'
       def pod.build_type;
         Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
       end
@@ -33,7 +33,12 @@ target 'MParticleSample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-  pod 'mParticle-Rokt'
+  # 9.3.1 is the first kit requiring Rokt-Widget ~> 5.3 (9.3.0 still allows ~> 5.2), so
+  # Rokt iOS resolves transitively from this floor. No DcuiSchema pin either: Rokt-Widget
+  # 5.3 resolves RoktUXHelper 1.0.0, which requires an exact `DcuiSchema` version, so the
+  # schema can no longer float out of sync with the RoktUXHelper sources (the desync that
+  # the previous 2.7.0 pin guarded against).
+  pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'
 
   target 'MParticleSampleTests' do
     inherit! :complete
