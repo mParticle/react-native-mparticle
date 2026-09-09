@@ -86,6 +86,11 @@ export interface CCPAConsent {
   hardwareId?: string | null;
 }
 
+export interface DeviceConsentState {
+  gdpr?: { [purpose: string]: GDPRConsent };
+  ccpa?: CCPAConsent | null;
+}
+
 export type AttributionResult = {
   [key: string]: {
     [key: string]: string | number | boolean;
@@ -139,6 +144,11 @@ export interface Spec extends TurboModule {
   removeGDPRConsentStateWithPurpose(purpose: string): void;
   setCCPAConsentState(consent: CCPAConsent): void;
   removeCCPAConsentState(): void;
+  setDeviceConsentState(consentState: DeviceConsentState): void;
+  clearDeviceConsentState(): void;
+  getDeviceConsentState(
+    callback: (result: DeviceConsentState | null) => void
+  ): void;
   isKitActive(kitId: number, callback: (result: boolean) => void): void;
   getAttributions(callback: (result: AttributionResult) => void): void;
   logPushRegistration(token: string, senderId: string): void;

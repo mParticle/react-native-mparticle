@@ -99,8 +99,9 @@ The Rokt section also demonstrates:
 - Using `RoktLayoutView` as an embedded placeholder component
 
 On Android, the Rokt session APIs require `android-core` and
-`android-rokt-kit` `5.79.0` or newer. If configured, the shared Expo
-`customBaseUrl` setting is applied to Android through
+`android-rokt-kit` `6.0.0` or newer. Apps that include `android-rokt-kit`
+`6.0.0` must build with `compileSdk` 35+ and Android Gradle Plugin 8.6+. If
+configured, the shared Expo `customBaseUrl` setting is applied to Android through
 `NetworkOptions.setCustomBaseURL`.
 
 ### Implementation guide: Shoppable Ads (`selectShoppableAds`)
@@ -203,7 +204,7 @@ Check `ios/Podfile` for:
 - Kit pods (if specified):
 
   ```ruby
-  pod 'mParticle-Rokt', '~> 9.2'
+  pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'
   ```
 
 ### Verify Android Integration
@@ -262,7 +263,7 @@ Check `android/app/build.gradle` for kit dependencies (if specified):
 ```gradle
 dependencies {
     // mParticle kits
-    implementation "com.mparticle:android-rokt-kit:+"
+    implementation "com.mparticle:android-rokt-kit:[6.0.0, 7.0)"
 }
 ```
 

@@ -8,8 +8,9 @@ import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
 import com.mparticle.internal.Logger
+import com.mparticle.kits.RoktEmbeddedView
+import com.mparticle.kits.rokt
 import com.mparticle.react.NativeMPRoktSpec
-import com.mparticle.rokt.RoktEmbeddedView
 import java.lang.ref.WeakReference
 
 class MPRoktModule(
@@ -31,17 +32,17 @@ class MPRoktModule(
             Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
+        impl.setWrapperSdk()
         val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)
-        MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
+        MParticle.getInstance()?.rokt?.events(identifier)?.let {
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
         }
 
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
         uiManager?.addUIBlock { nativeViewHierarchyManager ->
-            MParticle.getInstance()?.Rokt()?.selectPlacements(
+            MParticle.getInstance()?.rokt?.selectPlacements(
                 identifier = identifier,
                 attributes = impl.readableMapToMapOfStrings(attributes),
-                callbacks = impl.createRoktCallback(),
                 embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
                 fontTypefaces = null, // TODO
                 config = config,
