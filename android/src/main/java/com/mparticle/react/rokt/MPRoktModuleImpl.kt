@@ -28,6 +28,17 @@ class MPRoktModuleImpl(
     private val reactContext: ReactApplicationContext,
 ) {
     init {
+        setWrapperSdk()
+    }
+
+    /**
+     * Reports the React Native wrapper SDK type to mParticle so it can be forwarded to kits.
+     *
+     * Called before every placement selection (mirroring the iOS implementation) rather than
+     * only once at module creation, because the one-shot call is silently dropped when
+     * MParticle has not been started yet or when kits have not finished initializing.
+     */
+    fun setWrapperSdk() {
         MParticle.getInstance()?.setWrapperSdk(WrapperSdk.WrapperSdkReactNative, "")
     }
 

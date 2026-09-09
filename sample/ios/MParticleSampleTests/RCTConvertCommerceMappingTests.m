@@ -22,6 +22,8 @@
 
 @interface RNMParticle (ProductMappingTests)
 - (MPProduct *)createMPProductFromDict:(NSDictionary *)productDict;
+- (void)applyCommerceEventMetadata:(MPCommerceEvent *)event fromDictionary:(NSDictionary *)dict;
+- (void)addPromotionsFromDicts:(NSArray *)promotionDicts toCommerceEvent:(MPCommerceEvent *)event;
 @end
 
 /**
@@ -32,8 +34,9 @@
  * JSON → `MPCommerceEvent` tests below exercise the same `+[RCTConvert MPCommerceEvent:]` pipeline
  * used to assemble an `MPCommerceEvent` before `-[MParticle logCommerceEvent:]` (legacy bridge path),
  * including `MPPromotionContainer:` wiring. That catches regressions such as casting JS ints in
- * those helpers instead of calling the mappers. Product tests invoke the helper used by the New
- * Architecture codegen struct path without requiring generated C++ values in this target.
+ * those helpers instead of calling the mappers. Product and commerce-metadata tests invoke the
+ * helpers used by the New Architecture codegen struct path without requiring generated C++ values
+ * in this target.
  */
 @interface RCTConvertCommerceMappingTests : XCTestCase
 @end
@@ -179,6 +182,84 @@
     MPCommerceEvent *clickEvent = [RCTConvert MPCommerceEvent:jsonClick];
     XCTAssertNotNil(clickEvent.promotionContainer);
     XCTAssertEqual(clickEvent.promotionContainer.action, MPPromotionActionClick);
+}
+
+- (void)testMPCommerceEventFromJSON_mapsCurrencyCheckoutStepAndCheckoutOptions
+{
+    NSDictionary *json = @{
+        @"productActionType" : @(3), // Checkout in js/index.tsx
+        @"products" : @[ [self minimalProductJSON] ],
+        @"impressions" : @[],
+        @"currency" : @"USD",
+        @"checkoutStep" : @1,
+        @"checkoutOptions" : @"Visa",
+        @"productActionListName" : @"checkout-list",
+        @"productActionListSource" : @"app",
+        @"screenName" : @"Checkout",
+        @"nonInteractive" : @YES,
+        @"shouldUploadEvent" : @NO,
+    };
+
+    MPCommerceEvent *event = [RCTConvert MPCommerceEvent:json];
+    XCTAssertEqualObjects(event.currency, @"USD");
+    XCTAssertEqual(event.checkoutStep, 1);
+    XCTAssertEqualObjects(event.checkoutOptions, @"Visa");
+    XCTAssertEqualObjects(event.productListName, @"checkout-list");
+    XCTAssertEqualObjects(event.productListSource, @"app");
+    XCTAssertEqualObjects(event.screenName, @"Checkout");
+    XCTAssertTrue(event.nonInteractive);
+    XCTAssertFalse(event.shouldUploadEvent);
+}
+
+- (void)testApplyCommerceEventMetadata_copiesNativeCommerceFieldsForNewArchitecture
+{
+    RNMParticle *module = [[RNMParticle alloc] init];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionCheckout];
+
+    [module applyCommerceEventMetadata:event
+                        fromDictionary:@{
+                            @"currency" : @"USD",
+                            @"checkoutStep" : @1,
+                            @"checkoutOptions" : @"Visa",
+                            @"productActionListName" : @"checkout-list",
+                            @"productActionListSource" : @"app",
+                            @"screenName" : @"Checkout",
+                            @"nonInteractive" : @YES,
+                            @"shouldUploadEvent" : @NO,
+                        }];
+
+    XCTAssertEqualObjects(event.currency, @"USD");
+    XCTAssertEqual(event.checkoutStep, 1);
+    XCTAssertEqualObjects(event.checkoutOptions, @"Visa");
+    XCTAssertEqualObjects(event.productListName, @"checkout-list");
+    XCTAssertEqualObjects(event.productListSource, @"app");
+    XCTAssertEqualObjects(event.screenName, @"Checkout");
+    XCTAssertTrue(event.nonInteractive);
+    XCTAssertFalse(event.shouldUploadEvent);
+}
+
+- (void)testAddPromotionsFromDicts_fillsPromotionContainerForNewArchitecture
+{
+    RNMParticle *module = [[RNMParticle alloc] init];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] init];
+    event.promotionContainer = [[MPPromotionContainer alloc] initWithAction:MPPromotionActionView promotion:nil];
+
+    [module addPromotionsFromDicts:@[
+        @{
+            @"id" : @"promo-1",
+            @"name" : @"Sale",
+            @"creative" : @"banner",
+            @"position" : @"home-top",
+        }
+    ]
+                  toCommerceEvent:event];
+
+    XCTAssertEqual(event.promotionContainer.promotions.count, 1);
+    MPPromotion *promotion = event.promotionContainer.promotions.firstObject;
+    XCTAssertEqualObjects(promotion.promotionId, @"promo-1");
+    XCTAssertEqualObjects(promotion.name, @"Sale");
+    XCTAssertEqualObjects(promotion.creative, @"banner");
+    XCTAssertEqualObjects(promotion.position, @"home-top");
 }
 
 @end

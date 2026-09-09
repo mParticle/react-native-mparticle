@@ -645,16 +645,14 @@ class MParticleModule(
                     val product = convertProduct(productMap) ?: return null
                     val transactionAttributesMap = map.getMap("transactionAttributes")
                     val transactionAttributes = convertTransactionAttributes(transactionAttributesMap)
-                    val builder =
-                        transactionAttributes?.let {
-                            CommerceEvent.Builder(productAction, product).transactionAttributes(it)
-                        }
+                    val builder = CommerceEvent.Builder(productAction, product)
+                    transactionAttributes?.let { builder.transactionAttributes(it) }
 
                     for (i in 1 until productsArray.size()) {
                         val nextProductMap = productsArray.getMap(i)
                         val nextProduct = convertProduct(nextProductMap)
                         if (nextProduct != null) {
-                            builder?.addProduct(nextProduct)
+                            builder.addProduct(nextProduct)
                         }
                     }
                     builder
@@ -696,22 +694,22 @@ class MParticleModule(
             }
 
         if (map.hasKey("shouldUploadEvent")) {
-            builder?.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
+            builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
         }
         if (map.hasKey("customAttributes")) {
-            builder?.customAttributes(convertStringMap(map.getMap("customAttributes")))
+            builder.customAttributes(convertStringMap(map.getMap("customAttributes")))
         }
         if (map.hasKey("currency")) {
-            map.getString("currency")?.let { builder?.currency(it) }
+            map.getString("currency")?.let { builder.currency(it) }
         }
         if (map.hasKey("checkoutStep")) {
-            builder?.checkoutStep(map.getInt("checkoutStep"))
+            builder.checkoutStep(map.getInt("checkoutStep"))
         }
         if (map.hasKey("checkoutOptions")) {
-            map.getString("checkoutOptions")?.let { builder?.checkoutOptions(it) }
+            map.getString("checkoutOptions")?.let { builder.checkoutOptions(it) }
         }
 
-        return builder?.build()
+        return builder.build()
     }
 
     private fun convertProduct(map: ReadableMap?): Product? {

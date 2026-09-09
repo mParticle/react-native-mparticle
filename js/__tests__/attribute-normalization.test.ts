@@ -33,6 +33,7 @@ import {
   Event,
   Impression,
   Product,
+  TransactionAttributes,
   logCommerceEvent,
   logEvent,
   logMPEvent,
@@ -166,5 +167,40 @@ describe('custom attribute normalization', () => {
     expect(normalizedCommerce.customAttributes).toBeUndefined();
     expect(normalizedCommerce.impressions).toBeUndefined();
     expect(normalizedCommerce.products[0].customAttributes).toBeUndefined();
+  });
+
+  it('omits product action transaction attributes when none are provided', () => {
+    const event = CommerceEvent.createProductActionEvent(1, [
+      new Product('Shirt', 'shirt-1', 25),
+    ]);
+
+    expect(event.transactionAttributes).toBeUndefined();
+
+    logCommerceEvent(event);
+
+    const normalizedEvent = mockNativeModule.logCommerceEvent.mock.calls[0][0];
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        normalizedEvent,
+        'transactionAttributes'
+      )
+    ).toBe(false);
+  });
+
+  it('preserves explicitly provided product action transaction attributes', () => {
+    const transactionAttributes = new TransactionAttributes('order-123');
+    const event = CommerceEvent.createProductActionEvent(
+      7,
+      [new Product('Shirt', 'shirt-1', 25)],
+      transactionAttributes
+    );
+
+    expect(event.transactionAttributes).toBe(transactionAttributes);
+
+    logCommerceEvent(event);
+
+    expect(
+      mockNativeModule.logCommerceEvent.mock.calls[0][0].transactionAttributes
+    ).toBe(transactionAttributes);
   });
 });

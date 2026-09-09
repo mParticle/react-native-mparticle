@@ -204,7 +204,7 @@ Check `ios/Podfile` for:
 - Kit pods (if specified):
 
   ```ruby
-  pod 'mParticle-Rokt', '~> 9.2'
+  pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'
   ```
 
 ### Verify Android Integration
