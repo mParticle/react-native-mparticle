@@ -12,6 +12,7 @@ jest.mock(
     Platform: { OS: 'ios' },
     TurboModuleRegistry: {
       getEnforcing: jest.fn(() => mockNativeModule),
+      get: jest.fn(() => null),
     },
   }),
   { virtual: true }
