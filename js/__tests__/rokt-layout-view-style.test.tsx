@@ -41,7 +41,10 @@ jest.mock(
     NativeModules: { RoktEventManager: {} },
     NativeEventEmitter: jest.fn(() => ({ addListener: mockAddListener })),
     requireNativeComponent: jest.fn(() => 'RoktLegacyLayout'),
-    TurboModuleRegistry: { getEnforcing: jest.fn(() => ({})) },
+    TurboModuleRegistry: {
+      getEnforcing: jest.fn(() => ({})),
+      get: jest.fn(() => null),
+    },
   }),
   { virtual: true }
 );
