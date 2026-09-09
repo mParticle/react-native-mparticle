@@ -57,6 +57,22 @@ export interface MParticlePluginProps {
   iosKits?: string[];
 
   /**
+   * Custom base URL for global CNAME setup.
+   * This is applied before mParticle starts on iOS and Android.
+   * @example 'https://your-cname.example.com'
+   */
+  customBaseUrl?: string;
+
+  /**
+   * When true, disables SSL certificate pinning for mParticle network traffic.
+   *
+   * - **iOS:** Sets `MPNetworkOptions.pinningDisabled` before startup.
+   * - **Android:** Sets `NetworkOptions.Builder.setPinningDisabledInDevelopment(true)`
+   *   (mParticle's Android API for proxy/debug builds; see Android SDK docs).
+   */
+  pinningDisabled?: boolean;
+
+  /**
    * Android kit artifact names to include (version auto-detected from core SDK)
    * @example ['android-rokt-kit', 'android-amplitude-kit']
    */
