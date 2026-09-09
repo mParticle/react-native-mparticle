@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 #import "mParticle.h"
 
 @implementation AppDelegate
@@ -18,8 +19,20 @@
 {
   self.moduleName = @"MParticleSample";
   self.initialProps = @{};
-  MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
-                                                                 secret:@"REPLACE ME"];
+
+  // Required since React Native 0.77. Without it no third-party Fabric component is
+  // registered, so <RoktLayoutView> mounts as RCTUnimplementedViewComponentView and
+  // embedded placements resolve no placeholder view.
+  self.dependencyProvider = [RCTAppDependencyProvider new];
+  
+  MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
+  networkOptions.pinningDisabled = true;
+ 
+  MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE_ME"
+                                                                 secret:@"REPLACE_ME"];
+  mParticleOptions.logLevel = MPILogLevelDebug;
+  mParticleOptions.environment = MPEnvironmentProduction;
+  
   //Please see the Identity page for more information on building this object
   MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
   request.email = @"email@example.com";

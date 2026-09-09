@@ -14,7 +14,7 @@ import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.mparticle.MPEvent
 import com.mparticle.MParticle
-import com.mparticle.UserAttributeListener
+import com.mparticle.TypedUserAttributeListener
 import com.mparticle.commerce.CommerceEvent
 import com.mparticle.commerce.Impression
 import com.mparticle.commerce.Product
@@ -153,22 +153,21 @@ class MParticleModule(
         val selectedUser = MParticle.getInstance()?.Identity()?.getUser(parseMpid(mpid))
         if (selectedUser != null) {
             selectedUser.getUserAttributes(
-                object : UserAttributeListener {
+                object : TypedUserAttributeListener {
                     override fun onUserAttributesReceived(
-                        userAttributes: Map<String, String>?,
-                        userAttributeLists: Map<String, List<String>>?,
-                        mpid: Long?,
+                        userAttributes: Map<String, Any?>,
+                        userAttributeLists: Map<String, List<String?>?>,
+                        mpid: Long,
                     ) {
-                        val resultMap = WritableNativeMap()
-                        userAttributes?.let { attrs ->
-                            for ((key, value) in attrs) {
-                                resultMap.putString(key, value)
-                            }
+                        val resultMap = getWritableMap()
+                        for ((key, value) in userAttributes) {
+                            resultMap.putString(key, value?.toString())
                         }
-                        userAttributeLists?.let { attrLists ->
-                            for ((key, valueList) in attrLists) {
+
+                        for ((key, valueList) in userAttributeLists) {
+                            valueList?.let {
                                 val resultArray = WritableNativeArray()
-                                for (arrayVal in valueList) {
+                                for (arrayVal in it) {
                                     resultArray.pushString(arrayVal)
                                 }
                                 resultMap.putArray(key, resultArray)
@@ -179,7 +178,7 @@ class MParticleModule(
                 },
             )
         } else {
-            callback.invoke()
+            callback.invoke(null, getWritableMap())
         }
     }
 
@@ -534,6 +533,31 @@ class MParticleModule(
         }
     }
 
+    @ReactMethod
+    override fun setDeviceConsentState(consentState: ReadableMap?) {
+        val instance = MParticle.getInstance() ?: return
+        if (consentState == null) {
+            return
+        }
+        val state = convertToConsentState(consentState)
+        instance.setDeviceConsentState(if (isEmptyConsentState(state)) null else state)
+    }
+
+    @ReactMethod
+    override fun clearDeviceConsentState() {
+        MParticle.getInstance()?.setDeviceConsentState(null)
+    }
+
+    @ReactMethod
+    override fun getDeviceConsentState(callback: Callback) {
+        val instance = MParticle.getInstance()
+        if (instance == null) {
+            callback.invoke(null)
+            return
+        }
+        callback.invoke(consentStateToMap(instance.getDeviceConsentState()))
+    }
+
     protected fun getWritableMap(): WritableMap = WritableNativeMap()
 
     private fun convertIdentityAPIRequest(map: ReadableMap?): IdentityApiRequest {
@@ -621,16 +645,14 @@ class MParticleModule(
                     val product = convertProduct(productMap) ?: return null
                     val transactionAttributesMap = map.getMap("transactionAttributes")
                     val transactionAttributes = convertTransactionAttributes(transactionAttributesMap)
-                    val builder =
-                        transactionAttributes?.let {
-                            CommerceEvent.Builder(productAction, product).transactionAttributes(it)
-                        }
+                    val builder = CommerceEvent.Builder(productAction, product)
+                    transactionAttributes?.let { builder.transactionAttributes(it) }
 
                     for (i in 1 until productsArray.size()) {
                         val nextProductMap = productsArray.getMap(i)
                         val nextProduct = convertProduct(nextProductMap)
                         if (nextProduct != null) {
-                            builder?.addProduct(nextProduct)
+                            builder.addProduct(nextProduct)
                         }
                     }
                     builder
@@ -672,22 +694,22 @@ class MParticleModule(
             }
 
         if (map.hasKey("shouldUploadEvent")) {
-            builder?.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
+            builder.shouldUploadEvent(map.getBoolean("shouldUploadEvent"))
         }
         if (map.hasKey("customAttributes")) {
-            builder?.customAttributes(convertStringMap(map.getMap("customAttributes")))
+            builder.customAttributes(convertStringMap(map.getMap("customAttributes")))
         }
         if (map.hasKey("currency")) {
-            map.getString("currency")?.let { builder?.currency(it) }
+            map.getString("currency")?.let { builder.currency(it) }
         }
         if (map.hasKey("checkoutStep")) {
-            builder?.checkoutStep(map.getInt("checkoutStep"))
+            builder.checkoutStep(map.getInt("checkoutStep"))
         }
         if (map.hasKey("checkoutOptions")) {
-            map.getString("checkoutOptions")?.let { builder?.checkoutOptions(it) }
+            map.getString("checkoutOptions")?.let { builder.checkoutOptions(it) }
         }
 
-        return builder?.build()
+        return builder.build()
     }
 
     private fun convertProduct(map: ReadableMap?): Product? {
@@ -928,15 +950,28 @@ class MParticleModule(
             map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
-            try {
-                val timestampString = map.getString("timestamp")
-                val timestamp = timestampString?.toLong()
-                timestamp?.let { builder.timestamp(it) }
-            } catch (ex: Exception) {
-                Logger.warning("failed to convert \"timestamp\" value to Long")
-            }
+            readConsentTimestampMillis(map, "timestamp")?.let { builder.timestamp(it) }
         }
         return builder.build()
+    }
+
+    private fun readConsentTimestampMillis(
+        map: ReadableMap,
+        key: String,
+    ): Long? {
+        if (!map.hasKey(key)) {
+            return null
+        }
+        return try {
+            when (map.getType(key)) {
+                ReadableType.Number -> map.getDouble(key).toLong()
+                ReadableType.String -> map.getString(key)?.toLongOrNull()
+                else -> null
+            }
+        } catch (ex: Exception) {
+            Logger.warning("failed to convert \"$key\" timestamp value to Long")
+            null
+        }
     }
 
     private fun convertToCCPAConsent(map: ReadableMap): CCPAConsent? {
@@ -963,14 +998,67 @@ class MParticleModule(
             map.getString("location")?.let { builder.location(it) }
         }
         if (map.hasKey("timestamp")) {
-            try {
-                val timestampString = map.getString("timestamp")
-                val timestamp = timestampString?.toLong()
-                timestamp?.let { builder.timestamp(it) }
-            } catch (ex: Exception) {
-                Logger.warning("failed to convert \"timestamp\" value to Long")
+            readConsentTimestampMillis(map, "timestamp")?.let { builder.timestamp(it) }
+        }
+        return builder.build()
+    }
+
+    private fun convertToConsentState(map: ReadableMap): ConsentState {
+        val builder = ConsentState.builder()
+        if (map.hasKey("gdpr")) {
+            map.getMap("gdpr")?.let { gdprMap ->
+                val iterator = gdprMap.keySetIterator()
+                while (iterator.hasNextKey()) {
+                    val purpose = iterator.nextKey()
+                    val consentMap = gdprMap.getMap(purpose) ?: continue
+                    convertToGDPRConsent(consentMap)?.let { builder.addGDPRConsentState(purpose, it) }
+                }
+            }
+        }
+        if (map.hasKey("ccpa")) {
+            map.getMap("ccpa")?.let { ccpaMap ->
+                convertToCCPAConsent(ccpaMap)?.let { builder.setCCPAConsentState(it) }
             }
         }
         return builder.build()
+    }
+
+    private fun isEmptyConsentState(state: ConsentState) = state.gdprConsentState.isEmpty() && state.ccpaConsentState == null
+
+    private fun consentStateToMap(state: ConsentState?): WritableMap? {
+        if (state == null) {
+            return null
+        }
+        val result = Arguments.createMap()
+        val gdprConsentState = state.gdprConsentState
+        if (gdprConsentState.isNotEmpty()) {
+            val gdprMap = Arguments.createMap()
+            for ((purpose, consent) in gdprConsentState) {
+                gdprMap.putMap(purpose, gdprConsentToMap(consent))
+            }
+            result.putMap("gdpr", gdprMap)
+        }
+        state.ccpaConsentState?.let { result.putMap("ccpa", ccpaConsentToMap(it)) }
+        return if (result.toHashMap().isEmpty()) null else result
+    }
+
+    private fun gdprConsentToMap(consent: GDPRConsent): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("consented", consent.isConsented)
+        consent.document?.let { map.putString("document", it) }
+        consent.location?.let { map.putString("location", it) }
+        consent.hardwareId?.let { map.putString("hardwareId", it) }
+        consent.timestamp?.let { map.putDouble("timestamp", it.toDouble()) }
+        return map
+    }
+
+    private fun ccpaConsentToMap(consent: CCPAConsent): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("consented", consent.isConsented)
+        consent.document?.let { map.putString("document", it) }
+        consent.location?.let { map.putString("location", it) }
+        consent.hardwareId?.let { map.putString("hardwareId", it) }
+        consent.timestamp?.let { map.putDouble("timestamp", it.toDouble()) }
+        return map
     }
 }

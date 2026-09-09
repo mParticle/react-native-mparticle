@@ -1,10 +1,9 @@
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
+import type { UnsafeObject } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type CustomAttributes = { [key: string]: string | number | boolean };
-export type UserAttributes = {
-  [key: string]: string | string[] | number | boolean | null;
-};
+export type UserAttributes = UnsafeObject;
 export type UserIdentities = { [key: string]: string };
 
 export interface Product {
@@ -87,6 +86,11 @@ export interface CCPAConsent {
   hardwareId?: string | null;
 }
 
+export interface DeviceConsentState {
+  gdpr?: { [purpose: string]: GDPRConsent };
+  ccpa?: CCPAConsent | null;
+}
+
 export type AttributionResult = {
   [key: string]: {
     [key: string]: string | number | boolean;
@@ -140,6 +144,11 @@ export interface Spec extends TurboModule {
   removeGDPRConsentStateWithPurpose(purpose: string): void;
   setCCPAConsentState(consent: CCPAConsent): void;
   removeCCPAConsentState(): void;
+  setDeviceConsentState(consentState: DeviceConsentState): void;
+  clearDeviceConsentState(): void;
+  getDeviceConsentState(
+    callback: (result: DeviceConsentState | null) => void
+  ): void;
   isKitActive(kitId: number, callback: (result: boolean) => void): void;
   getAttributions(callback: (result: AttributionResult) => void): void;
   logPushRegistration(token: string, senderId: string): void;
@@ -151,10 +160,7 @@ export interface Spec extends TurboModule {
   setUserAttributeArray(mpid: string, key: string, value: Array<string>): void;
   getUserAttributes(
     mpid: string,
-    callback: (
-      error: CallbackError | null,
-      result: UserAttributes | null
-    ) => void
+    callback: (error: CallbackError | null, result: UserAttributes) => void
   ): void;
   setUserTag(mpid: string, tag: string): void;
   incrementUserAttribute(mpid: string, key: string, value: number): void;

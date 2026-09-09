@@ -70,7 +70,7 @@ def enableProguardInReleaseBuilds = false
  * give correct results when using with locales other than en-US. Note that
  * this variant is about 6MiB larger per architecture than default.
  */
-def jscFlavor = 'org.webkit:android-jsc:+'
+def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
     ndkVersion rootProject.ext.ndkVersion
@@ -110,8 +110,8 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation("com.mparticle:android-core:5.71.0")
-    implementation("com.mparticle:android-rokt-kit:5.71.0")
+    implementation("com.mparticle:android-core:[6.0.0, 7.0)")
+    implementation("com.mparticle:android-rokt-kit:[6.0.0, 7.0)")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

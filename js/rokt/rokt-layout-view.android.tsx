@@ -16,10 +16,6 @@ export interface RoktLayoutViewProps {
 export interface RoktLayoutViewState {
   height: number;
   placeholderName: string;
-  marginTop: number;
-  marginRight: number;
-  marginLeft: number;
-  marginBottom: number;
 }
 
 /**
@@ -31,18 +27,15 @@ interface HeightChangedEvent {
   };
 }
 
-interface MarginChangedEvent {
-  nativeEvent: {
-    marginTop?: string;
-    marginLeft?: string;
-    marginRight?: string;
-    marginBottom?: string;
-  };
-}
-
 const styles = StyleSheet.create({
   widget: {
-    flex: 1,
+    // Do NOT use `flex: 1` here. It expands to `flexBasis: 0%`, which takes
+    // precedence over `height` on the parent's main axis, so inside any
+    // auto-height column parent the layout collapses to 0 and the placement is
+    // never visible even though it was selected and reported its height.
+    // `alignSelf: 'stretch'` gives the full available width without touching the
+    // main axis, leaving the measured `height` free to apply.
+    alignSelf: 'stretch',
     backgroundColor: 'transparent',
   },
 });
@@ -62,10 +55,6 @@ export class RoktLayoutView extends Component<
     this.state = {
       height: 0,
       placeholderName: this.props.placeholderName,
-      marginTop: 0,
-      marginRight: 0,
-      marginLeft: 0,
-      marginBottom: 0,
     };
   }
 
@@ -79,23 +68,6 @@ export class RoktLayoutView extends Component<
     }
   };
 
-  /**
-   * Handles the margin changed event from the native component
-   * This is an internal implementation detail not exposed to users
-   */
-  private handleMarginChanged = (event: MarginChangedEvent) => {
-    if (event && event.nativeEvent) {
-      const { marginTop, marginLeft, marginRight, marginBottom } =
-        event.nativeEvent;
-      this.setState({
-        marginTop: parseInt(marginTop || '0'),
-        marginLeft: parseInt(marginLeft || '0'),
-        marginRight: parseInt(marginRight || '0'),
-        marginBottom: parseInt(marginBottom || '0'),
-      });
-    }
-  };
-
   override render() {
     try {
       // Get the placeholderName from props
@@ -103,9 +75,10 @@ export class RoktLayoutView extends Component<
 
       // Return the native component with the props
       // Cast to React.ComponentType to make it compatible with JSX
+      // Using 'unknown' intermediate cast for compatibility with different @types/react versions
       const RoktComponent =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        RoktNativeLayoutComponent as React.ComponentType<any>;
+        RoktNativeLayoutComponent as unknown as React.ComponentType<any>;
       return (
         <RoktComponent
           placeholderName={placeholderName}
@@ -113,14 +86,9 @@ export class RoktLayoutView extends Component<
             styles.widget,
             {
               height: this.state.height,
-              marginTop: this.state.marginTop,
-              marginLeft: this.state.marginLeft,
-              marginRight: this.state.marginRight,
-              marginBottom: this.state.marginBottom,
             },
           ]}
           onLayoutHeightChanged={this.handleHeightChanged}
-          onLayoutMarginChanged={this.handleMarginChanged}
         />
       );
     } catch (error) {
