@@ -139,3 +139,14 @@ dependencies {
     testCompileOnly 'com.mparticle:android-rokt-kit:6.0.2'
     testImplementation("com.facebook.react:react-android:+")
 }
+
+configurations.all {
+    resolutionStrategy {
+        // mockito 5.23.0 pulls byte-buddy 1.17.7, which ships a META-INF/versions/24
+        // multi-release overlay that this AGP's Jetifier can't parse ("Unsupported
+        // class file major version 68"). 1.15.x is the last line without that overlay
+        // and is still API-compatible with mockito's usage.
+        force 'net.bytebuddy:byte-buddy:1.15.11'
+        force 'net.bytebuddy:byte-buddy-agent:1.15.11'
+    }
+}
