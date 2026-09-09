@@ -26,6 +26,13 @@ const { RoktLayoutView, RoktEventManager } = MParticle;
 // Create event emitter for Rokt events
 const eventManagerEmitter = new NativeEventEmitter(RoktEventManager);
 
+const generateGuid = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === 'x' ? random : 8 + (random % 4);
+    return value.toString(16);
+  });
+
 export default function App() {
   const [eventName, setEventName] = useState('Test Event');
   const [status, setStatus] = useState('SDK initialized via native code');
@@ -257,6 +264,31 @@ export default function App() {
       });
   };
 
+  const handleRoktClose = () => {
+    MParticle.Rokt.close()
+      .then(() => {
+        addLog('Rokt close called');
+        setStatus('Rokt close called');
+      })
+      .catch((error: any) => {
+        addLog(`Rokt close error: ${JSON.stringify(error)}`);
+      });
+  };
+
+  const handleRoktSession = () => {
+    const sessionId = generateGuid();
+
+    MParticle.Rokt.setSessionId(sessionId)
+      .then(() => MParticle.Rokt.getSessionId())
+      .then((currentSessionId: string | null) => {
+        addLog(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+        setStatus(`Rokt session ID: ${currentSessionId ?? 'none'}`);
+      })
+      .catch((error: any) => {
+        addLog(`Rokt session error: ${JSON.stringify(error)}`);
+      });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -367,6 +399,20 @@ export default function App() {
               onPress={handleRoktShoppableAds}
             >
               <Text style={styles.buttonText}>Shoppable Ads</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButton]}
+              onPress={handleRoktClose}
+            >
+              <Text style={styles.buttonText}>Close Rokt</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.roktButtonAlt]}
+              onPress={handleRoktSession}
+            >
+              <Text style={styles.buttonText}>Rokt Session</Text>
             </TouchableOpacity>
           </View>
 
