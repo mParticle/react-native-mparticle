@@ -1,5 +1,11 @@
 #import "RoktEventManager.h"
-@import RoktContracts;
+// Not `@import RoktContracts` -- this file is Objective-C++ and the pod builds without
+// -fcxx-modules, so the module import fails. Matches how RNMPRokt.mm imports the same types.
+#if __has_include(<RoktContracts/RoktContracts-Swift.h>)
+    #import <RoktContracts/RoktContracts-Swift.h>
+#elif __has_include(<RoktContracts/RoktContracts.h>)
+    #import <RoktContracts/RoktContracts.h>
+#endif
 #import <os/log.h>
 
 static os_log_t _rokt_events_os_log(void) {
@@ -232,5 +238,11 @@ RCT_EXPORT_MODULE(RoktEventManager);
          [self sendEventWithName:@"RoktEvents" body:payload];
      }
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
+    return std::make_shared<facebook::react::NativeRoktEventManagerSpecJSI>(params);
+}
+#endif // RCT_NEW_ARCH_ENABLED
 
 @end

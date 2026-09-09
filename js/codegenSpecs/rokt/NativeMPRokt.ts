@@ -3,6 +3,8 @@ import { TurboModuleRegistry } from 'react-native';
 
 type ColorMode = string;
 
+type RoktAttributeValue = string | number | boolean;
+
 type CacheConfig = {
   readonly cacheDurationInSeconds?: number;
   readonly cacheAttributes?: { [key: string]: string };
@@ -16,7 +18,7 @@ type RoktConfigType = {
 export interface Spec extends TurboModule {
   selectPlacements(
     identifier: string,
-    attributes?: { [key: string]: string },
+    attributes?: { [key: string]: RoktAttributeValue },
     placeholders?: { [key: string]: number | null },
     roktConfig?: RoktConfigType,
     fontFilesMap?: { [key: string]: string }
@@ -30,9 +32,15 @@ export interface Spec extends TurboModule {
 
   selectShoppableAds(
     identifier: string,
-    attributes: { [key: string]: string },
+    attributes: { [key: string]: RoktAttributeValue },
     roktConfig?: RoktConfigType
   ): void;
+
+  close(): Promise<void>;
+
+  setSessionId(sessionId: string): Promise<void>;
+
+  getSessionId(): Promise<string | null>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNMPRokt');

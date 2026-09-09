@@ -7,13 +7,6 @@ type HeightChangedEvent = {
   height: string;
 };
 
-type MarginChangedEvent = {
-  marginTop: string;
-  marginRight: string;
-  marginLeft: string;
-  marginBottom: string;
-};
-
 // Native component props - these are the props the native component expects
 export interface NativeProps extends ViewProps {
   // Placeholder name to be passed to the native component
@@ -21,7 +14,6 @@ export interface NativeProps extends ViewProps {
 
   // Custom events
   onLayoutHeightChanged?: DirectEventHandler<HeightChangedEvent>;
-  onLayoutMarginChanged?: DirectEventHandler<MarginChangedEvent>;
 }
 
 export default codegenNativeComponent<NativeProps>(

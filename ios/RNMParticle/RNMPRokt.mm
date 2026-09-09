@@ -16,10 +16,11 @@
     #import <RoktContracts/RoktContracts.h>
 #endif
 #import <React/RCTConvert.h>
+#import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTViewManager.h>
-#import <React/RCTUIManager.h>
-#import <React/RCTBridge.h>
+#import <React/RCTLog.h>
+#import <React/RCTUtils.h>
 #import <os/log.h>
 #import "RoktEventManager.h"
 
@@ -55,7 +56,8 @@ static void _rokt_log(NSString *format, ...) {
 
 @implementation RNMPRokt
 
-@synthesize bridge = _bridge;
+// Maps React tags to UIViews in both bridge and bridgeless modes, unlike bridge.uiManager.
+@synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
 
 RCT_EXTERN void RCTRegisterModule(Class);
 
@@ -70,10 +72,9 @@ RCT_EXTERN void RCTRegisterModule(Class);
 
 - (dispatch_queue_t)methodQueue
 {
-    BOOL bridgeNil = (self.bridge == nil);
-    BOOL uiManagerNil = (self.bridge.uiManager == nil);
-    _rokt_log(@"[mParticle-Rokt] methodQueue called, bridge %@, uiManager %@", bridgeNil ? @"nil" : @"non-nil", uiManagerNil ? @"nil" : @"non-nil");
-    return self.bridge.uiManager.methodQueue;
+    // selectPlacements mutates the placeholder view hierarchy, so SDK calls must run on
+    // the main thread. Matches Android's UiThreadUtil.runOnUiThread (MPRoktModule.kt).
+    return dispatch_get_main_queue();
 }
 
 - (void)setMethodQueue:(dispatch_queue_t)methodQueue
@@ -101,6 +102,10 @@ static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
     }
     _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: extracting config");
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
+    if (roktConfig.colorMode() != nil) {
+        roktConfigDict[@"colorMode"] = roktConfig.colorMode();
+        _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: colorMode present");
+    }
     if (roktConfig.cacheConfig().has_value()) {
         NSMutableDictionary *cacheConfigDict = [[NSMutableDictionary alloc] init];
         auto cacheConfig = roktConfig.cacheConfig().value();
@@ -146,20 +151,11 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     [self ensureEventManager];
     __weak __typeof__(self) weakSelf = self;
 
-    BOOL bridgeNil = (self.bridge == nil);
-    BOOL uiManagerNil = (self.bridge.uiManager == nil);
-    _rokt_log(@"[mParticle-Rokt] bridge %@, uiManager %@", bridgeNil ? @"nil" : @"non-nil", uiManagerNil ? @"nil" : @"non-nil");
-
-    if (bridgeNil || uiManagerNil) {
-        _rokt_log(@"[mParticle-Rokt] addUIBlock skipped: self.bridge%@ is nil. selectPlacements will not be called. This can occur in New Architecture bridgeless production builds.", bridgeNil ? @"" : @".uiManager");
-    } else {
-        _rokt_log(@"[mParticle-Rokt] queuing addUIBlock for identifier: %@", identifer);
-    }
-    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+    // Replaces [self.bridge.uiManager addUIBlock:], which silently drops the call (no
+    // event emitted) when RCT_REMOVE_LEGACY_ARCH is set, React Native 0.84's default.
+    RCTExecuteOnMainQueue(^{
         __strong __typeof__(weakSelf) strongSelf = weakSelf;
-        _rokt_log(@"[mParticle-Rokt] addUIBlock executing for identifier: %@, viewRegistry count: %lu", identifer, (unsigned long)viewRegistry.count);
-
-        NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf getNativePlaceholders:placeholders viewRegistry:viewRegistry] : [NSMutableDictionary dictionary];
+        NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf resolvePlaceholders:placeholders] : [NSMutableDictionary dictionary];
 
         id mpInstance = [MParticle sharedInstance];
         id roktKit = mpInstance ? [mpInstance rokt] : nil;
@@ -172,8 +168,7 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
                                                     onEvent:^(RoktEvent * _Nonnull event) {
             [weakSelf.eventManager onRoktEvents:event viewName:identifer];
         }];
-    }];
-    _rokt_log(@"[mParticle-Rokt] addUIBlock enqueued for identifier: %@", identifer);
+    });
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -209,6 +204,63 @@ RCT_EXPORT_METHOD(selectShoppableAds:(NSString *)identifier attributes:(NSDictio
     }];
 }
 
+#ifdef RCT_NEW_ARCH_ENABLED
+- (void)close:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self closeWithResolve:resolve];
+}
+
+- (void)setSessionId:(NSString *)sessionId resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
+}
+
+- (void)getSessionId:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
+}
+#else
+RCT_EXPORT_METHOD(close:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self closeWithResolve:resolve];
+}
+
+RCT_EXPORT_METHOD(setSessionId:(NSString *)sessionId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self setSessionIdWithString:sessionId resolve:resolve];
+}
+
+RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    (void)reject;
+    [self getSessionIdWithResolve:resolve];
+}
+#endif
+
+- (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
+{
+    [[[MParticle sharedInstance] rokt] close];
+    resolve(nil);
+}
+
+- (void)setSessionIdWithString:(NSString *)sessionId
+                       resolve:(RCTPromiseResolveBlock)resolve
+{
+    [[[MParticle sharedInstance] rokt] setSessionId:sessionId ?: @""];
+    resolve(nil);
+}
+
+- (void)getSessionIdWithResolve:(RCTPromiseResolveBlock)resolve
+{
+    NSString *sessionId = [[[MParticle sharedInstance] rokt] getSessionId];
+    resolve(sessionId ?: [NSNull null]);
+}
+
 RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     NSString *)catalogItemId success : (BOOL)success) {
     [[[MParticle sharedInstance] rokt] purchaseFinalized:placementId
@@ -216,19 +268,36 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
                                                  success:success];
 }
 
-- (NSMutableDictionary*)convertToMutableDictionaryOfStrings:(NSDictionary*)attributes
+// Coerces React Native attribute values to strings, matching mParticle-Rokt kit
+// transformValuesToString behavior (MPKitRokt.m).
+- (NSMutableDictionary<NSString *, NSString *> *)convertToMutableDictionaryOfStrings:(NSDictionary *)attributes
 {
-    NSMutableDictionary *finalAttributes = [attributes mutableCopy];
-    NSArray *keysForNullValues = [finalAttributes allKeysForObject:[NSNull null]];
-    [finalAttributes removeObjectsForKeys:keysForNullValues];
+    NSMutableDictionary<NSString *, NSString *> *finalAttributes = [[NSMutableDictionary alloc] init];
+    if (!attributes) {
+        return finalAttributes;
+    }
 
-    NSSet *keys = [finalAttributes keysOfEntriesPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-        return ![obj isKindOfClass:[NSString class]];
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if (![key isKindOfClass:[NSString class]] || obj == nil || obj == [NSNull null]) {
+            return;
+        }
+
+        NSString *stringKey = (NSString *)key;
+        if ([obj isKindOfClass:[NSString class]]) {
+            finalAttributes[stringKey] = obj;
+        } else if ([obj isKindOfClass:[NSNumber class]]) {
+            NSNumber *numberAttribute = (NSNumber *)obj;
+            if (numberAttribute == (id)kCFBooleanTrue || numberAttribute == (id)kCFBooleanFalse) {
+                finalAttributes[stringKey] = [numberAttribute boolValue] ? @"true" : @"false";
+            } else {
+                finalAttributes[stringKey] = [numberAttribute stringValue];
+            }
+        } else if ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSArray class]]) {
+            finalAttributes[stringKey] = [obj description];
+        }
     }];
 
-    [finalAttributes removeObjectsForKeys:[keys allObjects]];
     return finalAttributes;
-
 }
 
 - (RoktConfig *)buildRoktConfigFromDict:(NSDictionary<NSString *, id> *)configMap {
@@ -270,22 +339,30 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return isConfigEmpty ? nil : [builder build];
 }
 
-- (NSMutableDictionary *)getNativePlaceholders:(NSDictionary *)placeholders viewRegistry:(NSDictionary<NSNumber *, UIView *> *)viewRegistry
+// Main thread only — RCTViewRegistry reads the mounted view hierarchy.
+- (NSMutableDictionary *)resolvePlaceholders:(NSDictionary *)placeholders
 {
-    _rokt_log(@"[mParticle-Rokt] getNativePlaceholders: placeholders %lu, viewRegistry %lu", (unsigned long)placeholders.count, (unsigned long)viewRegistry.count);
+    _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: %lu placeholder(s)", (unsigned long)placeholders.count);
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
     for(id key in placeholders){
-#ifdef RCT_NEW_ARCH_ENABLED
-        RoktNativeLayoutComponentView *wrapperView = (RoktNativeLayoutComponentView *)viewRegistry[[placeholders objectForKey:key]];
-        if (!wrapperView || ![wrapperView isKindOfClass:[RoktNativeLayoutComponentView class]]) {
-            RCTLogError(@"Cannot find RoktNativeWidgetComponentView with tag #%@", key);
+        // The spec allows `number | null`; viewForReactTag: would throw on NSNull.
+        NSNumber *reactTag = [placeholders objectForKey:key];
+        if (![reactTag isKindOfClass:[NSNumber class]]) {
+            RCTLogError(@"Invalid react tag for placeholder %@", key);
             continue;
         }
-        nativePlaceholders[key] = wrapperView.roktEmbeddedView;
+
+        // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
+        UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
+#ifdef RCT_NEW_ARCH_ENABLED
+        if (![view isKindOfClass:[RoktNativeLayoutComponentView class]]) {
+            RCTLogError(@"Cannot find RoktNativeLayoutComponentView for placeholder %@ (reactTag %@)", key, reactTag);
+            continue;
+        }
+        nativePlaceholders[key] = ((RoktNativeLayoutComponentView *)view).roktEmbeddedView;
 #else
-        RoktEmbeddedView *view = viewRegistry[[placeholders objectForKey:key]];
-        if (!view || ![view isKindOfClass:[RoktEmbeddedView class]]) {
+        if (![view isKindOfClass:[RoktEmbeddedView class]]) {
             RCTLogError(@"Cannot find RoktEmbeddedView with tag #%@", key);
             continue;
         }
@@ -294,14 +371,12 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 #endif // RCT_NEW_ARCH_ENABLED
     }
 
-    _rokt_log(@"[mParticle-Rokt] getNativePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
+    _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
-    self.bridge = params.instance.bridge;
-    _rokt_log(@"[mParticle-Rokt] getTurboModule: bridge set to %@", self.bridge == nil ? @"nil" : @"non-nil");
     return std::make_shared<facebook::react::NativeMPRoktSpecJSI>(params);
 }
 #endif // RCT_NEW_ARCH_ENABLED
