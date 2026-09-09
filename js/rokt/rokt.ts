@@ -1,8 +1,32 @@
-import { NativeModules } from 'react-native';
-import { getNativeModule } from '../utils/architecture';
+import { NativeModules, Platform, TurboModuleRegistry } from 'react-native';
+import { getNativeModule, isNewArchitecture } from '../utils/architecture';
 import type { Spec as NativeMPRoktInterface } from '../codegenSpecs/rokt/NativeMPRokt';
 
-const MPRokt = getNativeModule<NativeMPRoktInterface>('RNMPRokt');
+const ROKT_MODULE_NAME = 'RNMPRokt';
+const MPRokt =
+  Platform.OS === 'android'
+    ? getAndroidRoktModule()
+    : getNativeModule<NativeMPRoktInterface>(ROKT_MODULE_NAME);
+
+function getAndroidRoktModule(): NativeMPRoktInterface | null {
+  if (isNewArchitecture) {
+    return TurboModuleRegistry.get<NativeMPRoktInterface>(ROKT_MODULE_NAME);
+  }
+  return (
+    (NativeModules[ROKT_MODULE_NAME] as NativeMPRoktInterface | undefined) ??
+    null
+  );
+}
+
+function getMPRokt(): NativeMPRoktInterface {
+  if (MPRokt != null) {
+    return MPRokt;
+  }
+
+  throw new Error(
+    `${ROKT_MODULE_NAME} is unavailable. Add the native mParticle Rokt kit before using MParticle.Rokt APIs.`
+  );
+}
 
 export abstract class Rokt {
   /**
@@ -22,7 +46,7 @@ export abstract class Rokt {
     roktConfig?: IRoktConfig,
     fontFilesMap?: Record<string, string>
   ): Promise<void> {
-    MPRokt.selectPlacements(
+    getMPRokt().selectPlacements(
       identifier,
       attributes,
       placeholders,
@@ -31,12 +55,32 @@ export abstract class Rokt {
     );
   }
 
+  static async selectShoppableAds(
+    identifier: string,
+    attributes: Record<string, string>,
+    roktConfig?: IRoktConfig
+  ): Promise<void> {
+    getMPRokt().selectShoppableAds(identifier, attributes, roktConfig);
+  }
+
   static async purchaseFinalized(
     placementId: string,
     catalogItemId: string,
     success: boolean
   ): Promise<void> {
-    MPRokt.purchaseFinalized(placementId, catalogItemId, success);
+    getMPRokt().purchaseFinalized(placementId, catalogItemId, success);
+  }
+
+  static async close(): Promise<void> {
+    return getMPRokt().close();
+  }
+
+  static async setSessionId(sessionId: string): Promise<void> {
+    return getMPRokt().setSessionId(sessionId);
+  }
+
+  static async getSessionId(): Promise<string | null> {
+    return getMPRokt().getSessionId();
   }
 
   static createRoktConfig(colorMode?: ColorMode, cacheConfig?: CacheConfig) {

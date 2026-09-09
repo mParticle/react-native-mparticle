@@ -9,7 +9,7 @@
 using namespace facebook::react;
 
 @interface RoktNativeLayoutComponentView () <RCTRoktNativeLayoutViewProtocol>
-@property (nonatomic, nullable) MPRoktEmbeddedView *roktEmbeddedView;
+@property (nonatomic, nullable) RoktEmbeddedView *roktEmbeddedView;
 @property (nonatomic, nullable) NSString *placeholderName;
 @end
 
@@ -25,7 +25,7 @@ using namespace facebook::react;
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    _roktEmbeddedView = [[MPRoktEmbeddedView alloc] initWithFrame:self.bounds];
+    _roktEmbeddedView = [[RoktEmbeddedView alloc] initWithFrame:self.bounds];
     _roktEmbeddedView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:_roktEmbeddedView];
     NSLog(@"[ROKT] iOS Fabric: RoktFabricWrapperView initialized");
