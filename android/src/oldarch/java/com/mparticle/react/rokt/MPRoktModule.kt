@@ -1,5 +1,6 @@
 package com.mparticle.react.rokt
 
+import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
@@ -7,8 +8,9 @@ import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
 import com.mparticle.internal.Logger
+import com.mparticle.kits.RoktEmbeddedView
+import com.mparticle.kits.rokt
 import com.mparticle.react.NativeMPRoktSpec
-import com.mparticle.rokt.RoktEmbeddedView
 import java.lang.ref.WeakReference
 
 class MPRoktModule(
@@ -30,22 +32,31 @@ class MPRoktModule(
             Logger.warning("selectPlacements failed. identifier cannot be empty")
             return
         }
+        impl.setWrapperSdk()
         val uiManager = reactContext.getNativeModule(UIManagerModule::class.java)
-        MParticle.getInstance()?.Rokt()?.events(identifier)?.let {
+        MParticle.getInstance()?.rokt?.events(identifier)?.let {
             impl.startRoktEventListener(it, reactContext.currentActivity, identifier)
         }
 
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
         uiManager?.addUIBlock { nativeViewHierarchyManager ->
-            MParticle.getInstance()?.Rokt()?.selectPlacements(
+            MParticle.getInstance()?.rokt?.selectPlacements(
                 identifier = identifier,
                 attributes = impl.readableMapToMapOfStrings(attributes),
-                callbacks = impl.createRoktCallback(),
                 embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
                 fontTypefaces = null, // TODO
                 config = config,
             )
         }
+    }
+
+    @ReactMethod
+    override fun selectShoppableAds(
+        identifier: String,
+        attributes: ReadableMap?,
+        roktConfig: ReadableMap?,
+    ) {
+        impl.selectShoppableAds(identifier, attributes, roktConfig)
     }
 
     @ReactMethod
@@ -55,6 +66,24 @@ class MPRoktModule(
         success: Boolean,
     ) {
         impl.purchaseFinalized(placementId, catalogItemId, success)
+    }
+
+    @ReactMethod
+    override fun close(promise: Promise) {
+        impl.close(promise)
+    }
+
+    @ReactMethod
+    override fun setSessionId(
+        sessionId: String,
+        promise: Promise,
+    ) {
+        impl.setSessionId(sessionId, promise)
+    }
+
+    @ReactMethod
+    override fun getSessionId(promise: Promise) {
+        impl.getSessionId(promise)
     }
 
     private fun safeUnwrapPlaceholders(

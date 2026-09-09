@@ -5,9 +5,14 @@ import {
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import { MParticlePluginProps } from './withMParticle';
+import { getCustomBaseUrl } from './customBaseUrl';
 
 // Tag used for mergeContents to identify code blocks added by this plugin
 const MPARTICLE_TAG = 'react-native-mparticle';
+
+function shouldEmitNetworkOptions(props: MParticlePluginProps): boolean {
+  return Boolean(getCustomBaseUrl(props) || props.pinningDisabled === true);
+}
 
 /**
  * Get the mParticle log level string for Android
@@ -62,6 +67,8 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
     dataPlanId,
     dataPlanVersion,
   } = props;
+  const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -82,6 +89,21 @@ function generateKotlinInitCode(props: MParticlePluginProps): string {
   if (dataPlanId) {
     const versionParam = dataPlanVersion ? `, ${dataPlanVersion}` : '';
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
+  }
+
+  if (shouldEmitNetworkOptions(props)) {
+    lines.push('    .networkOptions(');
+    lines.push('        NetworkOptions.builder()');
+    if (customBaseUrl) {
+      lines.push(
+        `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('            .setPinningDisabledInDevelopment(true)');
+    }
+    lines.push('            .build()');
+    lines.push('    )');
   }
 
   if (useEmptyIdentifyRequest) {
@@ -107,6 +129,8 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     dataPlanId,
     dataPlanVersion,
   } = props;
+  const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
 
   const lines: string[] = [
     '// mParticle SDK initialization',
@@ -129,6 +153,21 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
     lines.push(`    .dataplan("${dataPlanId}"${versionParam})`);
   }
 
+  if (shouldEmitNetworkOptions(props)) {
+    lines.push('    .networkOptions(');
+    lines.push('        NetworkOptions.builder()');
+    if (customBaseUrl) {
+      lines.push(
+        `            .setCustomBaseURL(${JSON.stringify(customBaseUrl)})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('            .setPinningDisabledInDevelopment(true)');
+    }
+    lines.push('            .build()');
+    lines.push('    )');
+  }
+
   if (useEmptyIdentifyRequest) {
     lines.push('    .identify(IdentityApiRequest.withEmptyUser().build())');
   }
@@ -143,19 +182,35 @@ function generateJavaInitCode(props: MParticlePluginProps): string {
 /**
  * Generate mParticle import statements for Kotlin
  */
-function getKotlinImports(): string {
-  return `import com.mparticle.MParticle
-import com.mparticle.MParticleOptions
-import com.mparticle.identity.IdentityApiRequest`;
+function getKotlinImports(props: MParticlePluginProps): string {
+  const imports = [
+    'import com.mparticle.MParticle',
+    'import com.mparticle.MParticleOptions',
+    'import com.mparticle.identity.IdentityApiRequest',
+  ];
+
+  if (shouldEmitNetworkOptions(props)) {
+    imports.push('import com.mparticle.networking.NetworkOptions');
+  }
+
+  return imports.join('\n');
 }
 
 /**
  * Generate mParticle import statements for Java
  */
-function getJavaImports(): string {
-  return `import com.mparticle.MParticle;
-import com.mparticle.MParticleOptions;
-import com.mparticle.identity.IdentityApiRequest;`;
+function getJavaImports(props: MParticlePluginProps): string {
+  const imports = [
+    'import com.mparticle.MParticle;',
+    'import com.mparticle.MParticleOptions;',
+    'import com.mparticle.identity.IdentityApiRequest;',
+  ];
+
+  if (shouldEmitNetworkOptions(props)) {
+    imports.push('import com.mparticle.networking.NetworkOptions;');
+  }
+
+  return imports.join('\n');
 }
 
 /**
@@ -210,7 +265,7 @@ function addMParticleToKotlinMainApplication(
   // Add import statements using mergeContents
   const withImports = mergeContents({
     src: contents,
-    newSrc: getKotlinImports(),
+    newSrc: getKotlinImports(props),
     anchor: /^package .+$/m,
     offset: 1, // Add after package declaration
     tag: `${MPARTICLE_TAG}-import`,
@@ -261,7 +316,7 @@ function addMParticleToJavaMainApplication(
   // Add import statements using mergeContents
   const withImports = mergeContents({
     src: contents,
-    newSrc: getJavaImports(),
+    newSrc: getJavaImports(props),
     anchor: /^package .+;$/m,
     offset: 1, // Add after package declaration
     tag: `${MPARTICLE_TAG}-import`,
@@ -325,9 +380,10 @@ const withMParticleAppBuildGradle: ConfigPlugin<MParticlePluginProps> = (
     }
 
     // Generate kit dependency lines
-    // Use + for version to auto-match core SDK version
+    // Bounded range matches the core SDK range in android/build.gradle so the
+    // kit and core stay paired on a supported 6.x line.
     const kitDependencies = props.androidKits
-      .map(kit => `    implementation "com.mparticle:${kit}:+"`)
+      .map(kit => `    implementation "com.mparticle:${kit}:[6.0.0, 7.0)"`)
       .join('\n');
 
     // Use mergeContents for idempotent injection

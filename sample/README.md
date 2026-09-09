@@ -64,6 +64,16 @@ cd sample/ios
 pod install
 ```
 
+The sample Podfile pins `mParticle-Rokt` `>= 9.3.1, < 10.0`. Kit `9.3.1` is the first release requiring `Rokt-Widget` `~> 5.3` (`9.3.0` still allows `~> 5.2`), so Rokt iOS resolves transitively and the Podfile does not declare it.
+
+There is no longer a `DcuiSchema` pin. `Rokt-Widget` `5.3` resolves `RoktUXHelper` `1.0.0`, which requires an exact `DcuiSchema` version, so the schema cannot float out of sync with the `RoktUXHelper` sources. The previous `2.7.0` pin guarded against that float (schema `2.8.x` added `image` styling APIs that older `RoktUXHelper` Swift did not pass through, breaking `StyleTransformer` / `BaseStyles`) and now conflicts with the exact version `RoktUXHelper` requires.
+
+The sample Android app pins both `com.mparticle:android-core` and
+`com.mparticle:android-rokt-kit` to `[6.0.0, 7.0)` so the Rokt session APIs are
+available. Apps that include `android-rokt-kit` `6.0.0` must build with
+`compileSdk` 35+ and Android Gradle Plugin 8.6+; the sample uses `compileSdk` 36. Payment-extension installation and native URL callback forwarding are not
+configured in this release.
+
 ## Running the Sample App
 
 ### iOS
@@ -89,10 +99,10 @@ When making changes to the mParticle React Native SDK:
 1. Make your changes to the SDK source code
 2. Rebuild and reinstall the package:
 
-    ```bash
-    # From root directory
-    yarn dev:link
-    ```
+   ```bash
+   # From root directory
+   yarn dev:link
+   ```
 
 3. Restart the sample app to see your changes
 
@@ -136,6 +146,49 @@ From the sample directory:
 - `yarn android` - Run on Android emulator
 - `yarn lint` - Run ESLint
 - `yarn test` - Run Jest tests
+
+## iOS native unit tests (SDK bridge)
+
+The sample Xcode project includes **`RCTConvertCommerceMappingTests`**, which asserts that JavaScript `ProductActionType` / `PromotionActionType` integers map to the correct Apple SDK enums, and that **`+[RCTConvert MPCommerceEvent:]`** builds `MPCommerceEvent` / `MPPromotionContainer` with those mappings (the object graph used before `-[MParticle logCommerceEvent:]`) — see comments in that file for scope vs. the TurboModule codegen path.
+
+From `sample/ios` after `pod install`:
+
+```bash
+xcodebuild -workspace MParticleSample.xcworkspace \
+  -scheme MParticleSample \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  test -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests
+```
+
+Pull requests run these tests in CI (see `.github/workflows/pull-request.yml`).
+
+## Deferred-init edge case (Android)
+
+The sample includes a small, opt-in example that reproduces a late-initialisation race on
+Android: starting mParticle from a native module at first-frame paint (a partner pattern used
+to cut startup cost) instead of in `MainApplication.onCreate()`. Because the Rokt SDK caches
+the current `Activity` only on `onActivityResumed` (≤ v5), deferring init past the host
+Activity's resume leaves overlay/bottom-sheet placements unable to display until the next
+resume. iOS is unaffected. Fixed upstream in the Rokt Android SDK (`sdk-android-source`
+[#1062](https://github.com/ROKT/sdk-android-source/pull/1062),
+[#1063](https://github.com/ROKT/sdk-android-source/pull/1063)).
+
+It is **disabled by default**. To reproduce:
+
+1. Set `DEFERRED_INIT_EXAMPLE = true` in
+   `android/app/src/main/java/com/mparticlesample/DeferredInitModule.kt`.
+2. Run the app and watch `adb logcat -s DeferredInitRepro`.
+
+The `EAGER` tracker (registered at process start) captures `MainActivity`; the `DEFERRED`
+tracker (registered when init runs at first frame) stays `null` until you background and
+reopen the app — demonstrating the race. See `DeferredInitModule.kt` for the full write-up.
+
+> **Note:** When the flag is enabled, mParticle is not started until first-frame paint, so any
+> mParticle JS calls made earlier (e.g. `Identity.login` in the component constructor,
+> `getSession` in `componentDidMount`) run before the SDK is started and are no-ops until then.
+> This is itself an inherent hazard of deferred initialisation and is expected in this example;
+> gate such calls behind init completion in a real deferred-init integration. With the flag off
+> (default) mParticle starts eagerly in `onCreate()`, so these calls behave normally.
 
 ## Additional Resources
 
