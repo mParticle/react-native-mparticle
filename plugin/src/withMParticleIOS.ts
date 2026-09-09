@@ -5,6 +5,7 @@ import {
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
 import { MParticlePluginProps } from './withMParticle';
+import { getCustomBaseUrl } from './customBaseUrl';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -134,6 +135,23 @@ function generateSwiftInitCode(props: MParticlePluginProps): string {
     lines.push('mParticleOptions.identifyRequest = identifyRequest');
   }
 
+  const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
+  if (customBaseUrl || pinningDisabled) {
+    lines.push('let networkOptions = MPNetworkOptions()');
+    if (customBaseUrl) {
+      lines.push(
+        `networkOptions.customBaseURL = URL(string: ${JSON.stringify(
+          customBaseUrl
+        )})`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('networkOptions.pinningDisabled = true');
+    }
+    lines.push('mParticleOptions.networkOptions = networkOptions');
+  }
+
   lines.push('MParticle.sharedInstance().start(with: mParticleOptions)');
 
   return lines.join('\n    ');
@@ -181,6 +199,25 @@ function generateObjcInitCode(props: MParticlePluginProps): string {
       'MPIdentityApiRequest *identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];'
     );
     lines.push('mParticleOptions.identifyRequest = identifyRequest;');
+  }
+
+  const customBaseUrl = getCustomBaseUrl(props);
+  const pinningDisabled = props.pinningDisabled === true;
+  if (customBaseUrl || pinningDisabled) {
+    lines.push(
+      'MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];'
+    );
+    if (customBaseUrl) {
+      lines.push(
+        `networkOptions.customBaseURL = [NSURL URLWithString:@${JSON.stringify(
+          customBaseUrl
+        )}];`
+      );
+    }
+    if (pinningDisabled) {
+      lines.push('networkOptions.pinningDisabled = YES;');
+    }
+    lines.push('mParticleOptions.networkOptions = networkOptions;');
   }
 
   lines.push('[[MParticle sharedInstance] startWithOptions:mParticleOptions];');
@@ -349,6 +386,11 @@ const KIT_TRANSITIVE_DEPENDENCIES: Record<string, string[]> = {
   // "mParticle-Braze": [],
 };
 
+const KIT_VERSION_REQUIREMENTS: Record<string, string> = {
+  // 9.3.1 is the first kit declaring Rokt-Widget ~> 5.3; 9.3.0 still allows ~> 5.2.
+  'mParticle-Rokt': "'>= 9.3.1', '< 10.0'",
+};
+
 /**
  * Get all pods that need dynamic framework linking
  */
@@ -371,6 +413,13 @@ function getDynamicFrameworkPods(iosKits?: string[]): string[] {
   }
 
   return [...new Set(pods)]; // Remove duplicates
+}
+
+function getKitPodDeclaration(kit: string): string {
+  const versionRequirement = KIT_VERSION_REQUIREMENTS[kit];
+  return versionRequirement
+    ? `  pod '${kit}', ${versionRequirement}`
+    : `  pod '${kit}'`;
 }
 
 /**
@@ -425,16 +474,16 @@ end
         }
       }
 
-      // Add kit pods if specified
+      // Add kit pods if specified. Kits are matched individually so a Podfile that
+      // already declares one kit does not get it re-injected alongside a missing one.
       if (props.iosKits && props.iosKits.length > 0) {
-        const kitPods = props.iosKits.map(kit => `  pod '${kit}'`).join('\n');
-
-        // Check if kits are already added
-        const kitsAlreadyAdded = props.iosKits.every(kit =>
-          podfileContent.includes(`pod '${kit}'`)
+        const missingKits = props.iosKits.filter(
+          kit => !podfileContent.includes(`pod '${kit}'`)
         );
 
-        if (!kitsAlreadyAdded) {
+        if (missingKits.length > 0) {
+          const kitPods = missingKits.map(getKitPodDeclaration).join('\n');
+
           // Add kit pods inside the main target block
           // Look for use_react_native! and add after it
           const useReactNativeRegex = /(use_react_native!\([^)]*\))/s;
