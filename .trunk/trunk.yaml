@@ -75,6 +75,10 @@ lint:
     - linters: [markdownlint]
       paths:
         - CHANGELOG.md # Standard changelog format violates MD001, MD024, MD025
+    - linters: [shellcheck, shfmt]
+      paths:
+        - android/gradlew
+        - sample/android/gradlew # Vendored, regenerated verbatim by `gradle wrapper` — not hand-maintained
 actions:
   enabled:
     - trunk-announce
