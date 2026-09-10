@@ -1,18 +1,18 @@
 buildscript {
-    ext.kotlin_version = "2.1.0"
+    ext.kotlin_version = "2.4.10"
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath 'com.android.tools.build:gradle:9.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 plugins {
-    id "org.sonarqube" version "4.4.1.3373"
-    id "org.jlleitschuh.gradle.ktlint" version "13.0.0"
+    id "org.sonarqube" version "7.5.0.8588"
+    id "org.jlleitschuh.gradle.ktlint" version "14.2.0"
 }
 
 sonarqube {
@@ -43,7 +43,14 @@ def supportsNamespace() {
 
 apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+// AGP 9 ships built-in Kotlin support and registers the `kotlin` extension
+// itself. Applying the Kotlin plugin on top of it fails configuration with
+// "Cannot add extension with name 'kotlin'". Only apply it when nothing has
+// registered that extension yet.
+if (project.extensions.findByName('kotlin') == null) {
+    apply plugin: 'kotlin-android'
+}
+
 if (isNewArchitectureEnabled()) {
     apply plugin: 'com.facebook.react'
 }
@@ -60,11 +67,11 @@ android {
             }
         }
     }
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 36
         versionCode 2
         versionName "2.0.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
@@ -73,8 +80,10 @@ android {
         main {
             if (isNewArchitectureEnabled()) {
                 java.srcDirs += ['src/newarch/java']
+                kotlin.srcDirs += ['src/newarch/java']
             } else {
                 java.srcDirs += ['src/oldarch/java']
+                kotlin.srcDirs += ['src/oldarch/java']
             }
         }
     }
@@ -84,9 +93,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
     buildTypes {
         release {
             minifyEnabled false
@@ -94,8 +100,15 @@ android {
     }
     adbOptions {
        timeOutInMs 10 * 60 * 1000
-       installOptions "-d","-t"
    }
+}
+
+// Kotlin Gradle Plugin 2.x removed the `android.kotlinOptions` DSL in favor of
+// this top-level block.
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
 }
 
 repositories {
@@ -118,9 +131,8 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    // Bounded upper bound prevents resolving to 6.0.0-rc.1+ on Maven Central.
-    // 6.x removed deprecated symbols (e.g. UserAttributeListener); see #710.
-    api 'com.mparticle:android-core:[5.79.2, 6.0)'
+    api 'com.mparticle:android-core:[6.0.4, 7.0)'
+    compileOnly 'com.mparticle:android-rokt-kit:[6.0.4, 7.0)'
 
     //
     // And, if you want to include kits, you can do so as follows:
@@ -129,13 +141,14 @@ dependencies {
     //
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.11.0"
 
-    testImplementation 'org.mockito:mockito-core:5.8.0'
-    androidTestImplementation 'org.mockito:mockito-android:5.8.0'
-    testImplementation 'androidx.annotation:annotation:1.7.1'
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    androidTestImplementation 'org.mockito:mockito-android:5.23.0'
+    testImplementation 'androidx.annotation:annotation:1.9.1'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation files('libs/java-json.jar')
 
-    testImplementation 'com.mparticle:android-core:5.79.2'
+    testImplementation 'com.mparticle:android-core:6.0.4'
+    testCompileOnly 'com.mparticle:android-rokt-kit:6.0.4'
     testImplementation("com.facebook.react:react-android:+")
 }
