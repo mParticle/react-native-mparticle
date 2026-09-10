@@ -134,7 +134,7 @@ implementation "com.mparticle:android-rokt-kit:[6.0.0, 7.0)"
 ```
 
 `android-rokt-kit` requires `compileSdk` 35+ and Android Gradle Plugin 8.6+.
-This wrapper itself now compiles against `compileSdk` 36, so that's the
+This wrapper itself now compiles against `compileSdk` 37, so that's the
 effective floor for consuming apps regardless of the kit. With the Expo
 config plugin, list the kit in `androidKits` instead. This wrapper
 declares `android-core` as `[6.0.1, 7.0)`, so core resolves `6.0.1` or newer

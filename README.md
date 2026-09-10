@@ -339,9 +339,9 @@ For Android Rokt integrations, including `MParticle.Rokt.*` APIs and
 `RoktLayoutView`, `android-core` and `android-rokt-kit` `6.0.1` or newer are
 required — that is the range this library compiles against. Apps that include
 `android-rokt-kit` must build with `compileSdk` 35+ and Android Gradle Plugin
-8.6+. Since this library itself now compiles against `compileSdk` 36, that
+8.6+. Since this library itself now compiles against `compileSdk` 37, that
 higher floor applies regardless of whether `android-rokt-kit` is included —
-consuming apps need `compileSdk` 36+. Android CNAME setup through
+consuming apps need `compileSdk` 37+. Android CNAME setup through
 `customBaseUrl` also requires `android-core` `6.0.1` or newer.
 
 See [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
