@@ -32,6 +32,8 @@ jobs:
           cache-dependency-path: yarn.lock
       - name: Install node modules
         run: yarn install --frozen-lockfile
+      - name: Ensure jq is available
+        run: command -v jq >/dev/null || (sudo apt-get update && sudo apt-get install -y jq)
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1
 
