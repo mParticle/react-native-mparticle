@@ -1,11 +1,11 @@
 buildscript {
-    ext.kotlin_version = "2.1.0"
+    ext.kotlin_version = "2.4.10"
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath 'com.android.tools.build:gradle:9.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -43,7 +43,14 @@ def supportsNamespace() {
 
 apply plugin: 'org.jlleitschuh.gradle.ktlint'
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+// AGP 9 ships built-in Kotlin support and registers the `kotlin` extension
+// itself. Applying the Kotlin plugin on top of it fails configuration with
+// "Cannot add extension with name 'kotlin'". Only apply it when nothing has
+// registered that extension yet.
+if (project.extensions.findByName('kotlin') == null) {
+    apply plugin: 'kotlin-android'
+}
+
 if (isNewArchitectureEnabled()) {
     apply plugin: 'com.facebook.react'
 }
@@ -60,11 +67,11 @@ android {
             }
         }
     }
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 36
         versionCode 2
         versionName "2.0.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
@@ -73,8 +80,10 @@ android {
         main {
             if (isNewArchitectureEnabled()) {
                 java.srcDirs += ['src/newarch/java']
+                kotlin.srcDirs += ['src/newarch/java']
             } else {
                 java.srcDirs += ['src/oldarch/java']
+                kotlin.srcDirs += ['src/oldarch/java']
             }
         }
     }
@@ -84,9 +93,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
     buildTypes {
         release {
             minifyEnabled false
@@ -94,8 +100,15 @@ android {
     }
     adbOptions {
        timeOutInMs 10 * 60 * 1000
-       installOptions "-d","-t"
    }
+}
+
+// Kotlin Gradle Plugin 2.x removed the `android.kotlinOptions` DSL in favor of
+// this top-level block.
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
 }
 
 repositories {
@@ -138,15 +151,4 @@ dependencies {
     testImplementation 'com.mparticle:android-core:6.0.4'
     testCompileOnly 'com.mparticle:android-rokt-kit:6.0.4'
     testImplementation("com.facebook.react:react-android:+")
-}
-
-configurations.all {
-    resolutionStrategy {
-        // mockito 5.23.0 pulls byte-buddy 1.17.7, which ships a META-INF/versions/24
-        // multi-release overlay that this AGP's Jetifier can't parse ("Unsupported
-        // class file major version 68"). 1.15.x is the last line without that overlay
-        // and is still API-compatible with mockito's usage.
-        force 'net.bytebuddy:byte-buddy:1.15.11'
-        force 'net.bytebuddy:byte-buddy-agent:1.15.11'
-    }
 }
