@@ -1,6 +1,5 @@
 require 'json'
 
-new_arch_enabled = ENV['RCT_NEW_ARCH_ENABLED'] == '1'
 ios_platform = '15.6'
 
 package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
