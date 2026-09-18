@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.5] - 2026-09-18
+
+### Fixed
+
+- Restore legacy-architecture build and collapse duplicate RCTConvert categories ([#396](https://github.com/mParticle/react-native-mparticle/pull/396))
+- Attribute Handling of non-strings and colorMode for roktConfig ([#354](https://github.com/mParticle/react-native-mparticle/pull/354))
+- Register RoktEventManager as a TurboModule so events survive bridgeless ([#376](https://github.com/mParticle/react-native-mparticle/pull/376))
+
+### Changed
+
+- Restore secure tokenless npm publishing ([#400](https://github.com/mParticle/react-native-mparticle/pull/400))
+- Release 3.3.4 ([#399](https://github.com/mParticle/react-native-mparticle/pull/399))
+- Remove repo-level PR template ([#395](https://github.com/mParticle/react-native-mparticle/pull/395))
+- Bump org.sonarqube from 7.4.0.8496 to 7.5.0.8588 in /android ([#389](https://github.com/mParticle/react-native-mparticle/pull/389))
+- Bump com.mparticle:android-core from 6.0.2 to 6.0.4 in /android ([#391](https://github.com/mParticle/react-native-mparticle/pull/391))
+- Bump com.mparticle:android-rokt-kit from 6.0.2 to 6.0.4 in /android ([#392](https://github.com/mParticle/react-native-mparticle/pull/392))
+- Bump joi from 17.13.3 to 17.13.7 in /sample ([#386](https://github.com/mParticle/react-native-mparticle/pull/386))
+- Bump org.mockito:mockito-android from 5.8.0 to 5.23.0 in /android ([#317](https://github.com/mParticle/react-native-mparticle/pull/317))
+- Bump js-yaml from 4.1.0 to 4.1.1 ([#267](https://github.com/mParticle/react-native-mparticle/pull/267))
+- Bump baseline-browser-mapping from 2.9.19 to 2.11.21 ([#385](https://github.com/mParticle/react-native-mparticle/pull/385))
+- Bump launch-editor from 2.13.1 to 2.14.1 in /sample ([#340](https://github.com/mParticle/react-native-mparticle/pull/340))
+- Bump org.jlleitschuh.gradle.ktlint from 13.0.0 to 14.2.0 in /android ([#320](https://github.com/mParticle/react-native-mparticle/pull/320))
+- Bump androidx.annotation:annotation from 1.7.1 to 1.9.1 in /android ([#235](https://github.com/mParticle/react-native-mparticle/pull/235))
+- Bump flatted from 3.3.3 to 3.4.2 ([#297](https://github.com/mParticle/react-native-mparticle/pull/297))
+- Bump flatted from 3.3.4 to 3.4.2 in /sample ([#298](https://github.com/mParticle/react-native-mparticle/pull/298))
+- Bump picomatch from 2.3.1 to 2.3.2 ([#300](https://github.com/mParticle/react-native-mparticle/pull/300))
+- Bump yaml from 2.8.2 to 2.8.3 in /sample ([#301](https://github.com/mParticle/react-native-mparticle/pull/301))
+- Bump fast-xml-parser from 4.5.4 to 4.5.6 in /sample ([#303](https://github.com/mParticle/react-native-mparticle/pull/303))
+- Bump lodash from 4.17.23 to 4.18.1 in /sample ([#304](https://github.com/mParticle/react-native-mparticle/pull/304))
+- Bump lodash from 4.17.23 to 4.18.1 ([#305](https://github.com/mParticle/react-native-mparticle/pull/305))
+- Bump @babel/plugin-transform-modules-systemjs from 7.29.0 to 7.29.4 ([#322](https://github.com/mParticle/react-native-mparticle/pull/322))
+- Bump @babel/plugin-transform-modules-systemjs from 7.29.0 to 7.29.4 in /sample ([#326](https://github.com/mParticle/react-native-mparticle/pull/326))
+- Bump form-data from 4.0.5 to 4.0.6 ([#342](https://github.com/mParticle/react-native-mparticle/pull/342))
+- Bump @babel/core from 7.29.0 to 7.29.6 in /sample ([#346](https://github.com/mParticle/react-native-mparticle/pull/346))
+- Bump ws from 8.19.0 to 8.21.1 ([#360](https://github.com/mParticle/react-native-mparticle/pull/360))
+- Bump shell-quote from 1.8.3 to 1.10.0 in /sample ([#361](https://github.com/mParticle/react-native-mparticle/pull/361))
+- Bump org.sonarqube from 4.4.1.3373 to 7.4.0.8496 in /android ([#371](https://github.com/mParticle/react-native-mparticle/pull/371))
+- Bump com.mparticle:android-core from 6.0.1 to 6.0.2 in /android ([#374](https://github.com/mParticle/react-native-mparticle/pull/374))
+- Bump browserslist from 4.28.1 to 4.28.8 in /sample ([#382](https://github.com/mParticle/react-native-mparticle/pull/382))
+- Correct Fabric dependency provider requirement to React Native 0.77 ([#383](https://github.com/mParticle/react-native-mparticle/pull/383))
+- Bump actions/setup-node from 6 to 7 ([#356](https://github.com/mParticle/react-native-mparticle/pull/356))
+- Bump actions/checkout from 6 to 7 ([#343](https://github.com/mParticle/react-native-mparticle/pull/343))
+- Correct README iOS setup and JS API for 3.x ([#381](https://github.com/mParticle/react-native-mparticle/pull/381))
+- Add 2.x to 3.x migration guide ([#380](https://github.com/mParticle/react-native-mparticle/pull/380))
+
 ## [3.3.4] - 2026-09-18
 
 ### Fixed
@@ -510,7 +555,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.4...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.5...HEAD
+[3.3.5]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.5
 [3.3.4]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.4
 [3.3.3]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...3.3.3
 [3.3.2]: https://github.com/mParticle/react-native-mparticle/compare/3.3.1...3.3.2
