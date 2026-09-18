@@ -38,7 +38,7 @@ lint:
             '
           success_codes: [0, 1]
   enabled:
-    - actionlint@1.6.9
+    - actionlint@1.7.7
     - checkov@3.2.507
     - dotenv-linter@3.3.0
     # ESLint 9+ defaults to flat config only; this repo uses .eslintrc.js (ESLint 8 style).
