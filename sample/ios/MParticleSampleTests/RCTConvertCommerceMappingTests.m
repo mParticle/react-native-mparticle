@@ -409,12 +409,25 @@
  * `-[MParticle logCommerceEvent:]` was removed from the public headers in
  * mParticle-Apple-SDK 9.0 while its implementation stayed behind, which broke the
  * legacy-architecture bridge. `logEvent:` is the replacement and accepts any
- * MPBaseEvent subclass. Fails loudly if a future SDK bump moves that too.
+ * MPBaseEvent subclass.
+ *
+ * The guard is the `logEvent:` call below, not an assertion: that failure mode is
+ * declaration removed / implementation retained, so it is invisible at runtime.
+ * `respondsToSelector:` and `@selector()` both still succeed against a selector
+ * whose declaration is gone -- only compiling a real message send requires a
+ * visible declaration. So if a future SDK drops `logEvent:` from its headers this
+ * test target stops building, which is exactly how the original break surfaced.
+ *
+ * `shouldUploadEvent = NO` keeps the call compiled and executed without uploading
+ * to the sample app's workspace.
  */
 - (void)testCommerceEventsAreLoggableThroughLogEvent
 {
-    XCTAssertTrue([MPCommerceEvent isSubclassOfClass:[MPBaseEvent class]]);
-    XCTAssertTrue([[MParticle sharedInstance] respondsToSelector:@selector(logEvent:)]);
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase];
+    event.shouldUploadEvent = NO;
+
+    XCTAssertTrue([event isKindOfClass:[MPBaseEvent class]]);
+    [[MParticle sharedInstance] logEvent:event];
 }
 
 @end
