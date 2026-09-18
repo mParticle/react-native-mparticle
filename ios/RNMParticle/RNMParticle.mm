@@ -28,12 +28,23 @@
 - (void)addPromotionsFromDicts:(NSArray *)promotionDicts toCommerceEvent:(MPCommerceEvent *)event;
 @end
 
-// Forward declare so New Arch `logCommerceEvent` can use the same JS→native
-// mappings as `RCTConvert (MPCommerceEvent)` (defined later in this file).
-@interface RCTConvert (MPCommerceEvent)
-+ (MPCommerceEventAction)MPCommerceEventAction:(id)json;
-+ (MPPromotionAction)MPPromotionAction:(id)json;
+// The single set of JS -> native converters for this module, implemented at the
+// bottom of this file. Declared here so the New Architecture methods above can
+// reuse the same mappings as the legacy bridge. Parameter types match the
+// implementations exactly -- do not widen them to `id` without changing both.
+@interface RCTConvert (RNMParticle)
++ (MPEvent *)MPEvent:(NSDictionary *)dict;
++ (MPAliasRequest *)MPAliasRequest:(NSDictionary *)dict;
++ (MPCommerceEvent *)MPCommerceEvent:(id)json;
++ (MPPromotionContainer *)MPPromotionContainer:(id)json;
 + (MPPromotion *)MPPromotion:(id)json;
++ (MPTransactionAttributes *)MPTransactionAttributes:(id)json;
++ (MPProduct *)MPProduct:(id)json;
++ (MPPromotionAction)MPPromotionAction:(NSNumber *)json;
++ (MPCommerceEventAction)MPCommerceEventAction:(NSNumber *)json;
++ (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json;
++ (MPGDPRConsent *)MPGDPRConsent:(id)json;
++ (MPCCPAConsent *)MPCCPAConsent:(id)json;
 + (MPConsentState *)MPConsentState:(id)json;
 @end
 
@@ -43,6 +54,16 @@ static BOOL RNMParticleIsEmptyConsentState(MPConsentState *state)
         return YES;
     }
     return state.gdprConsentState.count == 0 && state.ccpaConsentState == nil;
+}
+
+// Returns nil for a missing key or an explicit JS `null`, so callers can assign
+// straight into a nullable NSString * property without storing NSNull.
+static NSString *RNMParticleNullableString(id value)
+{
+    if (value == nil || value == (id)[NSNull null]) {
+        return nil;
+    }
+    return [value isKindOfClass:[NSString class]] ? value : [value description];
 }
 
 static NSDictionary<NSString *, NSString *> *RNMParticleStringAttributes(id attributes)
@@ -766,7 +787,10 @@ RCT_EXPORT_METHOD(logMPEvent:(MPEvent *)event)
 
 RCT_EXPORT_METHOD(logCommerceEvent:(MPCommerceEvent *)commerceEvent)
 {
-    [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
+    // `logCommerceEvent:` was removed from the public MParticle interface in
+    // mParticle-Apple-SDK 9.0. `logEvent:` takes any MPBaseEvent subclass and
+    // dispatches commerce events identically. Matches the New Arch path above.
+    [[MParticle sharedInstance] logEvent:commerceEvent];
 }
 
 RCT_EXPORT_METHOD(addGDPRConsentState:(MPGDPRConsent *)gdprConsentState purpose:(NSString *)purpose)
@@ -1043,8 +1067,24 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
 
 @end
 
-// RCTConvert category methods for mParticle types
-@implementation RCTConvert (MParticle)
+typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
+    MPReactCommerceEventActionAddToCart = 1,
+    MPReactCommerceEventActionRemoveFromCart,
+    MPReactCommerceEventActionCheckout,
+    MPReactCommerceEventActionCheckoutOptions,
+    MPReactCommerceEventActionClick,
+    MPReactCommerceEventActionViewDetail,
+    MPReactCommerceEventActionPurchase,
+    MPReactCommerceEventActionRefund,
+    MPReactCommerceEventActionAddToWishList,
+    MPReactCommerceEventActionRemoveFromWishlist
+};
+
+// JS -> native converters used by both architectures. Keep this as the ONE
+// RCTConvert category in this file: two parallel categories used to implement
+// the same selectors here, and which implementation won was undefined
+// behaviour (see the `RCTConvert (RNMParticle)` interface above).
+@implementation RCTConvert (RNMParticle)
 
 + (MPEvent *)MPEvent:(NSDictionary *)dict {
     MPEvent *event = [[MPEvent alloc] initWithName:dict[@"name"] type:(MPEventType)[dict[@"type"] integerValue]];
@@ -1084,115 +1124,6 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
     return event;
 }
 
-+ (MPCommerceEvent *)MPCommerceEvent:(NSDictionary *)dict {
-    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] init];
-
-    if (dict[@"productActionType"] && dict[@"productActionType"] != [NSNull null]) {
-        commerceEvent.action = [RCTConvert MPCommerceEventAction:dict[@"productActionType"]];
-    }
-
-    if (dict[@"products"] && dict[@"products"] != [NSNull null]) {
-        NSArray *productDicts = dict[@"products"];
-        NSMutableArray *products = [[NSMutableArray alloc] init];
-        for (NSDictionary *productDict in productDicts) {
-            MPProduct *product = [[MPProduct alloc] initWithName:productDict[@"name"]
-                                                             sku:productDict[@"sku"]
-                                                        quantity:productDict[@"quantity"]
-                                                           price:productDict[@"price"]];
-            NSDictionary<NSString *, NSString *> *customAttributes =
-                RNMParticleStringAttributes(productDict[@"customAttributes"]);
-            for (NSString *key in customAttributes) {
-                [product setObject:customAttributes[key] forKeyedSubscript:key];
-            }
-            [products addObject:product];
-        }
-        [commerceEvent addProducts:products];
-    }
-
-    if (dict[@"transactionAttributes"] && dict[@"transactionAttributes"] != [NSNull null]) {
-        NSDictionary *transactionDict = dict[@"transactionAttributes"];
-        MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
-        if (transactionDict[@"transactionId"]) {
-            transactionAttributes.transactionId = transactionDict[@"transactionId"];
-        }
-        if (transactionDict[@"revenue"]) {
-            transactionAttributes.revenue = transactionDict[@"revenue"];
-        }
-        if (transactionDict[@"tax"]) {
-            transactionAttributes.tax = transactionDict[@"tax"];
-        }
-        if (transactionDict[@"shipping"]) {
-            transactionAttributes.shipping = transactionDict[@"shipping"];
-        }
-        if (transactionDict[@"couponCode"]) {
-            transactionAttributes.couponCode = transactionDict[@"couponCode"];
-        }
-        if (transactionDict[@"affiliation"]) {
-            transactionAttributes.affiliation = transactionDict[@"affiliation"];
-        }
-        commerceEvent.transactionAttributes = transactionAttributes;
-    }
-
-    if (dict[@"customAttributes"] && dict[@"customAttributes"] != [NSNull null]) {
-        commerceEvent.customAttributes =
-            RNMParticleEventAttributes(dict[@"customAttributes"]);
-    }
-
-    if (dict[@"shouldUploadEvent"] && dict[@"shouldUploadEvent"] != [NSNull null]) {
-        commerceEvent.shouldUploadEvent = [dict[@"shouldUploadEvent"] boolValue];
-    }
-
-    return commerceEvent;
-}
-
-+ (MPGDPRConsent *)MPGDPRConsent:(NSDictionary *)dict {
-    BOOL consented = [dict[@"consented"] boolValue];
-    MPGDPRConsent *consent = [[MPGDPRConsent alloc] init];
-    consent.consented = consented;
-
-    if (dict[@"document"] && dict[@"document"] != [NSNull null]) {
-        consent.document = dict[@"document"];
-    }
-
-    if (dict[@"timestamp"] && dict[@"timestamp"] != [NSNull null]) {
-        consent.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000.0];
-    }
-
-    if (dict[@"location"] && dict[@"location"] != [NSNull null]) {
-        consent.location = dict[@"location"];
-    }
-
-    if (dict[@"hardwareId"] && dict[@"hardwareId"] != [NSNull null]) {
-        consent.hardwareId = dict[@"hardwareId"];
-    }
-
-    return consent;
-}
-
-+ (MPCCPAConsent *)MPCCPAConsent:(NSDictionary *)dict {
-    BOOL consented = [dict[@"consented"] boolValue];
-    MPCCPAConsent *consent = [[MPCCPAConsent alloc] init];
-    consent.consented = consented;
-
-    if (dict[@"document"] && dict[@"document"] != [NSNull null]) {
-        consent.document = dict[@"document"];
-    }
-
-    if (dict[@"timestamp"] && dict[@"timestamp"] != [NSNull null]) {
-        consent.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000.0];
-    }
-
-    if (dict[@"location"] && dict[@"location"] != [NSNull null]) {
-        consent.location = dict[@"location"];
-    }
-
-    if (dict[@"hardwareId"] && dict[@"hardwareId"] != [NSNull null]) {
-        consent.hardwareId = dict[@"hardwareId"];
-    }
-
-    return consent;
-}
-
 + (MPAliasRequest *)MPAliasRequest:(NSDictionary *)dict {
     NSString *sourceMpidString = dict[@"sourceMpid"];
     NSString *destinationMpidString = dict[@"destinationMpid"];
@@ -1212,43 +1143,6 @@ RCT_EXPORT_METHOD(getDeviceConsentState:(RCTResponseSenderBlock)callback)
 
     return [MPAliasRequest requestWithSourceMPID:sourceMpid destinationMPID:destinationMpid startTime:startTime endTime:endTime];
 }
-
-@end
-
-typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
-    MPReactCommerceEventActionAddToCart = 1,
-    MPReactCommerceEventActionRemoveFromCart,
-    MPReactCommerceEventActionCheckout,
-    MPReactCommerceEventActionCheckoutOptions,
-    MPReactCommerceEventActionClick,
-    MPReactCommerceEventActionViewDetail,
-    MPReactCommerceEventActionPurchase,
-    MPReactCommerceEventActionRefund,
-    MPReactCommerceEventActionAddToWishList,
-    MPReactCommerceEventActionRemoveFromWishlist
-};
-
-@interface RCTConvert (MPCommerceEvent)
-
-+ (MPCommerceEvent *)MPCommerceEvent:(id)json;
-+ (MPPromotionContainer *)MPPromotionContainer:(id)json;
-+ (MPPromotion *)MPPromotion:(id)json;
-+ (MPTransactionAttributes *)MPTransactionAttributes:(id)json;
-+ (MPProduct *)MPProduct:(id)json;
-+ (MPCommerceEventAction)MPCommerceEventAction:(id)json;
-+ (MPPromotionAction)MPPromotionAction:(id)json;
-+ (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json;
-+ (MPIdentityApiResult *)MPIdentityApiResult:(id)json;
-+ (MPAliasRequest *)MPAliasRequest:(id)json;
-+ (MParticleUser *)MParticleUser:(id)json;
-+ (MPEvent *)MPEvent:(id)json;
-+ (MPGDPRConsent *)MPGDPRConsent:(id)json;
-+ (MPCCPAConsent *)MPCCPAConsent:(id)json;
-+ (MPConsentState *)MPConsentState:(id)json;
-
-@end
-
-@implementation RCTConvert (MPCommerceEvent)
 
 + (MPCommerceEvent *)MPCommerceEvent:(id)json {
     BOOL isProductAction = json[@"productActionType"] != nil;
@@ -1270,11 +1164,13 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
         commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
     }
 
-    commerceEvent.checkoutOptions = json[@"checkoutOptions"];
-    commerceEvent.currency = json[@"currency"];
-    commerceEvent.productListName = json[@"productActionListName"];
-    commerceEvent.productListSource = json[@"productActionListSource"];
-    commerceEvent.screenName = json[@"screenName"];
+    // Explicit JS `null` is treated as absent, never assigned into the
+    // NSString * properties. Matches the Android bridge's `?.let` handling.
+    commerceEvent.checkoutOptions = RNMParticleNullableString(json[@"checkoutOptions"]);
+    commerceEvent.currency = RNMParticleNullableString(json[@"currency"]);
+    commerceEvent.productListName = RNMParticleNullableString(json[@"productActionListName"]);
+    commerceEvent.productListSource = RNMParticleNullableString(json[@"productActionListSource"]);
+    commerceEvent.screenName = RNMParticleNullableString(json[@"screenName"]);
     commerceEvent.transactionAttributes = [RCTConvert MPTransactionAttributes:json[@"transactionAttributes"]];
     commerceEvent.checkoutStep = [json[@"checkoutStep"] intValue];
     commerceEvent.nonInteractive = [json[@"nonInteractive"] boolValue];
@@ -1425,7 +1321,6 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     return action;
 }
 
-
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(id)json {
     NSDictionary *dict = json;
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
@@ -1449,77 +1344,16 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     return request;
 }
 
-
-
-+ (MPIdentityApiResult *)MPIdentityApiResult:(id)json {
-    MPIdentityApiResult *result = [[MPIdentityApiResult alloc] init];
-    id obj = json[@"user"];
-    result.user = [RCTConvert MParticleUser:obj];
-
-    return result;
-}
-
-+ (MPAliasRequest *)MPAliasRequest:(id)json {
-    NSString *destinationMpidString = json[@"destinationMpid"];
-    NSString *sourceMpidString = json[@"sourceMpid"];
-    NSString *startTime = json[@"startTime"];
-    NSString *endTime = json[@"endTime"];
-    NSNumber *destinationMpid = [NSNumber numberWithLong:destinationMpidString.longLongValue];
-    NSNumber *sourceMpid = [NSNumber numberWithLong:sourceMpidString.longLongValue];
-    NSDate *startDate = nil;
-    NSDate *endDate = nil;
-
-    if (startTime != nil && startTime != [NSNull null]) {
-        startDate = [NSDate dateWithTimeIntervalSince1970:startTime.longLongValue];
-    }
-
-    if (endTime != nil && endTime != [NSNull null]) {
-        endDate = [NSDate dateWithTimeIntervalSince1970:endTime.longLongValue];
-    }
-
-    return [MPAliasRequest requestWithSourceMPID:sourceMpid destinationMPID:destinationMpid startTime:startDate endTime:endDate];
-}
-
-+ (MParticleUser *)MParticleUser:(id)json {
-    MParticleUser *user = [[MParticleUser alloc] init];
-    user.userId = json[@"userId"];
-
-    return user;
-}
-
-+ (MPEvent *)MPEvent:(id)json {
-    MPEvent *event = [[MPEvent alloc] init];
-
-    event.category = json[@"category"];
-    event.duration = json[@"duration"];
-    event.endTime = json[@"endTime"];
-    event.customAttributes = RNMParticleEventAttributes(json[@"info"]);
-    event.name = json[@"name"];
-    event.startTime = json[@"startTime"];
-    [event setType:(MPEventType)[json[@"type"] intValue]];
-    if (json[@"shouldUploadEvent"] != nil) {
-        event.shouldUploadEvent = [json[@"shouldUploadEvent"] boolValue];
-    }
-
-    NSDictionary *jsonFlags = json[@"customFlags"];
-    for (NSString *key in jsonFlags) {
-        NSString *value = jsonFlags[key];
-        [event addCustomFlag:value withKey:key];
-    }
-
-    return event;
-}
-
 + (MPGDPRConsent *)MPGDPRConsent:(id)json {
     MPGDPRConsent *mpConsent = [[MPGDPRConsent alloc] init];
 
     mpConsent.consented = [RCTConvert BOOL:json[@"consented"]];
-    mpConsent.document = json[@"document"];
+    mpConsent.document = RNMParticleNullableString(json[@"document"]);
     if (json[@"timestamp"] && json[@"timestamp"] != [NSNull null]) {
         mpConsent.timestamp = [NSDate dateWithTimeIntervalSince1970:[json[@"timestamp"] doubleValue] / 1000.0];
     }
-    mpConsent.location = json[@"location"];
-    mpConsent.hardwareId = json[@"hardwareId"];
+    mpConsent.location = RNMParticleNullableString(json[@"location"]);
+    mpConsent.hardwareId = RNMParticleNullableString(json[@"hardwareId"]);
 
     return mpConsent;
 }
@@ -1528,12 +1362,12 @@ typedef NS_ENUM(NSUInteger, MPReactCommerceEventAction) {
     MPCCPAConsent *mpConsent = [[MPCCPAConsent alloc] init];
 
     mpConsent.consented = [RCTConvert BOOL:json[@"consented"]];
-    mpConsent.document = json[@"document"];
+    mpConsent.document = RNMParticleNullableString(json[@"document"]);
     if (json[@"timestamp"] && json[@"timestamp"] != [NSNull null]) {
         mpConsent.timestamp = [NSDate dateWithTimeIntervalSince1970:[json[@"timestamp"] doubleValue] / 1000.0];
     }
-    mpConsent.location = json[@"location"];
-    mpConsent.hardwareId = json[@"hardwareId"];
+    mpConsent.location = RNMParticleNullableString(json[@"location"]);
+    mpConsent.hardwareId = RNMParticleNullableString(json[@"hardwareId"]);
 
     return mpConsent;
 }
