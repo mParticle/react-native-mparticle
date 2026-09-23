@@ -26,7 +26,10 @@ using namespace facebook::react;
 {
   if (self = [super initWithFrame:frame]) {
     _roktEmbeddedView = [[RoktEmbeddedView alloc] initWithFrame:self.bounds];
-    _roktEmbeddedView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    // Width only: the Rokt SDK owns the height (updateEmbeddedSize sets it before JS
+    // resizes this view), so flexible height would re-apply that delta once React Native
+    // caught up, doubling the embedded view and centring the layout below blank space.
+    _roktEmbeddedView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self addSubview:_roktEmbeddedView];
     NSLog(@"[ROKT] iOS Fabric: RoktFabricWrapperView initialized");
   }
