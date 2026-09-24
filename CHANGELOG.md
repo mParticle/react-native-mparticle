@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.6] - 2026-09-24
+
+### Fixed
+
+- Keep embedded Rokt view at SDK-reported height on New Architecture ([#408](https://github.com/mParticle/react-native-mparticle/pull/408))
+
+### Changed
+
+- Bump zizmorcore/zizmor-action from 0.6.3 to 0.6.4 ([#405](https://github.com/mParticle/react-native-mparticle/pull/405))
+- Bump com.mparticle:android-core from 6.0.4 to 6.1.2 in /android ([#406](https://github.com/mParticle/react-native-mparticle/pull/406))
+- Add zizmor security scan ([#402](https://github.com/mParticle/react-native-mparticle/pull/402))
+
 ## [3.3.5] - 2026-09-18
 
 ### Fixed
@@ -555,7 +567,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.5...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.6...HEAD
+[3.3.6]: https://github.com/mParticle/react-native-mparticle/compare/3.3.5...3.3.6
 [3.3.5]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.5
 [3.3.4]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.4
 [3.3.3]: https://github.com/mParticle/react-native-mparticle/compare/3.3.2...3.3.3
