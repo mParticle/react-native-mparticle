@@ -17,6 +17,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		B7C10E912E50AA1100000002 /* RCTConvertCommerceMappingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */; };
 		B7C10E932E50AA1100000004 /* RNMPRoktPlaceholderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */; };
+		B7C10E952E50AA1100000006 /* RoktNativeLayoutComponentViewSizingTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		89C6BE57DB24E9ADA2F236DE /* Pods-MParticleSample-MParticleSampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MParticleSample-MParticleSampleTests.release.xcconfig"; path = "Target Support Files/Pods-MParticleSample-MParticleSampleTests/Pods-MParticleSample-MParticleSampleTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTConvertCommerceMappingTests.m; sourceTree = "<group>"; };
 		B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNMPRoktPlaceholderTests.m; sourceTree = "<group>"; };
+		B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RoktNativeLayoutComponentViewSizingTests.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -78,6 +80,7 @@
 				00E356F21AD99517003FC87E /* MParticleSampleTests.m */,
 				B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */,
 				B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */,
+				B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */,
 				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
 			path = MParticleSampleTests;
@@ -397,6 +400,7 @@
 				00E356F31AD99517003FC87E /* MParticleSampleTests.m in Sources */,
 				B7C10E912E50AA1100000002 /* RCTConvertCommerceMappingTests.m in Sources */,
 				B7C10E932E50AA1100000004 /* RNMPRoktPlaceholderTests.m in Sources */,
+				B7C10E952E50AA1100000006 /* RoktNativeLayoutComponentViewSizingTests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
