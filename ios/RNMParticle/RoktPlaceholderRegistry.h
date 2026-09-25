@@ -19,6 +19,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// The newest view in a window, else the newest still alive.
 + (nullable UIView *)viewForName:(NSString *)name;
 
+/// Calls `completion` on the main queue once every name in `names` has a registered view, or
+/// after `timeout` seconds, whichever comes first. A new wait with the same `key` replaces the
+/// previous one, which then never completes.
++ (void)waitForNames:(NSArray<NSString *> *)names
+                 key:(NSString *)key
+             timeout:(NSTimeInterval)timeout
+          completion:(dispatch_block_t)completion;
+
+/// Drops every pending wait without completing it.
++ (void)cancelAllWaits;
+
 @end
 
 NS_ASSUME_NONNULL_END

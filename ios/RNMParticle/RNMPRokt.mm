@@ -41,6 +41,9 @@ static os_log_t _rokt_os_log(void) {
   return log;
 }
 
+// How long selectPlacements waits for a named placeholder to mount before proceeding without it.
+static const NSTimeInterval kRoktPlaceholderMountTimeout = 2.0;
+
 static void _rokt_log(NSString *format, ...) {
   va_list args;
   va_start(args, format);
@@ -155,20 +158,32 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     // Replaces [self.bridge.uiManager addUIBlock:], which silently drops the call (no
     // event emitted) when RCT_REMOVE_LEGACY_ARCH is set, React Native 0.84's default.
     RCTExecuteOnMainQueue(^{
-        __strong __typeof__(weakSelf) strongSelf = weakSelf;
-        NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf resolvePlaceholders:placeholders] : [NSMutableDictionary dictionary];
+        dispatch_block_t select = ^{
+            __strong __typeof__(weakSelf) strongSelf = weakSelf;
+            NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf resolvePlaceholders:placeholders] : [NSMutableDictionary dictionary];
 
-        id mpInstance = [MParticle sharedInstance];
-        id roktKit = mpInstance ? [mpInstance rokt] : nil;
-        _rokt_log(@"[mParticle-Rokt] MParticle sharedInstance %@, rokt kit %@", mpInstance ? @"non-nil" : @"nil", roktKit ? @"non-nil" : @"nil");
-        _rokt_log(@"[mParticle-Rokt] calling mParticle Core selectPlacements for: %@", identifer);
-        [[[MParticle sharedInstance] rokt] selectPlacements:identifer
-                                                 attributes:finalAttributes
-                                              embeddedViews:nativePlaceholders
-                                                     config:config
-                                                    onEvent:^(RoktEvent * _Nonnull event) {
-            [weakSelf.eventManager onRoktEvents:event viewName:identifer];
-        }];
+            id mpInstance = [MParticle sharedInstance];
+            id roktKit = mpInstance ? [mpInstance rokt] : nil;
+            _rokt_log(@"[mParticle-Rokt] MParticle sharedInstance %@, rokt kit %@", mpInstance ? @"non-nil" : @"nil", roktKit ? @"non-nil" : @"nil");
+            _rokt_log(@"[mParticle-Rokt] calling mParticle Core selectPlacements for: %@", identifer);
+            [[[MParticle sharedInstance] rokt] selectPlacements:identifer
+                                                     attributes:finalAttributes
+                                                  embeddedViews:nativePlaceholders
+                                                         config:config
+                                                        onEvent:^(RoktEvent * _Nonnull event) {
+                [weakSelf.eventManager onRoktEvents:event viewName:identifer];
+            }];
+        };
+
+        // A placeholder named by the app may not be mounted yet (e.g. selectPlacements from the
+        // same useEffect that rendered it), so wait for it briefly rather than dropping it.
+        NSArray<NSString *> *pending = [RNMPRokt unmountedPlaceholderNames:placeholders];
+        if (pending.count == 0) {
+            select();
+            return;
+        }
+        _rokt_log(@"[mParticle-Rokt] waiting up to %.0fs for placeholder(s) to mount: %@", kRoktPlaceholderMountTimeout, pending);
+        [RoktPlaceholderRegistry waitForNames:pending key:identifer timeout:kRoktPlaceholderMountTimeout completion:select];
     });
 }
 
@@ -245,6 +260,9 @@ RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
 
 - (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
 {
+    RCTExecuteOnMainQueue(^{
+        [RoktPlaceholderRegistry cancelAllWaits];
+    });
     [[[MParticle sharedInstance] rokt] close];
     resolve(nil);
 }
@@ -370,6 +388,21 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
+}
+
+// Names passed for name-based resolution (a non-positive value) that have no mounted view yet.
+// Legacy react tags are never waited for, so they behave exactly as before.
++ (NSArray<NSString *> *)unmountedPlaceholderNames:(NSDictionary *)placeholders
+{
+    NSMutableArray<NSString *> *pending = [NSMutableArray array];
+    for (id key in placeholders) {
+        id value = placeholders[key];
+        BOOL isReactTag = [value isKindOfClass:[NSNumber class]] && [value integerValue] > 0;
+        if (!isReactTag && [key isKindOfClass:[NSString class]] && [RoktPlaceholderRegistry viewForName:key] == nil) {
+            [pending addObject:key];
+        }
+    }
+    return pending;
 }
 
 - (nullable RoktEmbeddedView *)embeddedViewForReactTag:(NSNumber *)reactTag

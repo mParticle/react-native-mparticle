@@ -1,5 +1,7 @@
 package com.mparticle.react.rokt
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import java.lang.ref.WeakReference
 
@@ -22,6 +24,48 @@ internal object RoktPlaceholderRegistry {
     // if a brownfield app ever mounts the same name in two surfaces at once.
     private val views = HashMap<String, MutableList<WeakReference<View>>>()
 
+    /** Posts work to the UI thread; swapped in unit tests, which have no main looper. */
+    internal interface Scheduler {
+        fun post(runnable: Runnable)
+
+        fun postDelayed(
+            runnable: Runnable,
+            delayMillis: Long,
+        )
+
+        fun cancel(runnable: Runnable)
+    }
+
+    internal var scheduler: Scheduler =
+        object : Scheduler {
+            private val handler by lazy { Handler(Looper.getMainLooper()) }
+
+            override fun post(runnable: Runnable) {
+                handler.post(runnable)
+            }
+
+            override fun postDelayed(
+                runnable: Runnable,
+                delayMillis: Long,
+            ) {
+                handler.postDelayed(runnable, delayMillis)
+            }
+
+            override fun cancel(runnable: Runnable) {
+                handler.removeCallbacks(runnable)
+            }
+        }
+
+    private class Wait(
+        val names: Collection<String>,
+        val onReady: () -> Unit,
+    ) {
+        lateinit var timeout: Runnable
+    }
+
+    // Pending selectPlacements calls waiting for their placeholders to mount, keyed by caller.
+    private val waits = HashMap<String, Wait>()
+
     /** Registers [view] under [name], moving it off any name it was previously registered under. */
     fun register(
         view: View,
@@ -30,6 +74,7 @@ internal object RoktPlaceholderRegistry {
         unregister(view)
         if (!name.isNullOrEmpty()) {
             views.getOrPut(name) { mutableListOf() }.add(WeakReference(view))
+            completeSatisfiedWaits()
         }
     }
 
@@ -48,5 +93,47 @@ internal object RoktPlaceholderRegistry {
     fun lookup(name: String): View? {
         val live = views[name]?.mapNotNull { it.get() } ?: return null
         return live.lastOrNull { it.isAttachedToWindow } ?: live.lastOrNull()
+    }
+
+    /**
+     * Runs [onReady] on the UI thread once every name in [names] has a registered view, or after
+     * [timeoutMillis], whichever comes first. A new wait with the same [key] replaces the previous
+     * one, which then never runs.
+     */
+    fun awaitNames(
+        key: String,
+        names: Collection<String>,
+        timeoutMillis: Long,
+        onReady: () -> Unit,
+    ) {
+        waits.remove(key)?.let { scheduler.cancel(it.timeout) }
+        val wait = Wait(names, onReady)
+        wait.timeout = Runnable { if (waits[key] === wait) complete(key) }
+        waits[key] = wait
+        if (allRegistered(names)) {
+            complete(key)
+        } else {
+            scheduler.postDelayed(wait.timeout, timeoutMillis)
+        }
+    }
+
+    /** Drops every pending wait without running it. */
+    fun cancelWaits() {
+        waits.values.forEach { scheduler.cancel(it.timeout) }
+        waits.clear()
+    }
+
+    private fun allRegistered(names: Collection<String>) = names.all { lookup(it) != null }
+
+    private fun completeSatisfiedWaits() {
+        waits.filterValues { allRegistered(it.names) }.keys.forEach { complete(it) }
+    }
+
+    private fun complete(key: String) {
+        val wait = waits.remove(key) ?: return
+        scheduler.cancel(wait.timeout)
+        // Posted: registration happens mid-mount, and the Rokt SDK mutates the placeholder view
+        // hierarchy, so it must not run inside the mount pass.
+        scheduler.post { wait.onReady() }
     }
 }

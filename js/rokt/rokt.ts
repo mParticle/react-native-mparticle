@@ -34,7 +34,7 @@ export type RoktAttributeValue = string | number | boolean;
 /**
  * Embedded placeholders for `selectPlacements`.
  *
- * Preferred: the `placeholderName`s of mounted `RoktLayoutView`s, e.g. `['Location1']`.
+ * Preferred: the `placeholderName`s of `RoktLayoutView`s, e.g. `['Location1']`.
  * Legacy: a map of placeholder name to `findNodeHandle(ref)` react tag. Still supported.
  */
 export type RoktPlaceholders = string[] | Record<string, number | null>;
@@ -68,7 +68,7 @@ export abstract class Rokt {
    *
    * @param {string} identifier - The page identifier for the placement.
    * @param {Record<string, RoktAttributeValue>} attributes - Attributes to be associated with the placement.
-   * @param {RoktPlaceholders} [placeholders] - Optional embedded placeholders: `placeholderName`s of mounted `RoktLayoutView`s (preferred), or a legacy map of name to react tag.
+   * @param {RoktPlaceholders} [placeholders] - Optional embedded placeholders: `placeholderName`s of `RoktLayoutView`s (preferred), or a legacy map of name to react tag. A named view does not need to be mounted yet: the SDK waits up to 2 seconds for it, so this can be called from the same `useEffect` that renders it.
    * @param {IRoktConfig} [roktConfig] - Optional configuration settings for Rokt.
    * @param {Record<string, string>} [fontFilesMap] - Optional mapping of font files.
    * @returns {Promise<void>} A promise that resolves when the placement request is sent.

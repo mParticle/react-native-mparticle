@@ -79,6 +79,7 @@
 
 - (void)tearDown
 {
+    [RoktPlaceholderRegistry cancelAllWaits];
     RCTSetLogFunction(_originalLogFunction);
     _rokt = nil;
     _viewRegistry = nil;
@@ -202,6 +203,66 @@
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 0, @"errors: %@", _loggedErrors);
+}
+
+// selectPlacements may arrive before its placeholders mount (e.g. from the useEffect that
+// rendered them), so it waits on the registry. Completion is dispatched to the main queue so it
+// never runs inside the mount transaction that registered the view.
+
+- (void)testWaitCompletesAfterPlaceholderRegisters
+{
+    XCTestExpectation *done = [self expectationWithDescription:@"wait completed"];
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:10 completion:^{
+        [done fulfill];
+    }];
+
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+
+    [self waitForExpectations:@[ done ] timeout:1];
+    [RoktPlaceholderRegistry unregisterView:view];
+}
+
+- (void)testWaitCompletesOnTimeoutWhenPlaceholderNeverMounts
+{
+    XCTestExpectation *done = [self expectationWithDescription:@"wait timed out"];
+    [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
+        [done fulfill];
+    }];
+
+    [self waitForExpectations:@[ done ] timeout:1];
+}
+
+- (void)testNewerWaitWithSameKeyReplacesOlder
+{
+    XCTestExpectation *older = [self expectationWithDescription:@"older wait"];
+    older.inverted = YES;
+    XCTestExpectation *newer = [self expectationWithDescription:@"newer wait"];
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
+        [older fulfill];
+    }];
+    [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:10 completion:^{
+        [newer fulfill];
+    }];
+
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+
+    [self waitForExpectations:@[ older, newer ] timeout:0.5];
+    [RoktPlaceholderRegistry unregisterView:view];
+}
+
+- (void)testCancelledWaitNeverCompletes
+{
+    XCTestExpectation *done = [self expectationWithDescription:@"cancelled wait"];
+    done.inverted = YES;
+    [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
+        [done fulfill];
+    }];
+
+    [RoktPlaceholderRegistry cancelAllWaits];
+
+    [self waitForExpectations:@[ done ] timeout:0.5];
 }
 
 @end

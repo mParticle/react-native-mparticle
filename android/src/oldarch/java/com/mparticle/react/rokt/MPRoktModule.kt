@@ -40,13 +40,15 @@ class MPRoktModule(
 
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
         uiManager?.addUIBlock { nativeViewHierarchyManager ->
-            MParticle.getInstance()?.rokt?.selectPlacements(
-                identifier = identifier,
-                attributes = impl.readableMapToMapOfStrings(attributes),
-                embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
-                fontTypefaces = null, // TODO
-                config = config,
-            )
+            impl.whenPlaceholdersMounted(identifier, placeholders) {
+                MParticle.getInstance()?.rokt?.selectPlacements(
+                    identifier = identifier,
+                    attributes = impl.readableMapToMapOfStrings(attributes),
+                    embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
+                    fontTypefaces = null, // TODO
+                    config = config,
+                )
+            }
         }
     }
 
@@ -94,7 +96,8 @@ class MPRoktModule(
     ): Map<String, WeakReference<RoktEmbeddedView>> {
         val placeholderMap: MutableMap<String, WeakReference<RoktEmbeddedView>> = HashMap()
 
-        placeholders?.toHashMap()?.forEach { (key, value) ->
+        // A for loop, not forEach: HashMap.forEach(BiConsumer) needs API 24 and minSdk is 21.
+        for ((key, value) in placeholders?.toHashMap().orEmpty()) {
             val view =
                 (value as? Double)?.takeIf { it > 0 }?.let {
                     runCatching { nativeViewHierarchyManager.resolveView(it.toInt()) as? RoktEmbeddedView }.getOrNull()

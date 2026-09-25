@@ -67,9 +67,46 @@ class MPRoktModuleImpl(
     fun close(promise: Promise) {
         // rokt.close() dismisses/detaches Compose overlay views, which must happen on the main thread.
         UiThreadUtil.runOnUiThread {
+            RoktPlaceholderRegistry.cancelWaits()
             MParticle.getInstance()?.rokt?.close()
             promise.resolve(null)
         }
+    }
+
+    /**
+     * Runs [select] on the UI thread once every placeholder named for name-based resolution has
+     * mounted, or after [PLACEHOLDER_MOUNT_TIMEOUT_MS]. A placeholder may not be mounted yet when
+     * selectPlacements arrives, e.g. when it is called from the same useEffect that rendered it:
+     * Fabric creates views on the next frame. Legacy react tags are never waited for.
+     * Must be called on the UI thread.
+     */
+    fun whenPlaceholdersMounted(
+        identifier: String,
+        placeholders: ReadableMap?,
+        select: () -> Unit,
+    ) {
+        val pending = unmountedPlaceholderNames(placeholders)
+        if (pending.isEmpty()) {
+            select()
+            return
+        }
+        Logger.debug("Waiting up to ${PLACEHOLDER_MOUNT_TIMEOUT_MS}ms for placeholder(s) to mount: $pending")
+        RoktPlaceholderRegistry.awaitNames(identifier, pending, PLACEHOLDER_MOUNT_TIMEOUT_MS, select)
+    }
+
+    // Names passed for name-based resolution (a non-positive value) that have no mounted view yet.
+    internal fun unmountedPlaceholderNames(placeholders: ReadableMap?): List<String> {
+        if (placeholders == null) return emptyList()
+        val pending = mutableListOf<String>()
+        val iterator = placeholders.keySetIterator()
+        while (iterator.hasNextKey()) {
+            val key = iterator.nextKey()
+            val isReactTag = placeholders.getType(key) == ReadableType.Number && placeholders.getDouble(key) > 0
+            if (!isReactTag && RoktPlaceholderRegistry.lookup(key) == null) {
+                pending += key
+            }
+        }
+        return pending
     }
 
     fun setSessionId(
@@ -284,6 +321,9 @@ class MPRoktModuleImpl(
 
     companion object {
         const val MODULE_NAME = "RNMPRokt"
+
+        // How long selectPlacements waits for a named placeholder to mount before proceeding without it.
+        const val PLACEHOLDER_MOUNT_TIMEOUT_MS = 2000L
 
         // Match iOS NSNumber stringValue: plain decimals, no trailing ".0", no scientific notation.
         internal fun formatNumberAttribute(value: Double): String {

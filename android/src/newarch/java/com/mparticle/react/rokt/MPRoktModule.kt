@@ -46,13 +46,15 @@ class MPRoktModule(
         // views and invoke the SDK together on the UI thread. (oldarch uses UIManager.addUIBlock;
         // iOS uses the uiManager methodQueue — same intent.)
         UiThreadUtil.runOnUiThread {
-            MParticle.getInstance()?.rokt?.selectPlacements(
-                identifier = identifier,
-                attributes = attributeMap,
-                embeddedViews = resolvePlaceholders(placeholders),
-                fontTypefaces = null, // TODO
-                config = config,
-            )
+            impl.whenPlaceholdersMounted(identifier, placeholders) {
+                MParticle.getInstance()?.rokt?.selectPlacements(
+                    identifier = identifier,
+                    attributes = attributeMap,
+                    embeddedViews = resolvePlaceholders(placeholders),
+                    fontTypefaces = null, // TODO
+                    config = config,
+                )
+            }
         }
     }
 

@@ -90,4 +90,18 @@ class MPRoktModuleImplTest {
 
         impl.setWrapperSdk()
     }
+
+    @Test
+    fun `unmountedPlaceholderNames waits only for names, never for react tags`() {
+        val mounted = Mockito.mock(android.view.View::class.java)
+        RoktPlaceholderRegistry.register(mounted, "Mounted")
+        try {
+            val placeholders = MockMap(mapOf("Location1" to 0.0, "Mounted" to 0.0, "Tagged" to 42.0))
+
+            assertEquals(listOf("Location1"), impl.unmountedPlaceholderNames(placeholders))
+            assertEquals(emptyList<String>(), impl.unmountedPlaceholderNames(null))
+        } finally {
+            RoktPlaceholderRegistry.unregister(mounted)
+        }
+    }
 }

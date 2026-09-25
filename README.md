@@ -688,19 +688,21 @@ the native call, and `getSessionId` resolves with the current session ID (or
 watch the events below for the outcome.
 
 For embedded placements, render `RoktLayoutView` and pass its `placeholderName`
-in the `placeholders` array:
+in the `placeholders` array. The view does not need to be mounted when you call
+`selectPlacements`: the SDK waits up to 2 seconds for each named placeholder, so
+calling it from `useEffect` is fine.
 
 ```jsx
-<MParticle.RoktLayoutView placeholderName="Location1" />
-```
+useEffect(() => {
+  MParticle.Rokt.selectPlacements(
+    'MSDKEmbeddedLayout',
+    attributes,
+    ['Location1'],
+    config
+  );
+}, []);
 
-```js
-MParticle.Rokt.selectPlacements(
-  'MSDKEmbeddedLayout',
-  attributes,
-  ['Location1'],
-  config
-);
+return <MParticle.RoktLayoutView placeholderName="Location1" />;
 ```
 
 The earlier form, a map of `placeholderName` to `findNodeHandle(ref)`, is still
