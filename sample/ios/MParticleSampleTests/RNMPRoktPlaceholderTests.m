@@ -1,6 +1,8 @@
 #import <XCTest/XCTest.h>
 #import <React/RCTBridgeModule.h>
+#import <React/RCTInvalidating.h>
 #import <React/RCTLog.h>
+@import RoktContracts;
 #import "../../../ios/RNMParticle/RNMPRokt.h"
 #import "../../../ios/RNMParticle/RoktPlaceholderRegistry.h"
 
@@ -184,6 +186,19 @@
     XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location1"], inWindow);
     [RoktPlaceholderRegistry unregisterView:inWindow];
     [RoktPlaceholderRegistry unregisterView:offscreen];
+}
+
+- (void)testLegacyEmbeddedViewUnregistersWhenInvalidated
+{
+    // RCTUIManager invalidates each view it removes; a view still retained elsewhere must not stay
+    // resolvable by name, or selectPlacements would skip the mount wait and embed into it.
+    RoktEmbeddedView *view = [RoktEmbeddedView new];
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+    XCTAssertTrue([view conformsToProtocol:@protocol(RCTInvalidating)]);
+
+    [(id<RCTInvalidating>)view invalidate];
+
+    XCTAssertNil([RoktPlaceholderRegistry viewForName:@"Location1"]);
 }
 
 - (void)testRegistryDropsDeallocatedViews

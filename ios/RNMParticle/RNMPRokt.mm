@@ -260,11 +260,13 @@ RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
 
 - (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
 {
+    // methodQueue is the main queue, so this runs inline; kept as one block so pending waits are
+    // always cancelled before close even if that changes. Matches Android's MPRoktModuleImpl.close.
     RCTExecuteOnMainQueue(^{
         [RoktPlaceholderRegistry cancelAllWaits];
+        [[[MParticle sharedInstance] rokt] close];
+        resolve(nil);
     });
-    [[[MParticle sharedInstance] rokt] close];
-    resolve(nil);
 }
 
 - (void)setSessionIdWithString:(NSString *)sessionId
