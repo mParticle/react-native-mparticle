@@ -192,9 +192,11 @@
 {
     // RCTUIManager invalidates each view it removes; a view still retained elsewhere must not stay
     // resolvable by name, or selectPlacements would skip the mount wait and embed into it.
+    // The category is compiled only into legacy-architecture builds of the library.
+    XCTSkipUnless([RoktEmbeddedView conformsToProtocol:@protocol(RCTInvalidating)],
+                  @"library built for the New Architecture");
     RoktEmbeddedView *view = [RoktEmbeddedView new];
     [RoktPlaceholderRegistry registerView:view name:@"Location1"];
-    XCTAssertTrue([view conformsToProtocol:@protocol(RCTInvalidating)]);
 
     [(id<RCTInvalidating>)view invalidate];
 
@@ -230,7 +232,7 @@
     UIView *view = [UIView new];
     [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:10 completion:^{
         [done fulfill];
-    }];
+    } discarded:^{}];
 
     [RoktPlaceholderRegistry registerView:view name:@"Location1"];
 
@@ -243,7 +245,7 @@
     XCTestExpectation *done = [self expectationWithDescription:@"wait timed out"];
     [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
         [done fulfill];
-    }];
+    } discarded:^{}];
 
     [self waitForExpectations:@[ done ] timeout:1];
 }
@@ -252,32 +254,40 @@
 {
     XCTestExpectation *older = [self expectationWithDescription:@"older wait"];
     older.inverted = YES;
+    XCTestExpectation *olderDiscarded = [self expectationWithDescription:@"older wait discarded"];
     XCTestExpectation *newer = [self expectationWithDescription:@"newer wait"];
     UIView *view = [UIView new];
     [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
         [older fulfill];
+    } discarded:^{
+        [olderDiscarded fulfill];
     }];
     [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:10 completion:^{
         [newer fulfill];
+    } discarded:^{
+        XCTFail(@"the newer wait must not be discarded");
     }];
 
     [RoktPlaceholderRegistry registerView:view name:@"Location1"];
 
-    [self waitForExpectations:@[ older, newer ] timeout:0.5];
+    [self waitForExpectations:@[ older, olderDiscarded, newer ] timeout:0.5];
     [RoktPlaceholderRegistry unregisterView:view];
 }
 
-- (void)testCancelledWaitNeverCompletes
+- (void)testCancelledWaitIsDiscardedAndNeverCompletes
 {
     XCTestExpectation *done = [self expectationWithDescription:@"cancelled wait"];
     done.inverted = YES;
+    XCTestExpectation *discarded = [self expectationWithDescription:@"cancelled wait discarded"];
     [RoktPlaceholderRegistry waitForNames:@[ @"Location1" ] key:@"page" timeout:0.1 completion:^{
         [done fulfill];
+    } discarded:^{
+        [discarded fulfill];
     }];
 
     [RoktPlaceholderRegistry cancelAllWaits];
 
-    [self waitForExpectations:@[ done ] timeout:0.5];
+    [self waitForExpectations:@[ done, discarded ] timeout:0.5];
 }
 
 @end

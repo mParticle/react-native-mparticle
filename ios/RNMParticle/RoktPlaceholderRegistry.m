@@ -3,7 +3,7 @@
 // A name keeps every live view registered under it (newest last) rather than only the latest,
 // because stacked screens can each mount the same placeholder name: popping the top screen must
 // leave the one underneath resolvable.
-// ponytail: linear scan over a handful of views; global across React hosts, key by surface if a
+// Linear scan over a handful of views; global across React hosts, key by surface if a
 // brownfield app ever mounts the same name in two surfaces at once.
 static NSMutableDictionary<NSString *, NSPointerArray *> *RoktPlaceholderViews(void) {
     static NSMutableDictionary<NSString *, NSPointerArray *> *views;
@@ -17,6 +17,7 @@ static NSMutableDictionary<NSString *, NSPointerArray *> *RoktPlaceholderViews(v
 @interface RoktPlaceholderWait : NSObject
 @property (nonatomic, copy) NSArray<NSString *> *names;
 @property (nonatomic, copy) dispatch_block_t completion;
+@property (nonatomic, copy) dispatch_block_t discarded;
 @end
 
 @implementation RoktPlaceholderWait
@@ -82,11 +83,17 @@ static NSMutableDictionary<NSString *, RoktPlaceholderWait *> *RoktPlaceholderWa
                  key:(NSString *)key
              timeout:(NSTimeInterval)timeout
           completion:(dispatch_block_t)completion
+           discarded:(dispatch_block_t)discarded
 {
     RoktPlaceholderWait *wait = [RoktPlaceholderWait new];
     wait.names = names;
     wait.completion = completion;
+    wait.discarded = discarded;
+    RoktPlaceholderWait *replaced = RoktPlaceholderWaits()[key];
     RoktPlaceholderWaits()[key] = wait;
+    if (replaced != nil) {
+        dispatch_async(dispatch_get_main_queue(), replaced.discarded);
+    }
     if ([self allNamesRegistered:names]) {
         [self completeWaitForKey:key];
         return;
@@ -101,7 +108,11 @@ static NSMutableDictionary<NSString *, RoktPlaceholderWait *> *RoktPlaceholderWa
 
 + (void)cancelAllWaits
 {
+    NSArray<RoktPlaceholderWait *> *cancelled = RoktPlaceholderWaits().allValues;
     [RoktPlaceholderWaits() removeAllObjects];
+    for (RoktPlaceholderWait *wait in cancelled) {
+        dispatch_async(dispatch_get_main_queue(), wait.discarded);
+    }
 }
 
 + (BOOL)allNamesRegistered:(NSArray<NSString *> *)names
@@ -127,6 +138,9 @@ static NSMutableDictionary<NSString *, RoktPlaceholderWait *> *RoktPlaceholderWa
 + (void)completeWaitForKey:(NSString *)key
 {
     RoktPlaceholderWait *wait = RoktPlaceholderWaits()[key];
+    if (wait == nil) {
+        return;
+    }
     [RoktPlaceholderWaits() removeObjectForKey:key];
     // Asynchronously: registration happens mid-mount, and the Rokt SDK mutates the placeholder
     // view hierarchy, so it must not run inside the mount transaction.

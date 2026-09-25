@@ -20,7 +20,7 @@ import java.lang.ref.WeakReference
  * check the type when resolving.
  */
 internal object RoktPlaceholderRegistry {
-    // ponytail: linear scan over a handful of views; global across React hosts, key by surface
+    // Linear scan over a handful of views; global across React hosts, key by surface
     // if a brownfield app ever mounts the same name in two surfaces at once.
     private val views = HashMap<String, MutableList<WeakReference<View>>>()
 
@@ -59,6 +59,7 @@ internal object RoktPlaceholderRegistry {
     private class Wait(
         val names: Collection<String>,
         val onReady: () -> Unit,
+        val onDiscard: () -> Unit,
     ) {
         lateinit var timeout: Runnable
     }
@@ -98,16 +99,18 @@ internal object RoktPlaceholderRegistry {
     /**
      * Runs [onReady] on the UI thread once every name in [names] has a registered view, or after
      * [timeoutMillis], whichever comes first. A new wait with the same [key] replaces the previous
-     * one, which then never runs.
+     * one; a replaced or cancelled wait never runs [onReady] and runs [onDiscard] on the UI thread
+     * instead, so the caller can report the dropped request.
      */
     fun awaitNames(
         key: String,
         names: Collection<String>,
         timeoutMillis: Long,
+        onDiscard: () -> Unit,
         onReady: () -> Unit,
     ) {
-        waits.remove(key)?.let { scheduler.cancel(it.timeout) }
-        val wait = Wait(names, onReady)
+        waits.remove(key)?.let { discard(it) }
+        val wait = Wait(names, onReady, onDiscard)
         wait.timeout = Runnable { if (waits[key] === wait) complete(key) }
         waits[key] = wait
         if (allRegistered(names)) {
@@ -117,10 +120,16 @@ internal object RoktPlaceholderRegistry {
         }
     }
 
-    /** Drops every pending wait without running it. */
+    /** Drops every pending wait, running its onDiscard instead of onReady. */
     fun cancelWaits() {
-        waits.values.forEach { scheduler.cancel(it.timeout) }
+        val cancelled = waits.values.toList()
         waits.clear()
+        cancelled.forEach { discard(it) }
+    }
+
+    private fun discard(wait: Wait) {
+        scheduler.cancel(wait.timeout)
+        scheduler.post { wait.onDiscard() }
     }
 
     private fun allRegistered(names: Collection<String>) = names.all { lookup(it) != null }

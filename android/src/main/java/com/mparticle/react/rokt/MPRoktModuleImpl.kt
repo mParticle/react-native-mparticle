@@ -91,7 +91,24 @@ class MPRoktModuleImpl(
             return
         }
         Logger.debug("Waiting up to ${PLACEHOLDER_MOUNT_TIMEOUT_MS}ms for placeholder(s) to mount: $pending")
-        RoktPlaceholderRegistry.awaitNames(identifier, pending, PLACEHOLDER_MOUNT_TIMEOUT_MS, select)
+        RoktPlaceholderRegistry.awaitNames(
+            identifier,
+            pending,
+            PLACEHOLDER_MOUNT_TIMEOUT_MS,
+            onDiscard = { sendPlacementFailure(identifier) },
+            onReady = select,
+        )
+    }
+
+    // Replaced by a newer call with the same identifier, or cancelled by close(): the SDK is never
+    // called, so report the failure in the shape the event listener sends for the SDK's own
+    // PlacementFailure (no placementId), keeping the app from waiting on an event that never comes.
+    private fun sendPlacementFailure(viewName: String) {
+        Logger.debug("Pending selectPlacements dropped for: $viewName")
+        val params = Arguments.createMap()
+        params.putString("event", "PlacementFailure")
+        params.putString("viewName", viewName)
+        sendEvent(reactContext, "RoktEvents", params)
     }
 
     // Names passed for name-based resolution (a non-positive value) that have no mounted view yet.

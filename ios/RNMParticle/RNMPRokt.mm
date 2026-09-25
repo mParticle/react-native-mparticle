@@ -183,7 +183,16 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
             return;
         }
         _rokt_log(@"[mParticle-Rokt] waiting up to %.0fs for placeholder(s) to mount: %@", kRoktPlaceholderMountTimeout, pending);
-        [RoktPlaceholderRegistry waitForNames:pending key:identifer timeout:kRoktPlaceholderMountTimeout completion:select];
+        [RoktPlaceholderRegistry waitForNames:pending
+                                          key:identifer
+                                      timeout:kRoktPlaceholderMountTimeout
+                                   completion:select
+                                    discarded:^{
+            // Replaced by a newer call with the same identifier, or cancelled by close(): the SDK
+            // is never called, so report the failure the way the SDK reports a call it rejects.
+            _rokt_log(@"[mParticle-Rokt] pending selectPlacements dropped for: %@", identifer);
+            [weakSelf.eventManager onRoktEvents:[[RoktPlacementFailure alloc] initWithIdentifier:nil] viewName:identifer];
+        }];
     });
 }
 

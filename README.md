@@ -690,7 +690,9 @@ watch the events below for the outcome.
 For embedded placements, render `RoktLayoutView` and pass its `placeholderName`
 in the `placeholders` array. The view does not need to be mounted when you call
 `selectPlacements`: the SDK waits up to 2 seconds for each named placeholder, so
-calling it from `useEffect` is fine.
+calling it from `useEffect` is fine. If a call is still waiting when `close()`
+runs, or when a newer call with the same identifier replaces it, that call emits
+`PlacementFailure` instead.
 
 ```jsx
 useEffect(() => {

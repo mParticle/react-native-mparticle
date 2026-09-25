@@ -21,13 +21,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Calls `completion` on the main queue once every name in `names` has a registered view, or
 /// after `timeout` seconds, whichever comes first. A new wait with the same `key` replaces the
-/// previous one, which then never completes.
+/// previous one; a replaced or cancelled wait never completes and calls `discarded` on the main
+/// queue instead, so the caller can report the dropped request.
 + (void)waitForNames:(NSArray<NSString *> *)names
                  key:(NSString *)key
              timeout:(NSTimeInterval)timeout
-          completion:(dispatch_block_t)completion;
+          completion:(dispatch_block_t)completion
+           discarded:(dispatch_block_t)discarded;
 
-/// Drops every pending wait without completing it.
+/// Drops every pending wait, calling its `discarded` block.
 + (void)cancelAllWaits;
 
 @end

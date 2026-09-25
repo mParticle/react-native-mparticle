@@ -9,13 +9,14 @@
 #import <React/RCTInvalidating.h>
 #import "RoktPlaceholderRegistry.h"
 
+#ifndef RCT_NEW_ARCH_ENABLED
 // This manager is mounted only when Fabric is off (React Native 0.76-0.81 with the legacy
-// architecture); builds with RCT_REMOVE_LEGACY_ARCH never create it. The legacy architecture has
-// no per-view drop callback on iOS, but RCTUIManager calls -invalidate on each view it removes
-// that conforms to RCTInvalidating. RoktEmbeddedView is a Swift class closed to subclassing, so the
-// conformance is added as a category; the trade-off is that another -invalidate category on this
-// class would collide silently. Without it a dropped view that something still retains stays
-// registered and resolvable by name.
+// architecture), so the category below is compiled only into those builds. The legacy
+// architecture has no per-view drop callback on iOS, but RCTUIManager calls -invalidate on each
+// view it removes that conforms to RCTInvalidating. RoktEmbeddedView is a Swift class closed to
+// subclassing, so the conformance is added as a category; the trade-off is that another
+// -invalidate category on this class would collide silently. Without it a dropped view that
+// something still retains stays registered and resolvable by name.
 @interface RoktEmbeddedView (RNMPPlaceholderRegistration) <RCTInvalidating>
 @end
 
@@ -27,6 +28,7 @@
 }
 
 @end
+#endif // RCT_NEW_ARCH_ENABLED
 
 @interface RoktLayoutViewManager : RCTViewManager
 @end

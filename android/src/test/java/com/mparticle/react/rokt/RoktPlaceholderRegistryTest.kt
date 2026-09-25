@@ -114,7 +114,7 @@ class RoktPlaceholderRegistryTest {
     @Test
     fun `a wait runs once its placeholder mounts, after the mount pass`() {
         var runs = 0
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000) { runs++ }
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000, onDiscard = {}) { runs++ }
         assertEquals(0, runs)
 
         RoktPlaceholderRegistry.register(view(), "Location1")
@@ -130,7 +130,7 @@ class RoktPlaceholderRegistryTest {
     @Test
     fun `a wait runs on timeout when its placeholder never mounts`() {
         var runs = 0
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000) { runs++ }
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000, onDiscard = {}) { runs++ }
 
         scheduler.fireTimeouts()
         scheduler.runPosted()
@@ -141,7 +141,7 @@ class RoktPlaceholderRegistryTest {
     @Test
     fun `a wait needs every name`() {
         var runs = 0
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1", "Location2"), 2000) { runs++ }
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1", "Location2"), 2000, onDiscard = {}) { runs++ }
 
         RoktPlaceholderRegistry.register(view(), "Location1")
         scheduler.runPosted()
@@ -153,11 +153,13 @@ class RoktPlaceholderRegistryTest {
     }
 
     @Test
-    fun `a newer wait with the same key replaces the older one`() {
+    fun `a newer wait with the same key replaces the older one and discards it`() {
         var older = 0
+        var olderDiscarded = 0
         var newer = 0
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000) { older++ }
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000) { newer++ }
+        var newerDiscarded = 0
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000, onDiscard = { olderDiscarded++ }) { older++ }
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000, onDiscard = { newerDiscarded++ }) { newer++ }
 
         RoktPlaceholderRegistry.register(view(), "Location1")
         scheduler.runPosted()
@@ -165,13 +167,16 @@ class RoktPlaceholderRegistryTest {
         scheduler.runPosted()
 
         assertEquals(0, older)
+        assertEquals(1, olderDiscarded)
         assertEquals(1, newer)
+        assertEquals(0, newerDiscarded)
     }
 
     @Test
-    fun `cancelled waits never run`() {
+    fun `cancelled waits are discarded and never run`() {
         var runs = 0
-        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000) { runs++ }
+        var discarded = 0
+        RoktPlaceholderRegistry.awaitNames("page", listOf("Location1"), 2000, onDiscard = { discarded++ }) { runs++ }
 
         RoktPlaceholderRegistry.cancelWaits()
         RoktPlaceholderRegistry.register(view(), "Location1")
@@ -179,5 +184,6 @@ class RoktPlaceholderRegistryTest {
         scheduler.fireTimeouts()
 
         assertEquals(0, runs)
+        assertEquals(1, discarded)
     }
 }
