@@ -31,13 +31,44 @@ function getMPRokt(): NativeMPRoktInterface {
 
 export type RoktAttributeValue = string | number | boolean;
 
+/**
+ * Embedded placeholders for `selectPlacements`.
+ *
+ * Preferred: the `placeholderName`s of mounted `RoktLayoutView`s, e.g. `['Location1']`.
+ * Legacy: a map of placeholder name to `findNodeHandle(ref)` react tag. Still supported.
+ */
+export type RoktPlaceholders = string[] | Record<string, number | null>;
+
+/**
+ * Converts the public placeholder forms to the native spec's map shape. React tags are
+ * positive, so zero is an explicit request to resolve the view by its `placeholderName`.
+ * A numeric sentinel is required because React Native codegen drops null-valued map entries.
+ */
+export function toNativePlaceholders(
+  placeholders?: RoktPlaceholders
+): Record<string, number> | undefined {
+  if (placeholders == null) {
+    return undefined;
+  }
+
+  const entries: ReadonlyArray<readonly [string, number | null]> =
+    Array.isArray(placeholders)
+      ? placeholders.map(name => [name, null] as const)
+      : Object.entries(placeholders);
+
+  return entries.reduce<Record<string, number>>((map, [name, reactTag]) => {
+    map[name] = reactTag ?? 0;
+    return map;
+  }, {});
+}
+
 export abstract class Rokt {
   /**
    * Selects placements with a [identifier], [attributes], optional [placeholders], optional [roktConfig], and optional [fontFilePathMap].
    *
    * @param {string} identifier - The page identifier for the placement.
    * @param {Record<string, RoktAttributeValue>} attributes - Attributes to be associated with the placement.
-   * @param {Record<string, number | null>} [placeholders] - Optional placeholders for dynamic content.
+   * @param {RoktPlaceholders} [placeholders] - Optional embedded placeholders: `placeholderName`s of mounted `RoktLayoutView`s (preferred), or a legacy map of name to react tag.
    * @param {IRoktConfig} [roktConfig] - Optional configuration settings for Rokt.
    * @param {Record<string, string>} [fontFilesMap] - Optional mapping of font files.
    * @returns {Promise<void>} A promise that resolves when the placement request is sent.
@@ -45,14 +76,14 @@ export abstract class Rokt {
   static async selectPlacements(
     identifier: string,
     attributes: Record<string, RoktAttributeValue>,
-    placeholders?: Record<string, number | null>,
+    placeholders?: RoktPlaceholders,
     roktConfig?: IRoktConfig,
     fontFilesMap?: Record<string, string>
   ): Promise<void> {
     getMPRokt().selectPlacements(
       identifier,
       attributes,
-      placeholders,
+      toNativePlaceholders(placeholders),
       roktConfig,
       fontFilesMap
     );

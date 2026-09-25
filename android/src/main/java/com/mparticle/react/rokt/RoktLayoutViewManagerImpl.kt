@@ -27,7 +27,13 @@ class RoktLayoutViewManagerImpl {
         view: RoktEmbeddedView?,
         value: String?,
     ) {
-        view?.tag = value
+        view ?: return
+        view.tag = value
+        RoktPlaceholderRegistry.register(view, value)
+    }
+
+    fun onDropViewInstance(view: RoktEmbeddedView) {
+        RoktPlaceholderRegistry.unregister(view)
     }
 
     private fun setUpWidgetListeners(widget: RoktEmbeddedView) {

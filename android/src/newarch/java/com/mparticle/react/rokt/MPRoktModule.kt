@@ -93,8 +93,10 @@ class MPRoktModule(
     }
 
     /**
-     * Resolve placeholders from a ReadableMap of react tags to their RoktEmbeddedView instances.
-     * Must be called on the UI thread — it resolves live views via the UIManager.
+     * Resolve placeholders to their RoktEmbeddedView instances. A positive numeric value is a
+     * legacy `findNodeHandle` react tag. Zero is the name-lookup sentinel used by the JS wrapper;
+     * unresolved tags also fall back to placeholderName.
+     * Must be called on the UI thread — it resolves live views.
      */
     private fun resolvePlaceholders(placeholders: ReadableMap?): Map<String, WeakReference<RoktEmbeddedView>> {
         val placeholdersMap = HashMap<String, WeakReference<RoktEmbeddedView>>()
@@ -106,30 +108,22 @@ class MPRoktModule(
         while (iterator.hasNextKey()) {
             val key = iterator.nextKey()
             try {
-                val reactTag =
-                    when {
-                        placeholders.getType(key) == ReadableType.Number -> {
-                            placeholders.getDouble(key).toInt()
-                        }
-
-                        else -> {
-                            Logger.warning("Invalid view tag for key: $key")
-                            continue
-                        }
+                val taggedView =
+                    if (
+                        placeholders.getType(key) == ReadableType.Number &&
+                        placeholders.getDouble(key) > 0
+                    ) {
+                        resolveReactTag(placeholders.getDouble(key).toInt())
+                    } else {
+                        null
                     }
+                val view = taggedView ?: RoktPlaceholderRegistry.lookup(key) as? RoktEmbeddedView
 
-                val uiManager = UIManagerHelper.getUIManagerForReactTag(reactContext, reactTag)
-                if (uiManager == null) {
-                    Logger.warning("UIManager not found for tag: $reactTag")
-                    continue
-                }
-
-                val view = uiManager.resolveView(reactTag)
-                if (view is RoktEmbeddedView) {
+                if (view != null) {
                     placeholdersMap[key] = WeakReference(view)
-                    Logger.debug("Successfully found Widget for key: $key with tag: $reactTag")
+                    Logger.debug("Successfully found Widget for key: $key")
                 } else {
-                    Logger.warning("View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
+                    Logger.warning("Cannot resolve placeholder for key: $key")
                 }
             } catch (e: Exception) {
                 Logger.warning("Error processing placeholder for key $key: ${e.message}")
@@ -137,5 +131,20 @@ class MPRoktModule(
         }
 
         return placeholdersMap
+    }
+
+    private fun resolveReactTag(reactTag: Int): RoktEmbeddedView? {
+        val uiManager = UIManagerHelper.getUIManagerForReactTag(reactContext, reactTag)
+        if (uiManager == null) {
+            Logger.warning("UIManager not found for tag: $reactTag")
+            return null
+        }
+        // resolveView throws for a tag that is no longer mounted; the caller falls back to the name.
+        val view = runCatching { uiManager.resolveView(reactTag) }.getOrNull()
+        if (view !is RoktEmbeddedView) {
+            Logger.warning("View with tag $reactTag is not a Widget: ${view?.javaClass?.simpleName}")
+            return null
+        }
+        return view
     }
 }

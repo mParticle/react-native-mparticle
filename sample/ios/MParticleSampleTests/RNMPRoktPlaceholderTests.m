@@ -2,6 +2,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTLog.h>
 #import "../../../ios/RNMParticle/RNMPRokt.h"
+#import "../../../ios/RNMParticle/RoktPlaceholderRegistry.h"
 
 // Implemented in RNMPRokt.mm.
 @interface RNMPRokt (PlaceholderTests)
@@ -116,18 +117,81 @@
     XCTAssertEqual(_loggedErrorCount, 1, @"errors: %@", _loggedErrors);
 }
 
-- (void)testSkipsNonNumericTagWithoutThrowing
+- (void)testSkipsNonNumericValueWithNoRegisteredNameWithoutThrowing
 {
-    // `placeholders?: {[key: string]: number | null}` in js/codegenSpecs/rokt/NativeMPRokt.ts.
-    // The old dictionary-subscript lookup tolerated NSNull; viewForReactTag: would throw
-    // on it, so resolvePlaceholders: has to reject non-numeric tags itself.
+    // Defensive coverage for malformed direct native calls: viewForReactTag: would throw on
+    // NSNull, so non-numeric values must never reach it. They are resolved by placeholder name
+    // instead, and nothing is registered under these names.
     NSDictionary *resolved =
         [_rokt resolvePlaceholders:@{@"Location1" : [NSNull null], @"Location2" : @"101"}];
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 2, @"errors: %@", _loggedErrors);
-    XCTAssertTrue([_loggedErrors.firstObject hasPrefix:@"Invalid react tag"],
+    XCTAssertTrue([_loggedErrors.firstObject hasPrefix:@"Cannot resolve placeholder"],
                   @"errors: %@", _loggedErrors);
+}
+
+// Name-based resolution goes through RoktPlaceholderRegistry. Its semantics are
+// binary-independent, so they are asserted directly with plain views; the final
+// isKindOfClass: step hits the same linkage limit described above.
+
+- (void)testRegistryResolvesRegisteredViewByName
+{
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+
+    XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location1"], view);
+    XCTAssertNil([RoktPlaceholderRegistry viewForName:@"Location2"]);
+    [RoktPlaceholderRegistry unregisterView:view];
+}
+
+- (void)testRegistryRenameMovesView
+{
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+    [RoktPlaceholderRegistry registerView:view name:@"Location2"];
+
+    XCTAssertNil([RoktPlaceholderRegistry viewForName:@"Location1"]);
+    XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location2"], view);
+    [RoktPlaceholderRegistry unregisterView:view];
+}
+
+- (void)testRegistryKeepsOlderViewWhenNewerSharedNameIsDropped
+{
+    // Stacked screens can each mount the same placeholder name.
+    UIView *lower = [UIView new];
+    UIView *upper = [UIView new];
+    [RoktPlaceholderRegistry registerView:lower name:@"Location1"];
+    [RoktPlaceholderRegistry registerView:upper name:@"Location1"];
+    XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location1"], upper);
+
+    [RoktPlaceholderRegistry unregisterView:upper];
+
+    XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location1"], lower);
+    [RoktPlaceholderRegistry unregisterView:lower];
+}
+
+- (void)testRegistryPrefersViewInWindow
+{
+    UIWindow *window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
+    UIView *inWindow = [UIView new];
+    [window addSubview:inWindow];
+    UIView *offscreen = [UIView new];
+    [RoktPlaceholderRegistry registerView:inWindow name:@"Location1"];
+    [RoktPlaceholderRegistry registerView:offscreen name:@"Location1"];
+
+    XCTAssertEqualObjects([RoktPlaceholderRegistry viewForName:@"Location1"], inWindow);
+    [RoktPlaceholderRegistry unregisterView:inWindow];
+    [RoktPlaceholderRegistry unregisterView:offscreen];
+}
+
+- (void)testRegistryDropsDeallocatedViews
+{
+    @autoreleasepool {
+        [RoktPlaceholderRegistry registerView:[UIView new] name:@"Location1"];
+    }
+
+    XCTAssertNil([RoktPlaceholderRegistry viewForName:@"Location1"]);
 }
 
 - (void)testEmptyPlaceholdersResolveToEmptyDictionary

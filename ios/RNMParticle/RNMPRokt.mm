@@ -23,6 +23,7 @@
 #import <React/RCTUtils.h>
 #import <os/log.h>
 #import "RoktEventManager.h"
+#import "RoktPlaceholderRegistry.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RoktNativeLayoutComponentView.h"
@@ -339,40 +340,48 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return isConfigEmpty ? nil : [builder build];
 }
 
-// Main thread only — RCTViewRegistry reads the mounted view hierarchy.
+// Main thread only — RCTViewRegistry and RoktPlaceholderRegistry read the mounted view hierarchy.
+// A positive numeric value is a legacy findNodeHandle react tag. Zero is the name-lookup
+// sentinel used by the JS wrapper; unresolved tags also fall back to placeholderName.
 - (NSMutableDictionary *)resolvePlaceholders:(NSDictionary *)placeholders
 {
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: %lu placeholder(s)", (unsigned long)placeholders.count);
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
     for(id key in placeholders){
-        // The spec allows `number | null`; viewForReactTag: would throw on NSNull.
-        NSNumber *reactTag = [placeholders objectForKey:key];
-        if (![reactTag isKindOfClass:[NSNumber class]]) {
-            RCTLogError(@"Invalid react tag for placeholder %@", key);
+        id reactTag = [placeholders objectForKey:key];
+        RoktEmbeddedView *embeddedView = nil;
+        if ([reactTag isKindOfClass:[NSNumber class]] && [reactTag integerValue] > 0) {
+            embeddedView = [self embeddedViewForReactTag:reactTag];
+        }
+        if (embeddedView == nil && [key isKindOfClass:[NSString class]]) {
+            UIView *view = [RoktPlaceholderRegistry viewForName:key];
+            // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
+            if ([view isKindOfClass:[RoktEmbeddedView class]]) {
+                embeddedView = (RoktEmbeddedView *)view;
+            }
+        }
+        if (embeddedView == nil) {
+            RCTLogError(@"Cannot resolve placeholder %@ (value %@)", key, reactTag);
             continue;
         }
-
-        // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
-        UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
-#ifdef RCT_NEW_ARCH_ENABLED
-        if (![view isKindOfClass:[RoktNativeLayoutComponentView class]]) {
-            RCTLogError(@"Cannot find RoktNativeLayoutComponentView for placeholder %@ (reactTag %@)", key, reactTag);
-            continue;
-        }
-        nativePlaceholders[key] = ((RoktNativeLayoutComponentView *)view).roktEmbeddedView;
-#else
-        if (![view isKindOfClass:[RoktEmbeddedView class]]) {
-            RCTLogError(@"Cannot find RoktEmbeddedView with tag #%@", key);
-            continue;
-        }
-
-        nativePlaceholders[key] = view;
-#endif // RCT_NEW_ARCH_ENABLED
+        nativePlaceholders[key] = embeddedView;
     }
 
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
+}
+
+- (nullable RoktEmbeddedView *)embeddedViewForReactTag:(NSNumber *)reactTag
+{
+    UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
+#ifdef RCT_NEW_ARCH_ENABLED
+    return [view isKindOfClass:[RoktNativeLayoutComponentView class]]
+        ? ((RoktNativeLayoutComponentView *)view).roktEmbeddedView
+        : nil;
+#else
+    return [view isKindOfClass:[RoktEmbeddedView class]] ? (RoktEmbeddedView *)view : nil;
+#endif // RCT_NEW_ARCH_ENABLED
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED

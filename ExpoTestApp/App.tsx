@@ -5,7 +5,7 @@
  * It demonstrates SDK initialization, event logging, and Rokt placements.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   View,
   Platform,
-  findNodeHandle,
   NativeEventEmitter,
 } from 'react-native';
 import MParticle from 'react-native-mparticle';
@@ -37,9 +36,6 @@ export default function App() {
   const [eventName, setEventName] = useState('Test Event');
   const [status, setStatus] = useState('SDK initialized via native code');
   const [logs, setLogs] = useState<string[]>([]);
-
-  // Ref for Rokt embedded placeholder
-  const roktPlaceholderRef = useRef<any>(null);
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -194,18 +190,11 @@ export default function App() {
     const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);
     const config = MParticle.Rokt.createRoktConfig('system', cacheConfig);
 
-    // Build placeholder map for embedded placements
-    const placeholderMap: { [key: string]: number | null } = {};
-    const nodeHandle = findNodeHandle(roktPlaceholderRef.current);
-    if (nodeHandle !== null) {
-      placeholderMap['Location1'] = nodeHandle;
-    }
-
-    // Call selectPlacements
+    // Call selectPlacements, embedding into the mounted <RoktLayoutView placeholderName="Location1" />
     MParticle.Rokt.selectPlacements(
       identifier,
       attributes,
-      placeholderMap,
+      ['Location1'],
       config,
       undefined
     )
@@ -421,10 +410,7 @@ export default function App() {
             <Text style={styles.placeholderLabel}>
               Embedded Placement Area:
             </Text>
-            <RoktLayoutView
-              ref={roktPlaceholderRef}
-              placeholderName="Location1"
-            />
+            <RoktLayoutView placeholderName="Location1" />
           </View>
         </View>
 

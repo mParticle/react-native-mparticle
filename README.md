@@ -687,25 +687,24 @@ the native call, and `getSessionId` resolves with the current session ID (or
 `null`), but no Rokt method reports success or failure through its promise —
 watch the events below for the outcome.
 
-For embedded placements, render `RoktLayoutView` and pass its node handle in the
-`placeholders` map, keyed by the same `placeholderName`:
+For embedded placements, render `RoktLayoutView` and pass its `placeholderName`
+in the `placeholders` array:
 
 ```jsx
-<MParticle.RoktLayoutView ref={this.placeholder1} placeholderName="Location1" />
+<MParticle.RoktLayoutView placeholderName="Location1" />
 ```
 
 ```js
-import { findNodeHandle } from 'react-native';
-
-const placeholders = { Location1: findNodeHandle(this.placeholder1.current) };
-
 MParticle.Rokt.selectPlacements(
   'MSDKEmbeddedLayout',
   attributes,
-  placeholders,
+  ['Location1'],
   config
 );
 ```
+
+The earlier form, a map of `placeholderName` to `findNodeHandle(ref)`, is still
+supported: `{ Location1: findNodeHandle(this.placeholder1.current) }`.
 
 | Method                                                | Notes                                                 |
 | ----------------------------------------------------- | ----------------------------------------------------- |

@@ -11,7 +11,6 @@ import {
   Text,
   Button,
   Platform,
-  findNodeHandle,
   ScrollView,
   NativeEventEmitter,
   SafeAreaView,
@@ -37,7 +36,6 @@ const generateGuid = () =>
 export default class MParticleSample extends Component {
   constructor(props) {
     super(props);
-    this.placeholder1 = React.createRef();
     this.state = {
       isShowingText: true,
       optedOut: true,
@@ -320,13 +318,11 @@ export default class MParticleSample extends Component {
     );
     const cacheConfig = MParticle.Rokt.createCacheConfig(30, attributes);
     const config = MParticle.Rokt.createRoktConfig('system', cacheConfig);
-    const placeholderMap = {
-      Location1: findNodeHandle(this.placeholder1.current),
-    };
+    // Names of the mounted <RoktLayoutView placeholderName="..." /> views to embed into.
     MParticle.Rokt.selectPlacements(
       identifier,
       attributes,
-      placeholderMap,
+      ['Location1'],
       config,
       null,
     )
@@ -451,10 +447,7 @@ export default class MParticleSample extends Component {
               </TouchableOpacity>
             </View>
 
-            <RoktLayoutView
-              ref={this.placeholder1}
-              placeholderName="Location1"
-            />
+            <RoktLayoutView placeholderName="Location1" />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
