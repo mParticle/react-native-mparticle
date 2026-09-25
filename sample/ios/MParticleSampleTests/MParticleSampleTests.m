@@ -13,8 +13,8 @@
 #import <React/RCTLog.h>
 #import <React/RCTRootView.h>
 
-#define TIMEOUT_SECONDS 600
-#define TEXT_TO_LOOK_FOR @"Welcome to React Native!"
+#define TIMEOUT_SECONDS 60
+#define TEXT_TO_LOOK_FOR @"React Native SDK Sample"
 
 @interface MParticleSampleTests : XCTestCase
 
@@ -35,9 +35,28 @@
   return NO;
 }
 
-- (void)testRendersWelcomeScreen
+- (UIViewController *)rootViewControllerForConnectedScene
 {
-  UIViewController *vc = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+  UIViewController *fallbackViewController = nil;
+
+  for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+    if (![scene isKindOfClass:[UIWindowScene class]]) {
+      continue;
+    }
+
+    for (UIWindow *window in ((UIWindowScene *)scene).windows) {
+      fallbackViewController = fallbackViewController ?: window.rootViewController;
+      if (window.isKeyWindow) {
+        return window.rootViewController;
+      }
+    }
+  }
+
+  return fallbackViewController;
+}
+
+- (void)testRendersSampleScreen
+{
   NSDate *date = [NSDate dateWithTimeIntervalSinceNow:TIMEOUT_SECONDS];
   BOOL foundElement = NO;
 
@@ -52,7 +71,8 @@
     [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     [[NSRunLoop mainRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
 
-    foundElement = [self findSubviewInView:vc.view matching:^BOOL(UIView *view) {
+    UIViewController *viewController = [self rootViewControllerForConnectedScene];
+    foundElement = [self findSubviewInView:viewController.view matching:^BOOL(UIView *view) {
       if ([view.accessibilityLabel isEqualToString:TEXT_TO_LOOK_FOR]) {
         return YES;
       }
