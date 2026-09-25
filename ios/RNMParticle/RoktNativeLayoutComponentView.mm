@@ -1,10 +1,12 @@
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <SafariServices/SafariServices.h>
 #import "RoktNativeLayoutComponentView.h"
+#import "RoktPlaceholderRegistry.h"
 
 #import <React/renderer/components/RNMParticle/ComponentDescriptors.h>
 #import <react/renderer/components/RNMParticle/Props.h>
 #import <React/renderer/components/RNMParticle/RCTComponentViewHelpers.h>
+#import <React/RCTConversions.h>
 
 using namespace facebook::react;
 
@@ -38,9 +40,21 @@ using namespace facebook::react;
 
 - (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
 {
-  // This is intentionally left blank.
-  // The props are handled by the view manager and direct access to the swift view.
+  // Register by placeholderName so selectPlacements can resolve this view by name.
+  const auto &newProps = *std::static_pointer_cast<const RoktNativeLayoutProps>(props);
+  NSString *placeholderName = RCTNSStringFromStringNilIfEmpty(newProps.placeholderName);
+  if (![placeholderName isEqualToString:_placeholderName]) {
+    _placeholderName = placeholderName;
+    [RoktPlaceholderRegistry registerView:_roktEmbeddedView name:placeholderName];
+  }
   [super updateProps:props oldProps:oldProps];
+}
+
+- (void)prepareForRecycle
+{
+  [RoktPlaceholderRegistry unregisterView:_roktEmbeddedView];
+  _placeholderName = nil;
+  [super prepareForRecycle];
 }
 
 // Export function for codegen compatibility

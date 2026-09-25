@@ -7,6 +7,7 @@ import {
   IRoktConfig,
   ColorMode,
   RoktEventManager,
+  RoktPlaceholders,
 } from './rokt/rokt';
 import RoktLayoutView, { RoktLayoutViewProps } from './rokt/rokt-layout-view';
 import type {
@@ -978,7 +979,7 @@ export class MParticleError {
 }
 
 // Export Rokt functionality
-export type { IRoktConfig, ColorMode, RoktLayoutViewProps };
+export type { IRoktConfig, ColorMode, RoktLayoutViewProps, RoktPlaceholders };
 export { Rokt, CacheConfig, RoktLayoutView };
 
 // ******** Exports ********

@@ -28,4 +28,9 @@ class RoktLayoutViewManager :
     ) {
         impl.setPlaceholderName(view, value)
     }
+
+    override fun onDropViewInstance(view: RoktEmbeddedView) {
+        impl.onDropViewInstance(view)
+        super.onDropViewInstance(view)
+    }
 }

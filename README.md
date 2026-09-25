@@ -231,12 +231,16 @@ The `startWithOptions` method requires an options argument containing your key a
 
 For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/sdk/ios/getting-started/#create-an-input).
 
-> **React Native 0.77+ requires a Fabric dependency provider.** Set it in `application:didFinishLaunchingWithOptions:` before starting mParticle. Without it no third-party Fabric component is registered, so `<RoktLayoutView>` mounts as `RCTUnimplementedViewComponentView` and embedded placements never appear. This fails at runtime, not at build time. See `sample/ios/MParticleSample/AppDelegate.mm`.
+> **React Native 0.77+ requires a Fabric dependency provider.** Set it in `application:didFinishLaunchingWithOptions:` before starting mParticle. Without it no third-party Fabric component is registered, so `<RoktLayoutView>` mounts as `RCTUnimplementedViewComponentView` and embedded placements never appear. This fails at runtime, not at build time. See `sample/ios/MParticleSample/AppDelegate.swift`.
 >
-> ```objective-c
-> #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
+> ```swift
+> import ReactAppDependencyProvider
 >
-> self.dependencyProvider = [RCTAppDependencyProvider new];
+> let delegate = ReactNativeDelegate()
+> delegate.dependencyProvider = RCTAppDependencyProvider()
+>
+> reactNativeDelegate = delegate
+> reactNativeFactory = RCTReactNativeFactory(delegate: delegate)
 > ```
 
 > **If you install no iOS kit, declare the umbrella pod.** `mParticle-Apple-SDK` is now a thin Swift umbrella over `mParticle-Apple-SDK-ObjC`, and this wrapper depends on the ObjC pod directly — so the umbrella is installed only when something else declares it, as `mParticle-Rokt` 9.x does. Without a kit, add `pod 'mParticle-Apple-SDK', '>= 9.2.2', '< 10.0'` (matching this library's own floor) for `import mParticle_Apple_SDK` to resolve, or import `mParticle_Apple_SDK_ObjC` instead.
@@ -687,25 +691,28 @@ the native call, and `getSessionId` resolves with the current session ID (or
 `null`), but no Rokt method reports success or failure through its promise —
 watch the events below for the outcome.
 
-For embedded placements, render `RoktLayoutView` and pass its node handle in the
-`placeholders` map, keyed by the same `placeholderName`:
+For embedded placements, render `RoktLayoutView` and pass its `placeholderName`
+in the `placeholders` array. The view does not need to be mounted when you call
+`selectPlacements`: the SDK waits up to 2 seconds for each named placeholder, so
+calling it from `useEffect` is fine. If a call is still waiting when `close()`
+runs, or when a newer call with the same identifier replaces it, that call emits
+`PlacementFailure` instead.
 
 ```jsx
-<MParticle.RoktLayoutView ref={this.placeholder1} placeholderName="Location1" />
+useEffect(() => {
+  MParticle.Rokt.selectPlacements(
+    'MSDKEmbeddedLayout',
+    attributes,
+    ['Location1'],
+    config
+  );
+}, []);
+
+return <MParticle.RoktLayoutView placeholderName="Location1" />;
 ```
 
-```js
-import { findNodeHandle } from 'react-native';
-
-const placeholders = { Location1: findNodeHandle(this.placeholder1.current) };
-
-MParticle.Rokt.selectPlacements(
-  'MSDKEmbeddedLayout',
-  attributes,
-  placeholders,
-  config
-);
-```
+The earlier form, a map of `placeholderName` to `findNodeHandle(ref)`, is still
+supported: `{ Location1: findNodeHandle(this.placeholder1.current) }`.
 
 | Method                                                | Notes                                                 |
 | ----------------------------------------------------- | ----------------------------------------------------- |

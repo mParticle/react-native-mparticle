@@ -40,13 +40,15 @@ class MPRoktModule(
 
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
         uiManager?.addUIBlock { nativeViewHierarchyManager ->
-            MParticle.getInstance()?.rokt?.selectPlacements(
-                identifier = identifier,
-                attributes = impl.readableMapToMapOfStrings(attributes),
-                embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
-                fontTypefaces = null, // TODO
-                config = config,
-            )
+            impl.whenPlaceholdersMounted(identifier, placeholders) {
+                MParticle.getInstance()?.rokt?.selectPlacements(
+                    identifier = identifier,
+                    attributes = impl.readableMapToMapOfStrings(attributes),
+                    embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
+                    fontTypefaces = null, // TODO
+                    config = config,
+                )
+            }
         }
     }
 
@@ -86,22 +88,25 @@ class MPRoktModule(
         impl.getSessionId(promise)
     }
 
+    // Positive numeric values are legacy react tags. Zero is the name-lookup sentinel used by
+    // the JS wrapper; unresolved tags also fall back to placeholderName.
     private fun safeUnwrapPlaceholders(
         placeholders: ReadableMap?,
         nativeViewHierarchyManager: NativeViewHierarchyManager,
     ): Map<String, WeakReference<RoktEmbeddedView>> {
         val placeholderMap: MutableMap<String, WeakReference<RoktEmbeddedView>> = HashMap()
 
-        if (placeholders != null) {
-            placeholderMap.putAll(
-                placeholders
-                    .toHashMap()
-                    .filterValues { value -> value is Double }
-                    .mapValues { pair -> (pair.value as Double).toInt() }
-                    .mapValues { pair -> nativeViewHierarchyManager.resolveView(pair.value) as? RoktEmbeddedView }
-                    .filterValues { value -> value != null }
-                    .mapValues { WeakReference(it.value as RoktEmbeddedView) },
-            )
+        // A for loop, not forEach: HashMap.forEach(BiConsumer) needs API 24 and minSdk is 21.
+        for ((key, value) in placeholders?.toHashMap().orEmpty()) {
+            val view =
+                (value as? Double)?.takeIf { it > 0 }?.let {
+                    runCatching { nativeViewHierarchyManager.resolveView(it.toInt()) as? RoktEmbeddedView }.getOrNull()
+                } ?: RoktPlaceholderRegistry.lookup(key) as? RoktEmbeddedView
+            if (view != null) {
+                placeholderMap[key] = WeakReference(view)
+            } else {
+                Logger.warning("Cannot resolve placeholder for key: $key")
+            }
         }
         return placeholderMap
     }
