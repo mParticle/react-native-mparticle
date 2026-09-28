@@ -4,7 +4,7 @@ This sample app demonstrates how to integrate and use the mParticle React Native
 
 ## Prerequisites
 
-- Node.js (>= 18)
+- Node.js (>= 22.11)
 - Yarn package manager
 - React Native development environment set up
 - For iOS: Xcode and iOS Simulator
@@ -14,16 +14,18 @@ This sample app demonstrates how to integrate and use the mParticle React Native
 
 ### 1. Configure mParticle Keys
 
-Before running the sample app, you need to replace the placeholder mParticle keys with your actual mParticle app credentials.
+Before running the sample app, provide your mParticle app credentials without adding them to source control.
 
 #### iOS Configuration
 
-Edit `ios/MParticleSample/AppDelegate.mm` and replace the placeholder keys:
+In Xcode, edit the `MParticleSample` scheme and add these environment variables to the **Run > Arguments** tab:
 
-```objc
-MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"YOUR_IOS_API_KEY"
-                                                               secret:@"YOUR_IOS_SECRET_KEY"];
+```text
+MPARTICLE_KEY=YOUR_IOS_API_KEY
+MPARTICLE_SECRET=YOUR_IOS_SECRET_KEY
 ```
+
+`AppDelegate.swift` reads these values at launch and falls back to `REPLACE_ME` when they are absent.
 
 #### Android Configuration
 

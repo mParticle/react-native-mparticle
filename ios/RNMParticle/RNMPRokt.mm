@@ -23,6 +23,7 @@
 #import <React/RCTUtils.h>
 #import <os/log.h>
 #import "RoktEventManager.h"
+#import "RoktPlaceholderRegistry.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RoktNativeLayoutComponentView.h"
@@ -39,6 +40,9 @@ static os_log_t _rokt_os_log(void) {
   });
   return log;
 }
+
+// How long selectPlacements waits for a named placeholder to mount before proceeding without it.
+static const NSTimeInterval kRoktPlaceholderMountTimeout = 2.0;
 
 static void _rokt_log(NSString *format, ...) {
   va_list args;
@@ -154,19 +158,40 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     // Replaces [self.bridge.uiManager addUIBlock:], which silently drops the call (no
     // event emitted) when RCT_REMOVE_LEGACY_ARCH is set, React Native 0.84's default.
     RCTExecuteOnMainQueue(^{
-        __strong __typeof__(weakSelf) strongSelf = weakSelf;
-        NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf resolvePlaceholders:placeholders] : [NSMutableDictionary dictionary];
+        dispatch_block_t select = ^{
+            __strong __typeof__(weakSelf) strongSelf = weakSelf;
+            NSMutableDictionary *nativePlaceholders = strongSelf ? [strongSelf resolvePlaceholders:placeholders] : [NSMutableDictionary dictionary];
 
-        id mpInstance = [MParticle sharedInstance];
-        id roktKit = mpInstance ? [mpInstance rokt] : nil;
-        _rokt_log(@"[mParticle-Rokt] MParticle sharedInstance %@, rokt kit %@", mpInstance ? @"non-nil" : @"nil", roktKit ? @"non-nil" : @"nil");
-        _rokt_log(@"[mParticle-Rokt] calling mParticle Core selectPlacements for: %@", identifer);
-        [[[MParticle sharedInstance] rokt] selectPlacements:identifer
-                                                 attributes:finalAttributes
-                                              embeddedViews:nativePlaceholders
-                                                     config:config
-                                                    onEvent:^(RoktEvent * _Nonnull event) {
-            [weakSelf.eventManager onRoktEvents:event viewName:identifer];
+            id mpInstance = [MParticle sharedInstance];
+            id roktKit = mpInstance ? [mpInstance rokt] : nil;
+            _rokt_log(@"[mParticle-Rokt] MParticle sharedInstance %@, rokt kit %@", mpInstance ? @"non-nil" : @"nil", roktKit ? @"non-nil" : @"nil");
+            _rokt_log(@"[mParticle-Rokt] calling mParticle Core selectPlacements for: %@", identifer);
+            [[[MParticle sharedInstance] rokt] selectPlacements:identifer
+                                                     attributes:finalAttributes
+                                                  embeddedViews:nativePlaceholders
+                                                         config:config
+                                                        onEvent:^(RoktEvent * _Nonnull event) {
+                [weakSelf.eventManager onRoktEvents:event viewName:identifer];
+            }];
+        };
+
+        // A placeholder named by the app may not be mounted yet (e.g. selectPlacements from the
+        // same useEffect that rendered it), so wait for it briefly rather than dropping it.
+        NSArray<NSString *> *pending = [RNMPRokt unmountedPlaceholderNames:placeholders];
+        if (pending.count == 0) {
+            select();
+            return;
+        }
+        _rokt_log(@"[mParticle-Rokt] waiting up to %.0fs for placeholder(s) to mount: %@", kRoktPlaceholderMountTimeout, pending);
+        [RoktPlaceholderRegistry waitForNames:pending
+                                          key:identifer
+                                      timeout:kRoktPlaceholderMountTimeout
+                                   completion:select
+                                    discarded:^{
+            // Replaced by a newer call with the same identifier, or cancelled by close(): the SDK
+            // is never called, so report the failure the way the SDK reports a call it rejects.
+            _rokt_log(@"[mParticle-Rokt] pending selectPlacements dropped for: %@", identifer);
+            [weakSelf.eventManager onRoktEvents:[[RoktPlacementFailure alloc] initWithIdentifier:nil] viewName:identifer];
         }];
     });
 }
@@ -244,8 +269,13 @@ RCT_EXPORT_METHOD(getSessionId:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
 
 - (void)closeWithResolve:(RCTPromiseResolveBlock)resolve
 {
-    [[[MParticle sharedInstance] rokt] close];
-    resolve(nil);
+    // methodQueue is the main queue, so this runs inline; kept as one block so pending waits are
+    // always cancelled before close even if that changes. Matches Android's MPRoktModuleImpl.close.
+    RCTExecuteOnMainQueue(^{
+        [RoktPlaceholderRegistry cancelAllWaits];
+        [[[MParticle sharedInstance] rokt] close];
+        resolve(nil);
+    });
 }
 
 - (void)setSessionIdWithString:(NSString *)sessionId
@@ -339,40 +369,63 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return isConfigEmpty ? nil : [builder build];
 }
 
-// Main thread only — RCTViewRegistry reads the mounted view hierarchy.
+// Main thread only — RCTViewRegistry and RoktPlaceholderRegistry read the mounted view hierarchy.
+// A positive numeric value is a legacy findNodeHandle react tag. Zero is the name-lookup
+// sentinel used by the JS wrapper; unresolved tags also fall back to placeholderName.
 - (NSMutableDictionary *)resolvePlaceholders:(NSDictionary *)placeholders
 {
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: %lu placeholder(s)", (unsigned long)placeholders.count);
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
     for(id key in placeholders){
-        // The spec allows `number | null`; viewForReactTag: would throw on NSNull.
-        NSNumber *reactTag = [placeholders objectForKey:key];
-        if (![reactTag isKindOfClass:[NSNumber class]]) {
-            RCTLogError(@"Invalid react tag for placeholder %@", key);
+        id reactTag = [placeholders objectForKey:key];
+        RoktEmbeddedView *embeddedView = nil;
+        if ([reactTag isKindOfClass:[NSNumber class]] && [reactTag integerValue] > 0) {
+            embeddedView = [self embeddedViewForReactTag:reactTag];
+        }
+        if (embeddedView == nil && [key isKindOfClass:[NSString class]]) {
+            UIView *view = [RoktPlaceholderRegistry viewForName:key];
+            // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
+            if ([view isKindOfClass:[RoktEmbeddedView class]]) {
+                embeddedView = (RoktEmbeddedView *)view;
+            }
+        }
+        if (embeddedView == nil) {
+            RCTLogError(@"Cannot resolve placeholder %@ (value %@)", key, reactTag);
             continue;
         }
-
-        // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
-        UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
-#ifdef RCT_NEW_ARCH_ENABLED
-        if (![view isKindOfClass:[RoktNativeLayoutComponentView class]]) {
-            RCTLogError(@"Cannot find RoktNativeLayoutComponentView for placeholder %@ (reactTag %@)", key, reactTag);
-            continue;
-        }
-        nativePlaceholders[key] = ((RoktNativeLayoutComponentView *)view).roktEmbeddedView;
-#else
-        if (![view isKindOfClass:[RoktEmbeddedView class]]) {
-            RCTLogError(@"Cannot find RoktEmbeddedView with tag #%@", key);
-            continue;
-        }
-
-        nativePlaceholders[key] = view;
-#endif // RCT_NEW_ARCH_ENABLED
+        nativePlaceholders[key] = embeddedView;
     }
 
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
+}
+
+// Names passed for name-based resolution (a non-positive value) that have no mounted view yet.
+// Legacy react tags are never waited for, so they behave exactly as before.
++ (NSArray<NSString *> *)unmountedPlaceholderNames:(NSDictionary *)placeholders
+{
+    NSMutableArray<NSString *> *pending = [NSMutableArray array];
+    for (id key in placeholders) {
+        id value = placeholders[key];
+        BOOL isReactTag = [value isKindOfClass:[NSNumber class]] && [value integerValue] > 0;
+        if (!isReactTag && [key isKindOfClass:[NSString class]] && [RoktPlaceholderRegistry viewForName:key] == nil) {
+            [pending addObject:key];
+        }
+    }
+    return pending;
+}
+
+- (nullable RoktEmbeddedView *)embeddedViewForReactTag:(NSNumber *)reactTag
+{
+    UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
+#ifdef RCT_NEW_ARCH_ENABLED
+    return [view isKindOfClass:[RoktNativeLayoutComponentView class]]
+        ? ((RoktNativeLayoutComponentView *)view).roktEmbeddedView
+        : nil;
+#else
+    return [view isKindOfClass:[RoktEmbeddedView class]] ? (RoktEmbeddedView *)view : nil;
+#endif // RCT_NEW_ARCH_ENABLED
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED

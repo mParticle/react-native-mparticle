@@ -3,6 +3,7 @@ package com.mparticle.react.rokt
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
+import com.facebook.react.uimanager.annotations.ReactProp
 import com.mparticle.kits.RoktEmbeddedView
 
 class RoktLayoutViewManager : ViewGroupManager<RoktEmbeddedView>() {
@@ -22,10 +23,16 @@ class RoktLayoutViewManager : ViewGroupManager<RoktEmbeddedView>() {
 
     override fun needsCustomLayoutForChildren(): Boolean = false
 
+    @ReactProp(name = "placeholderName")
     fun setPlaceholderName(
         view: RoktEmbeddedView?,
         value: String?,
     ) {
         impl.setPlaceholderName(view, value)
+    }
+
+    override fun onDropViewInstance(view: RoktEmbeddedView) {
+        impl.onDropViewInstance(view)
+        super.onDropViewInstance(view)
     }
 }
