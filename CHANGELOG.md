@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-09-28
+
+### Added
+
+- Resolve embedded placeholders by placeholderName ([#410](https://github.com/mParticle/react-native-mparticle/pull/410))
+
+### Fixed
+
+- Default roktConfig so iOS no longer crashes when it is omitted ([#418](https://github.com/mParticle/react-native-mparticle/pull/418))
+
+### Changed
+
+- Bump org.mockito:mockito-android from 5.23.0 to 5.24.0 in /android ([#413](https://github.com/mParticle/react-native-mparticle/pull/413))
+- Bump com.mparticle:android-core from 6.1.2 to 6.1.3 in /android ([#411](https://github.com/mParticle/react-native-mparticle/pull/411))
+
 ## [3.3.6] - 2026-09-24
 
 ### Fixed
@@ -567,7 +582,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.3.6...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.4.0...HEAD
+[3.4.0]: https://github.com/mParticle/react-native-mparticle/compare/3.3.6...3.4.0
 [3.3.6]: https://github.com/mParticle/react-native-mparticle/compare/3.3.5...3.3.6
 [3.3.5]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.5
 [3.3.4]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.4
