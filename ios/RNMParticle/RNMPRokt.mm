@@ -1,20 +1,5 @@
 #import "RNMPRokt.h"
-// SDK 9.0: ObjC headers moved to mParticle_Apple_SDK_ObjC module
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/mParticle.h>)
-    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
-    #import <mParticle_Apple_SDK_ObjC/MPRokt.h>
-#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
-    #import <mParticle_Apple_SDK/mParticle.h>
-    #import <mParticle_Apple_SDK/MPRokt.h>
-#else
-    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
-    #import <mParticle_Apple_SDK_ObjC/MPRokt.h>
-#endif
-#if __has_include(<RoktContracts/RoktContracts-Swift.h>)
-    #import <RoktContracts/RoktContracts-Swift.h>
-#elif __has_include(<RoktContracts/RoktContracts.h>)
-    #import <RoktContracts/RoktContracts.h>
-#endif
+#import "RNMPSDKImports.h"
 #import <React/RCTConvert.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
