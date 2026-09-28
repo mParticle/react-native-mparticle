@@ -1,11 +1,5 @@
 #import "RoktEventManager.h"
-// Not `@import RoktContracts` -- this file is Objective-C++ and the pod builds without
-// -fcxx-modules, so the module import fails. Matches how RNMPRokt.mm imports the same types.
-#if __has_include(<RoktContracts/RoktContracts-Swift.h>)
-    #import <RoktContracts/RoktContracts-Swift.h>
-#elif __has_include(<RoktContracts/RoktContracts.h>)
-    #import <RoktContracts/RoktContracts.h>
-#endif
+#import "RNMPSDKImports.h"
 #import <os/log.h>
 
 static os_log_t _rokt_events_os_log(void) {
