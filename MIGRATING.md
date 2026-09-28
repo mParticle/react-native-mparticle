@@ -2,6 +2,69 @@
 
 This document provides migration guidance for changes in `react-native-mparticle`.
 
+## Migrating embedded placements to placeholder names
+
+`MParticle.Rokt.selectPlacements` can find each embedded `RoktLayoutView` by its
+`placeholderName`, so apps no longer need a ref, `findNodeHandle`, or to wait for
+the view to mount before calling it. This is not a breaking change: the map of
+placeholder names to React tags still works. We recommend moving to names the
+next time you touch the integration.
+
+Before, tag-based:
+
+```jsx
+import { findNodeHandle } from 'react-native';
+
+const placeholderRef = useRef(null);
+
+const onPlaceholderLayout = () => {
+  MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, {
+    Location1: findNodeHandle(placeholderRef.current),
+  });
+};
+
+return (
+  <View onLayout={onPlaceholderLayout}>
+    <MParticle.RoktLayoutView
+      ref={placeholderRef}
+      placeholderName="Location1"
+    />
+  </View>
+);
+```
+
+After, name-based:
+
+```jsx
+useEffect(() => {
+  MParticle.Rokt.selectPlacements('MSDKEmbeddedLayout', attributes, [
+    'Location1',
+  ]);
+}, []);
+
+return <MParticle.RoktLayoutView placeholderName="Location1" />;
+```
+
+To migrate, remove the ref, the `findNodeHandle` import and any `onLayout`
+handler or timer used to delay the call, then pass an array of placeholder
+names. Each name must match the `placeholderName` of a `RoktLayoutView`, the same
+key the map uses today.
+
+### Behavior changes to check
+
+- **A named placeholder that has not mounted yet delays the request by up to 2
+  seconds.** The SDK waits for the view, then calls Rokt with the views it has.
+  A misspelled or never-rendered name therefore arrives 2 seconds late, and is
+  logged as `Cannot resolve placeholder`.
+- **`null` in the map form is resolved by name.** `findNodeHandle` returns `null`
+  before the view mounts; that placeholder was skipped before and is now looked
+  up by its key.
+- **A waiting call can end in `PlacementFailure`.** If `close()` runs, or a newer
+  call with the same identifier replaces it, before its placeholders mount, the
+  waiting call emits `PlacementFailure` instead of being dropped silently.
+
+The map form is planned for removal in a future major version.
+
 ## Migrating from versions < 3.0.0
 
 `3.0.0` moved iOS to the mParticle Apple SDK **9.x**. Later 3.x releases raised
