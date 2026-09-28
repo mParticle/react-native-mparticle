@@ -94,16 +94,11 @@ RCT_EXTERN void RCTRegisterModule(Class);
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
-// Extracts roktConfig fields into an NSDictionary, returning nil when the
-// TurboModule bridge passes a null C++ reference for an omitted optional param.
-// __attribute__((optnone)) is required: &ref != nullptr is UB in C++ and the
-// compiler removes the check at -O2, causing a SIGSEGV in Release builds.
-static NSDictionary * __attribute__((optnone)) safeExtractRoktConfigDict(
+// Extracts roktConfig fields into an NSDictionary. An omitted optional object param arrives
+// as a null C++ reference, which can't be checked here (the check is UB and is compiled out),
+// so the JS wrapper always sends a config, `{}` when omitted (toNativeRoktConfig in rokt.ts).
+static NSDictionary *safeExtractRoktConfigDict(
     JS::NativeMPRokt::RoktConfigType &roktConfig) {
-    if (&roktConfig == nullptr) {
-        _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: roktConfig ref is nullptr, returning nil");
-        return nil;
-    }
     _rokt_log(@"[mParticle-Rokt] safeExtractRoktConfigDict: extracting config");
     NSMutableDictionary *roktConfigDict = [[NSMutableDictionary alloc] init];
     if (roktConfig.colorMode() != nil) {
