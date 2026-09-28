@@ -62,6 +62,21 @@ export function toNativePlaceholders(
   }, {});
 }
 
+/**
+ * iOS New Architecture binds an omitted optional object param to a null C++ reference, which
+ * crashes on first access. An empty config is treated by native exactly like no config.
+ * Android takes a nullable `ReadableMap` and keeps receiving `undefined`: there `{}` would build a
+ * default `RoktConfig`, whose `edgeToEdgeDisplay = true` turns on edge-to-edge overlays.
+ */
+export function toNativeRoktConfig(
+  roktConfig?: IRoktConfig
+): IRoktConfig | undefined {
+  if (Platform.OS !== 'ios') {
+    return roktConfig;
+  }
+  return roktConfig ?? {};
+}
+
 export abstract class Rokt {
   /**
    * Selects placements with a [identifier], [attributes], optional [placeholders], optional [roktConfig], and optional [fontFilePathMap].
@@ -84,7 +99,7 @@ export abstract class Rokt {
       identifier,
       attributes,
       toNativePlaceholders(placeholders),
-      roktConfig,
+      toNativeRoktConfig(roktConfig),
       fontFilesMap
     );
   }
@@ -94,7 +109,11 @@ export abstract class Rokt {
     attributes: Record<string, RoktAttributeValue>,
     roktConfig?: IRoktConfig
   ): Promise<void> {
-    getMPRokt().selectShoppableAds(identifier, attributes, roktConfig);
+    getMPRokt().selectShoppableAds(
+      identifier,
+      attributes,
+      toNativeRoktConfig(roktConfig)
+    );
   }
 
   static async purchaseFinalized(
