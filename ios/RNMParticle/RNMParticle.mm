@@ -9,6 +9,10 @@
     #import <mParticle_Apple_SDK_ObjC/mParticle.h>
 #endif
 #import <React/RCTConvert.h>
+#import <React/RCTLog.h>
+#if DEBUG
+#import <objc/runtime.h>
+#endif
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import <RNMParticle/RNMParticle.h>
@@ -142,6 +146,65 @@ RCT_EXTERN void RCTRegisterModule(Class);
 + (void)load {
     RCTRegisterModule(self);
 }
+
+#if DEBUG
+- (instancetype)init
+{
+    if (self = [super init]) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [RNMParticle warnIfSDKLoadedTwice];
+        });
+    }
+    return self;
+}
+
+// Counts, per class name, the loaded images inside the app bundle that define it. System
+// images are skipped: scanning them all takes tens of seconds, the bundle takes milliseconds.
++ (NSDictionary<NSString *, NSNumber *> *)imageCountsForClassNames:(NSArray<NSString *> *)classNames
+{
+    NSMutableDictionary<NSString *, NSNumber *> *counts = [NSMutableDictionary dictionary];
+    for (NSString *name in classNames) {
+        counts[name] = @0;
+    }
+    NSString *bundlePath = NSBundle.mainBundle.bundlePath;
+    unsigned int imageCount = 0;
+    const char **images = objc_copyImageNames(&imageCount);
+    for (unsigned int i = 0; i < imageCount; i++) {
+        if (![@(images[i]) hasPrefix:bundlePath]) {
+            continue;
+        }
+        unsigned int classCount = 0;
+        const char **classes = objc_copyClassNamesForImage(images[i], &classCount);
+        for (unsigned int j = 0; j < classCount; j++) {
+            NSString *name = @(classes[j]);
+            if (counts[name] != nil) {
+                counts[name] = @(counts[name].unsignedIntegerValue + 1);
+            }
+        }
+        free(classes);
+    }
+    free(images);
+    return counts;
+}
+
+// Mixing CocoaPods and Swift Package Manager for the mParticle SDKs links a second copy that
+// builds and archives silently, then crashes at runtime. Say so early in development.
++ (void)warnIfSDKLoadedTwice
+{
+    NSArray<NSString *> *classNames = @[ @"MParticle", @"RoktEmbeddedView" ];
+    NSDictionary<NSString *, NSNumber *> *counts = [self imageCountsForClassNames:classNames];
+    NSMutableArray<NSString *> *duplicates = [NSMutableArray array];
+    for (NSString *name in classNames) {
+        if (counts[name].unsignedIntegerValue > 1) {
+            [duplicates addObject:[NSString stringWithFormat:@"%@ x%@", name, counts[name]]];
+        }
+    }
+    if (duplicates.count > 0) {
+        RCTLogError(@"[mParticle] The mParticle SDK is loaded more than once (%@). This happens when the SDK comes from both CocoaPods and Swift Package Manager. See README › Swift Package Manager.", [duplicates componentsJoinedByString:@", "]);
+    }
+}
+#endif
 
 RCT_EXPORT_METHOD(upload)
 {
