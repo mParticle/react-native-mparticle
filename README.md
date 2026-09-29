@@ -91,6 +91,9 @@ npx expo run:android
 | `dataPlanId`              | string   | No       | Data plan ID for validation                                                                                     |
 | `dataPlanVersion`         | number   | No       | Data plan version (ignored unless `dataPlanId` is also set)                                                     |
 | `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                                                                  |
+| `iosDependencyManager`    | string   | No       | `'cocoapods'` (default) or `'spm'`: take the iOS SDK and kits from Swift Package Manager (see below)            |
+| `iosSdkVersion`           | string   | No       | With `'spm'`, the exact mParticle core SDK version, also used for kits without a version                        |
+| `iosSpmKits`              | object[] | No       | With `'spm'`, extra kits as `{ url, product, version? }` Swift packages                                         |
 | `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android; must be an absolute `https://` URL or prebuild fails |
 | `pinningDisabled`         | boolean  | No       | Disable SSL pinning (`MPNetworkOptions` on iOS; `setPinningDisabledInDevelopment` on Android)                   |
 | `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)                                                       |
@@ -128,6 +131,21 @@ For global CNAME setup, add the optional shared `customBaseUrl` setting:
 }
 ```
 
+### Swift Package Manager (Expo)
+
+Set `iosDependencyManager` to `'spm'` to take the iOS mParticle SDK and kits from Swift Package Manager instead of CocoaPods ([details](#swift-package-manager-opt-in)). `iosKits` names are mapped to their Swift packages; today that is `mParticle-Rokt`. List any other kit in `iosSpmKits`, or prebuild fails with an error naming it.
+
+```json
+{
+  "iosDependencyManager": "spm",
+  "iosKits": ["mParticle-Rokt"]
+}
+```
+
+Expo regenerates `ios/` on `expo prebuild --clean`, so there is no committed `Package.resolved`. Set `iosSdkVersion` to pin the core SDK (and kits without a version) exactly. With `'spm'`, the core SDK package is always linked, so `import mParticle_Apple_SDK` resolves without declaring the umbrella pod.
+
+When you switch `iosDependencyManager` in either direction, run `npx expo prebuild --clean`, so the previous mode's Podfile lines and Swift packages are not left behind.
+
 ### What the Plugin Does
 
 **iOS:**
@@ -136,6 +154,7 @@ For global CNAME setup, add the optional shared `customBaseUrl` setting:
 - Sets `MPNetworkOptions` (`customBaseURL` and/or `pinningDisabled`) before startup when those plugin options are configured
 - Configures `pre_install` hook in Podfile for dynamic framework linking, covering the kit's transitive pods (skipped if the Podfile already mentions `mParticle-Apple-SDK`)
 - Adds specified kit pod dependencies — `mParticle-Rokt` is pinned to `>= 9.3.1, < 10.0`, other kits are added unpinned
+- With `iosDependencyManager: 'spm'`, instead of the two items above: turns on this package's Swift Package Manager mode in the Podfile and calls `mparticle_spm_post_install`, which links the core SDK and kits into the app target as Swift packages pinned to exact versions
 
 **Android:**
 
@@ -379,7 +398,7 @@ Every mParticle and Rokt SDK must then come from Swift Package Manager, and none
    ])
    ```
 
-   `core_version:` pins the core SDK; it defaults to the version this release was tested with.
+   `core_version:` pins the core SDK; it defaults to the version this release was tested with. A kit without a `version:` gets the core's version, since mParticle kits are released with the core.
 
 4. Run `pod install`, then build as usual.
 
