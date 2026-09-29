@@ -21,10 +21,18 @@ jobs:
     name: Create Release PR
     runs-on: ubuntu-latest
     steps:
+      # A major bump off main would publish the next major from maintenance code.
+      - name: Block major bump outside main
+        if: github.ref_name != 'main' && inputs.bump-type == 'major'
+        run: |
+          echo "::error::Major releases can only be drafted from main"
+          exit 1
+
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Read current version
         id: current-version
@@ -38,10 +46,14 @@ jobs:
           level: ${{ github.event.inputs.bump-type || 'patch' }}
 
       - name: Write new version to VERSION
-        run: echo "${{ steps.bump-version.outputs.new_version }}" > VERSION
+        env:
+          NEW_VERSION: ${{ steps.bump-version.outputs.new_version }}
+        run: echo "$NEW_VERSION" > VERSION
 
       - name: Update package.json version
-        run: npm version "${{ steps.bump-version.outputs.new_version }}" --no-git-tag-version --allow-same-version
+        env:
+          NEW_VERSION: ${{ steps.bump-version.outputs.new_version }}
+        run: npm version "$NEW_VERSION" --no-git-tag-version --allow-same-version
 
       - name: Generate changelog from git history
         id: changelog
@@ -58,12 +70,15 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: |
             react-native-mparticle
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Create release PR
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
         with:
           token: ${{ steps.generate-token.outputs.token }}
           branch: release/${{ steps.bump-version.outputs.new_version }}
+          base: ${{ github.ref_name }}
           title: 'chore: release ${{ steps.bump-version.outputs.new_version }}'
           body: |
             ## Release ${{ steps.bump-version.outputs.new_version }}
