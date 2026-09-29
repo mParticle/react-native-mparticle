@@ -2,7 +2,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTInvalidating.h>
 #import <React/RCTLog.h>
-@import RoktContracts;
+#import "../../../ios/RNMParticle/RNMPSDKImports.h"
 #import "../../../ios/RNMParticle/RNMPRokt.h"
 #import "../../../ios/RNMParticle/RoktPlaceholderRegistry.h"
 

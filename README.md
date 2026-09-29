@@ -356,9 +356,49 @@ npm start
 
 and build your workspace from xCode.
 
-### Swift Package Manager
+### Swift Package Manager (opt-in)
 
-Take the mParticle SDK and its kits from one dependency manager only. If the core comes from CocoaPods (through this package) and a kit such as `mParticle-Rokt` is added to the app with Swift Package Manager, the app contains two copies of the SDK. It builds and archives without warnings, then crashes at runtime. Debug builds detect this and show a red box: `[mParticle] The mParticle SDK is loaded more than once`. To fix it, remove the mParticle and Rokt Swift packages from the app and add the kits with CocoaPods, as shown above.
+By default this package takes the mParticle SDKs from CocoaPods. In Swift Package Manager mode, React Native and this package still install with CocoaPods, but the mParticle core SDK and its kits come from Swift Package Manager and are linked into your app target. Use it when you add kits with Swift Package Manager, or when you need mParticle SDK releases that are not published to CocoaPods. iOS only: `$RNMParticleUseSPM` applies to the whole Podfile, so a Podfile with a tvOS target that uses this package must stay on CocoaPods.
+
+Every mParticle and Rokt SDK must then come from Swift Package Manager, and none from CocoaPods. If the core comes from one and a kit from the other, the app contains two copies of the SDK: it builds and archives without warnings, then crashes at runtime.
+
+1. At the top of `ios/Podfile`, before any `target` block:
+
+   ```ruby
+   $RNMParticleUseSPM = true
+   require_relative '../node_modules/react-native-mparticle/ios/mparticle_spm'
+   ```
+
+2. Remove the mParticle kit pods (for example `pod 'mParticle-Rokt'`) and the mParticle entries of the `pre_install` dynamic-framework hook shown above.
+
+3. At the end of `post_install`, after `react_native_post_install(...)`, list your kits:
+
+   ```ruby
+   mparticle_spm_post_install(installer, kits: [
+     { url: 'https://github.com/mparticle-integrations/mp-apple-integration-rokt', product: 'mParticle-Rokt', version: '9.6.1' },
+   ])
+   ```
+
+   `core_version:` pins the core SDK; it defaults to the version this release was tested with.
+
+4. Run `pod install`, then build as usual.
+
+**What `mparticle_spm_post_install` changes.** On each `pod install` it edits your app's `.xcodeproj`: it adds a Swift package reference for the mParticle core SDK and each kit, pinned to the exact version, and links each package's product into every iOS application target that uses this package. It prints every change (`[mParticle] MyApp <- mParticle-Rokt 9.6.1`) and running it again changes nothing. It stops `pod install` with an error if a pod would add a second copy of the SDKs. Commit the `.xcodeproj` change and `ios/<App>.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so every build resolves the same versions.
+
+**Linkage.** This package's pod is always built as a static framework in this mode, so it works with each CocoaPods linkage:
+
+| Podfile linkage                         | Supported |
+| --------------------------------------- | --------- |
+| Static libraries (React Native default) | ✓         |
+| `use_frameworks! :linkage => :static`   | ✓         |
+| `use_frameworks! :linkage => :dynamic`  | ✓         |
+
+**Troubleshooting.**
+
+- `pod install` fails with `[mParticle] $RNMParticleUseSPM is set, but these pods would add a second copy of the mParticle/Rokt SDKs`: remove the pods it lists, including entries in a `pre_install` hook, and add those kits through `mparticle_spm_post_install` instead.
+- `pod install` fails with `The Swift pod mParticle-Apple-SDK depends upon mParticle-Apple-SDK-ObjC, which does not define modules`: an mParticle kit pod such as `mParticle-Rokt` is still declared. CocoaPods reports this before the check above can run. Remove the kit pod and add the kit through `mparticle_spm_post_install`.
+- The build fails with `[mParticle] $RNMParticleUseSPM is set but the mParticle-Apple-SDK Swift package is not linked into the app target`: `mparticle_spm_post_install` did not run, or the package was removed from the app target afterwards. Call it in `post_install` and run `pod install` again.
+- A Debug build shows the red box `[mParticle] The mParticle SDK is loaded more than once`: the SDK comes from both CocoaPods and Swift Package Manager. Remove the mParticle and Rokt pods and Swift packages you added by hand, then set up one mode as described above.
 
 ## Android (Manual Setup)
 
