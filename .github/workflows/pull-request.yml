@@ -187,6 +187,9 @@ jobs:
           -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
           -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewSizingTests \
           -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
+          -only-testing:MParticleSampleTests/RNMPRoktEventMapperTests \
+          -only-testing:MParticleSampleTests/RNMPRoktConfigFactoryTests \
+          -only-testing:MParticleSampleTests/RNMPRoktSwiftTests \
           | bundle exec xcpretty -k
 
       - name: Archive iOS sample app and check for a single copy of each SDK

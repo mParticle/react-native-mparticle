@@ -17,6 +17,10 @@
     @import mParticle_Apple_SDK_ObjC;
 #endif
 
+// RoktContracts for Objective-C (.m) files only. Objective-C++ files use its types through the
+// Swift layer (RNMPRoktSwift.h), because a Swift Package Manager Objective-C++ target cannot
+// import them; the SDK headers above only forward-declare RoktEmbeddedView, RoktConfig and RoktEvent.
+#ifndef __cplusplus
 #if __has_include(<RoktContracts/RoktContracts-Swift.h>)
     #import <RoktContracts/RoktContracts-Swift.h>
 #elif __has_include(<RoktContracts/RoktContracts.h>)
@@ -26,3 +30,4 @@
 #else
     @import RoktContracts;
 #endif
+#endif // __cplusplus

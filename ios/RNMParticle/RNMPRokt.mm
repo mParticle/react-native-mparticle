@@ -1,5 +1,6 @@
 #import "RNMPRokt.h"
 #import "RNMPSDKImports.h"
+#import "RNMPRoktSwift.h"
 #import <React/RCTConvert.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
@@ -119,14 +120,14 @@ static NSDictionary *safeExtractRoktConfigDict(
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
 
     NSDictionary *roktConfigDict = safeExtractRoktConfigDict(roktConfig);
-    RoktConfig *config = [self buildRoktConfigFromDict:roktConfigDict];
+    RoktConfig *config = [RNMPRoktConfigFactory configFromDictionary:roktConfigDict];
 #else
 // Old Architecture Implementation — selectPlacements
 RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSDictionary * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
 {
     _rokt_log(@"[mParticle-Rokt] Old Architecture Implementation");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
-    RoktConfig *config = [self buildRoktConfigFromDict:roktConfig];
+    RoktConfig *config = [RNMPRoktConfigFactory configFromDictionary:roktConfig];
 #endif
 
     _rokt_log(@"[mParticle-Rokt] selectPlacements called with identifier: %@, attributes count: %lu", identifer, (unsigned long)finalAttributes.count);
@@ -171,7 +172,7 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
             // Replaced by a newer call with the same identifier, or cancelled by close(): the SDK
             // is never called, so report the failure the way the SDK reports a call it rejects.
             _rokt_log(@"[mParticle-Rokt] pending selectPlacements dropped for: %@", identifer);
-            [weakSelf.eventManager onRoktEvents:[[RoktPlacementFailure alloc] initWithIdentifier:nil] viewName:identifer];
+            [weakSelf.eventManager onRoktEvents:[RNMPRoktEventMapper placementFailure] viewName:identifer];
         }];
     });
 }
@@ -185,14 +186,14 @@ RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictiona
     _rokt_log(@"[mParticle-Rokt] selectShoppableAds New Architecture");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
     NSDictionary *roktConfigDict = safeExtractRoktConfigDict(roktConfig);
-    RoktConfig *config = [self buildRoktConfigFromDict:roktConfigDict];
+    RoktConfig *config = [RNMPRoktConfigFactory configFromDictionary:roktConfigDict];
 #else
 // Old Architecture Implementation — selectShoppableAds
 RCT_EXPORT_METHOD(selectShoppableAds:(NSString *)identifier attributes:(NSDictionary *)attributes roktConfig:(NSDictionary * _Nullable)roktConfig)
 {
     _rokt_log(@"[mParticle-Rokt] selectShoppableAds Old Architecture");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
-    RoktConfig *config = [self buildRoktConfigFromDict:roktConfig];
+    RoktConfig *config = [RNMPRoktConfigFactory configFromDictionary:roktConfig];
 #endif
 
     _rokt_log(@"[mParticle-Rokt] selectShoppableAds called with identifier: %@, attributes count: %lu", identifier, (unsigned long)finalAttributes.count);
@@ -310,45 +311,6 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return finalAttributes;
 }
 
-- (RoktConfig *)buildRoktConfigFromDict:(NSDictionary<NSString *, id> *)configMap {
-    _rokt_log(@"[mParticle-Rokt] buildRoktConfigFromDict: configMap %@", configMap == nil ? @"nil" : [NSString stringWithFormat:@"non-nil (%lu keys)", (unsigned long)configMap.count]);
-    if (configMap == nil || configMap.count == 0) {
-        _rokt_log(@"[mParticle-Rokt] buildRoktConfigFromDict: returning nil");
-        return nil;
-    }
-
-    RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
-    BOOL isConfigEmpty = YES;
-
-    NSString *colorModeString = configMap[@"colorMode"];
-    if (colorModeString && [colorModeString isKindOfClass:[NSString class]]) {
-        isConfigEmpty = NO;
-        if ([colorModeString isEqualToString:@"dark"]) {
-            [builder colorMode:RoktColorModeDark];
-        } else if ([colorModeString isEqualToString:@"light"]) {
-            [builder colorMode:RoktColorModeLight];
-        } else {
-            [builder colorMode:RoktColorModeSystem];
-        }
-    }
-
-    NSDictionary *cacheConfigMap = configMap[@"cacheConfig"];
-    if (cacheConfigMap && [cacheConfigMap isKindOfClass:[NSDictionary class]]) {
-        isConfigEmpty = NO;
-        NSNumber *cacheDuration = cacheConfigMap[@"cacheDurationInSeconds"];
-        if (!cacheDuration) {
-            cacheDuration = @0;
-        }
-        NSDictionary<NSString *, NSString *> *cacheAttributes = cacheConfigMap[@"cacheAttributes"];
-        RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:[cacheDuration longLongValue]
-                                                                      cacheAttributes:cacheAttributes ?: @{}];
-        [builder cacheConfig:cacheConfig];
-    }
-
-    _rokt_log(@"[mParticle-Rokt] buildRoktConfigFromDict: returning %@", isConfigEmpty ? @"nil" : @"config");
-    return isConfigEmpty ? nil : [builder build];
-}
-
 // Main thread only — RCTViewRegistry and RoktPlaceholderRegistry read the mounted view hierarchy.
 // A positive numeric value is a legacy findNodeHandle react tag. Zero is the name-lookup
 // sentinel used by the JS wrapper; unresolved tags also fall back to placeholderName.
@@ -359,15 +321,15 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
 
     for(id key in placeholders){
         id reactTag = [placeholders objectForKey:key];
-        RoktEmbeddedView *embeddedView = nil;
+        UIView *embeddedView = nil;
         if ([reactTag isKindOfClass:[NSNumber class]] && [reactTag integerValue] > 0) {
             embeddedView = [self embeddedViewForReactTag:reactTag];
         }
         if (embeddedView == nil && [key isKindOfClass:[NSString class]]) {
             UIView *view = [RoktPlaceholderRegistry viewForName:key];
-            // nil fails isKindOfClass:, covering both "not mounted" and "wrong class".
-            if ([view isKindOfClass:[RoktEmbeddedView class]]) {
-                embeddedView = (RoktEmbeddedView *)view;
+            // nil is not an embedded view, covering both "not mounted" and "wrong class".
+            if ([RNMPRoktViews isEmbeddedView:view]) {
+                embeddedView = view;
             }
         }
         if (embeddedView == nil) {
@@ -396,7 +358,7 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return pending;
 }
 
-- (nullable RoktEmbeddedView *)embeddedViewForReactTag:(NSNumber *)reactTag
+- (nullable UIView *)embeddedViewForReactTag:(NSNumber *)reactTag
 {
     UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -404,7 +366,7 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
         ? ((RoktNativeLayoutComponentView *)view).roktEmbeddedView
         : nil;
 #else
-    return [view isKindOfClass:[RoktEmbeddedView class]] ? (RoktEmbeddedView *)view : nil;
+    return [RNMPRoktViews isEmbeddedView:view] ? view : nil;
 #endif // RCT_NEW_ARCH_ENABLED
 }
 

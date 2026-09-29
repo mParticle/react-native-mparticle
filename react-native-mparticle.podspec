@@ -17,6 +17,12 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/mParticle/react-native-mparticle.git", :tag => "#{s.version}" }
   s.source_files  = "ios/**/*.{h,m,mm,swift}"
+  # The Rokt-typed code is Swift (ios/RNMParticle/Swift); Objective-C++ reaches it through the
+  # hand-written RNMPRoktSwift.h. Private headers keep C++ and React headers out of the module's
+  # umbrella header, which the Swift code's module would otherwise fail to build.
+  s.swift_version = '5.0'
+  s.private_header_files = 'ios/**/*.h'
+  xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
   # Opt-in Swift Package Manager mode: set `$RNMParticleUseSPM = true` at the top of the Podfile and
   # call `mparticle_spm_post_install` (ios/mparticle_spm.rb) in post_install. When it is unset, this
@@ -29,9 +35,9 @@ Pod::Spec.new do |s|
     # `use_frameworks! :linkage => :dynamic`.
     s.static_framework = true
     s.platforms = { :ios => ios_platform } # the Rokt kit Swift package is iOS-only
-    s.pod_target_xcconfig = {
-      'HEADER_SEARCH_PATHS' => '"$(DERIVED_FILE_DIR)/mParticleSPMInclude" "$(OBJROOT)/GeneratedModuleMaps-$(PLATFORM_NAME)"'
-    }
+    xcconfig['HEADER_SEARCH_PATHS'] = '"$(DERIVED_FILE_DIR)/mParticleSPMInclude" "$(OBJROOT)/GeneratedModuleMaps-$(PLATFORM_NAME)"'
+    # Where Xcode puts the Swift packages' .swiftmodule files, for build and archive alike.
+    xcconfig['SWIFT_INCLUDE_PATHS'] = '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)"'
     # Xcode writes a module map holding the absolute checkout path of each package, for build and
     # archive alike, under OBJROOT. Linking that directory into this target's derived sources means no
     # DerivedData or -clonedSourcePackagesDirPath layout is assumed. Declaring RoktContracts-Swift.h
@@ -55,6 +61,8 @@ Pod::Spec.new do |s|
       SH
     }
   end
+
+  s.pod_target_xcconfig = xcconfig
 
   if respond_to?(:install_modules_dependencies, true)
     install_modules_dependencies(s)
