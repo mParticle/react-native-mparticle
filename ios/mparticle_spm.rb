@@ -80,7 +80,9 @@ end
 
 def mparticle_spm_post_install(installer, core_version: MParticleSPM::DEFAULT_CORE_VERSION, kits: [])
   MParticleSPM.guard!(installer)
-  packages = [{ url: MParticleSPM::CORE_URL, product: MParticleSPM::CORE_PRODUCT, version: core_version }] + kits
+  # mParticle kits are released in lockstep with the core, so a kit without a version gets the core's.
+  packages = [{ url: MParticleSPM::CORE_URL, product: MParticleSPM::CORE_PRODUCT, version: core_version }] +
+             kits.map { |kit| { version: core_version }.merge(kit) }
   touched = {}
   MParticleSPM.application_targets(installer).each do |project, target|
     packages.each do |pkg|
