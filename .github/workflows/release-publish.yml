@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [react-tests, android-unit-tests]
     # One publish at a time across branches, so each run reads npm's `latest` after the previous publish.
-    # ponytail: GitHub keeps one pending run per group; a third concurrent release cancels the waiting one, which can be re-run.
+    # GitHub keeps one pending run per group: a third concurrent release cancels the waiting one, which can be re-run.
     concurrency:
       group: npm-publish
       cancel-in-progress: false
@@ -93,7 +93,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           current=$(npm view react-native-mparticle dist-tags.latest)
-          # ponytail: sort -V is fine while we never publish pre-releases
+          # sort -V orders 4.0.0-beta.1 above 4.0.0; fine while this package publishes no pre-releases
           if [ "$(printf '%s\n' "$current" "$VERSION" | sort -V | tail -n1)" = "$VERSION" ]; then
             echo "tag=latest" >> "$GITHUB_OUTPUT"
             echo "latest=true" >> "$GITHUB_OUTPUT"
