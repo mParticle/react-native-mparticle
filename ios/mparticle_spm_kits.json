@@ -1,0 +1,134 @@
+{
+  "kits": {
+    "mParticle-Adjust-5": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-adjust-5",
+      "product": "mParticle-Adjust"
+    },
+    "mParticle-Adobe-5": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-adobe-5",
+      "product": "mParticle-Adobe"
+    },
+    "mParticle-AppsFlyer-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer-6",
+      "product": "mParticle-AppsFlyer"
+    },
+    "mParticle-Apptentive-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive-6",
+      "product": "mParticle-Apptentive"
+    },
+    "mParticle-Apptentive-7": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive-7",
+      "product": "mParticle-Apptentive"
+    },
+    "mParticle-Apptimize-3": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-apptimize-3",
+      "product": "mParticle-Apptimize"
+    },
+    "mParticle-BranchMetrics-3": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics-3",
+      "product": "mParticle-BranchMetrics"
+    },
+    "mParticle-Braze-12": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12",
+      "product": "mParticle-Braze"
+    },
+    "mParticle-Braze-13": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-13",
+      "product": "mParticle-Braze"
+    },
+    "mParticle-Braze-14": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-14",
+      "product": "mParticle-Braze"
+    },
+    "mParticle-Braze-17": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-17",
+      "product": "mParticle-Braze"
+    },
+    "mParticle-CleverTap-7": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-clevertap-7",
+      "product": "mParticle-CleverTap"
+    },
+    "mParticle-ComScore-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-comscore-6",
+      "product": "mParticle-ComScore"
+    },
+    "mParticle-Firebase-11": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-11",
+      "product": "mParticle-Firebase"
+    },
+    "mParticle-Firebase-12": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-12",
+      "product": "mParticle-Firebase"
+    },
+    "mParticle-FirebaseGA4-11": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4-11",
+      "product": "mParticle-FirebaseGA4"
+    },
+    "mParticle-FirebaseGA4-12": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4-12",
+      "product": "mParticle-FirebaseGA4"
+    },
+    "mParticle-Iterable-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-iterable-6",
+      "product": "mParticle-Iterable"
+    },
+    "mParticle-Kochava-9": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-kochava-9",
+      "product": "mParticle-Kochava"
+    },
+    "mParticle-Kochava-No-Tracking-9": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-kochava-no-tracking-9",
+      "product": "mParticle-Kochava"
+    },
+    "mParticle-Leanplum-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum-6",
+      "product": "mParticle-Leanplum"
+    },
+    "mParticle-Localytics-6": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-localytics-6",
+      "product": "mParticle-Localytics"
+    },
+    "mParticle-Localytics-7": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-localytics-7",
+      "product": "mParticle-Localytics"
+    },
+    "mParticle-OneTrust": {
+      "url": "https://github.com/mparticle-integrations/mp-apple-integration-onetrust",
+      "product": "mParticle-OneTrust"
+    },
+    "mParticle-Optimizely-4": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-4",
+      "product": "mParticle-Optimizely"
+    },
+    "mParticle-Optimizely-5": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-5",
+      "product": "mParticle-Optimizely"
+    },
+    "mParticle-Radar-3": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-radar-3",
+      "product": "mParticle-Radar"
+    },
+    "mParticle-Rokt": {
+      "url": "https://github.com/mparticle-integrations/mp-apple-integration-rokt",
+      "product": "mParticle-Rokt"
+    },
+    "mParticle-Singular-12": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-singular-12",
+      "product": "mParticle-Singular"
+    },
+    "mParticle-UrbanAirship-19": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-19",
+      "product": "mParticle-UrbanAirship"
+    },
+    "mParticle-UrbanAirship-20": {
+      "url": "https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20",
+      "product": "mParticle-UrbanAirship"
+    },
+    "RoktSDKPlus": {
+      "url": "https://github.com/ROKT/rokt-sdk-plus-ios",
+      "product": "RoktSDKPlus",
+      "includes": ["mParticle-Rokt"]
+    }
+  },
+  "swiftPackageOnly": ["mParticle-Kochava-9", "mParticle-Kochava-No-Tracking-9"]
+}

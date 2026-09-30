@@ -1,4 +1,5 @@
 require 'json'
+require_relative 'ios/mparticle_spm'
 
 ios_platform = '15.6'
 
@@ -24,10 +25,10 @@ Pod::Spec.new do |s|
   s.private_header_files = 'ios/**/*.h'
   xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
-  # Opt-in Swift Package Manager mode: set `$RNMParticleUseSPM = true` at the top of the Podfile and
-  # call `mparticle_spm_post_install` (ios/mparticle_spm.rb) in post_install. When it is unset, this
-  # podspec resolves exactly as before.
-  use_spm = defined?($RNMParticleUseSPM) && $RNMParticleUseSPM
+  # Swift Package Manager mode is the default: ios/mparticle_spm.rb links the mParticle SDKs into the
+  # app target on each `pod install`. `$RNMParticleDisableSPM = true` at the top of the Podfile takes
+  # them from CocoaPods instead.
+  use_spm = MParticleSPM.enabled?
 
   if use_spm
     # The app target links mParticle and RoktContracts as Swift packages. This pod only compiles
@@ -53,7 +54,7 @@ Pod::Spec.new do |s|
         MAP="${OBJROOT}/GeneratedModuleMaps-${PLATFORM_NAME}/mParticle_Apple_SDK_ObjC.modulemap"
         INC=$(sed -n 's/^umbrella "\(.*\)"$/\1/p' "$MAP" 2>/dev/null || true)
         if [ -z "$INC" ] || [ ! -d "$INC" ]; then
-          echo "error: [mParticle] \$RNMParticleUseSPM is set but the mParticle-Apple-SDK Swift package is not linked into the app target. Call mparticle_spm_post_install in your Podfile post_install."
+          echo "error: [mParticle] Swift Package Manager mode is on, but the mParticle-Apple-SDK Swift package is not linked into the app target. Run pod install again, or set \$RNMParticleDisableSPM = true at the top of the Podfile to take the SDK from CocoaPods."
           exit 1
         fi
         mkdir -p "${DERIVED_FILE_DIR}"

@@ -2,21 +2,24 @@
 
 This document provides migration guidance for changes in `react-native-mparticle`.
 
-## Moving an iOS app to Swift Package Manager mode
+## iOS: the mParticle SDKs now come from Swift Package Manager
 
-Optional, iOS only. The default CocoaPods setup keeps working unchanged. See [README › Swift Package Manager (opt-in)](./README.md#swift-package-manager-opt-in) for what the mode does.
+**Breaking, iOS only.** React Native and this package still install with CocoaPods, but the mParticle core SDK and its kits now come from Swift Package Manager by default, linked into the app target. CocoaPods trunk becomes read-only on 2 December 2026. An app with no kits needs no change. An app that declares kit pods fails `pod install` until it moves them, or opts out. See [README › Swift Package Manager](./README.md#swift-package-manager).
 
-1. In `ios/Podfile`, add `$RNMParticleUseSPM = true` and `require_relative '../node_modules/react-native-mparticle/ios/mparticle_spm'` above the first `target` block.
-2. Remove every mParticle and Rokt pod you declared, such as `pod 'mParticle-Rokt'`, `pod 'mParticle-Apple-SDK'` or `pod 'Rokt-Widget'`.
-3. Remove the mParticle, Rokt, `RoktContracts`, `RoktUXHelper` and `DcuiSchema` names from any `pre_install` hook that makes them dynamic frameworks. If the hook lists nothing else, delete it.
-4. If you added mParticle or Rokt Swift packages to the app target by hand, remove them in Xcode (target › General › Frameworks, Libraries, and Embedded Content, and the project's Package Dependencies). The helper adds them back, pinned.
-5. In `post_install`, after `react_native_post_install(...)`, call `mparticle_spm_post_install(installer, kits: [...])` with one entry per kit.
-6. Run `pod install`. It prints each package it adds, and fails with a list of pods to remove if any would add a second copy of the SDK.
-7. Build, run a Debug build once to confirm no red box, and commit the `.xcodeproj` change and `Package.resolved`.
+To move a bare React Native app:
+
+1. In `ios/Podfile`, remove every mParticle and Rokt pod you declared, such as `pod 'mParticle-Rokt'`, `pod 'mParticle-Apple-SDK'` or `pod 'Rokt-Widget'`.
+2. Remove the mParticle, Rokt, `RoktContracts`, `RoktUXHelper` and `DcuiSchema` names from any `pre_install` hook that makes them dynamic frameworks. If the hook lists nothing else, delete it.
+3. If you added mParticle or Rokt Swift packages to the app target by hand, remove them in Xcode (target › General › Frameworks, Libraries, and Embedded Content, and the project's Package Dependencies). `pod install` adds them back, pinned.
+4. Above the first `target` block, list your kits by CocoaPods name: `$RNMParticleSPMKits = ['mParticle-Rokt']`.
+5. Run `pod install`. It prints each package it adds, and fails with a list of pods to remove if any would add a second copy of the SDK.
+6. Build, run a Debug build once to confirm no red box, and commit the `.xcodeproj` change and `Package.resolved`.
 
 A Swift `AppDelegate` needs no change: `import mParticle_Apple_SDK` resolves from the Swift package.
 
-To go back, undo these steps: remove `$RNMParticleUseSPM` and the helper call, restore your kit pods and the `pre_install` hook, remove the packages from the app target, and run `pod install`.
+Expo apps need no change beyond `npx expo prebuild --clean`: the plugin maps `iosKits` to their Swift packages. A kit the plugin does not know goes in `iosSpmKits`.
+
+To stay on CocoaPods for now, add `$RNMParticleDisableSPM = true` at the top of `ios/Podfile`, before any `target` block, and keep your pods (Expo: `"iosDependencyManager": "cocoapods"`). This is deprecated, and a Podfile with a tvOS target that uses this package must do it.
 
 ## Migrating embedded placements to placeholder names
 
