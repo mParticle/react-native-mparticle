@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import <React/RCTBridgeModule.h>
 #import <React/RCTInvalidating.h>
 #import <React/RCTLog.h>
 #import "../../../ios/RNMParticle/RNMPSDKImports.h"
@@ -8,20 +7,13 @@
 
 // Implemented in RNMPRokt.mm.
 @interface RNMPRokt (PlaceholderTests)
-- (NSMutableDictionary *)resolvePlaceholders:(NSDictionary *)placeholders;
+- (NSMutableDictionary *)resolvePlaceholders:(NSArray *)placeholders;
++ (NSArray<NSString *> *)unmountedPlaceholderNames:(NSArray *)placeholders;
 @end
 
 /**
- * Guards how `-[RNMPRokt resolvePlaceholders:]` turns placeholder react tags into the
- * embedded views handed to `MPRokt selectPlacements`.
- *
- * Resolution goes through `RCTViewRegistry` rather than the legacy
- * `self.bridge.uiManager addUIBlock:` view registry, because the latter is a no-op method
- * body when RCT_REMOVE_LEGACY_ARCH is defined (React Native 0.84's default) and a no-op
- * when `self.bridge` is nil — either way selectPlacements was discarded with no event
- * emitted. The registry is exercised for real here: the tests install a bridgeless
- * component-view provider, the same hook RCTInstance wires to the surface presenter in
- * production.
+ * Guards how `-[RNMPRokt resolvePlaceholders:]` turns placeholder names into the embedded
+ * views handed to `MPRokt selectPlacements`, looking each name up in RoktPlaceholderRegistry.
  *
  * Scope limit, deliberate: this test target statically links the react-native-mparticle
  * pod a second time on top of the app it hosts, so `RoktNativeLayoutComponentView` and
@@ -30,18 +22,13 @@
  * warning). Asserting a mounted placeholder resolves all the way to its `RoktEmbeddedView`
  * would therefore be testing the linkage, not the code. That step is verified by running
  * an embedded placement in the sample app instead. What is covered below is
- * binary-independent: that the module is wired to a working registry, and every branch
- * that refuses to resolve a tag.
+ * binary-independent: every branch that refuses to resolve a placeholder.
  */
 @interface RNMPRoktPlaceholderTests : XCTestCase
 @end
 
 @implementation RNMPRoktPlaceholderTests {
     RNMPRokt *_rokt;
-    // viewRegistry_DEPRECATED is a weak property (React Native retains the registry via
-    // RCTBridgeModuleDecorator for the instance's lifetime), so the test has to own it.
-    RCTViewRegistry *_viewRegistry;
-    NSMutableDictionary<NSNumber *, UIView *> *_views;
     NSInteger _loggedErrorCount;
     NSMutableArray<NSString *> *_loggedErrors;
     RCTLogFunction _originalLogFunction;
@@ -51,21 +38,13 @@
 {
     [super setUp];
     _rokt = [RNMPRokt new];
-    _views = [NSMutableDictionary new];
-
-    _viewRegistry = [RCTViewRegistry new];
-    __weak __typeof__(self) weakSelf = self;
-    [_viewRegistry setBridgelessComponentViewProvider:^UIView *(NSNumber *reactTag) {
-        __strong __typeof__(weakSelf) strongSelf = weakSelf;
-        return strongSelf ? strongSelf->_views[reactTag] : nil;
-    }];
-    _rokt.viewRegistry_DEPRECATED = _viewRegistry;
 
     // Unresolvable placeholders are reported via RCTLogError. Capture instead of letting
     // it surface as test noise, so the diagnostic itself can be asserted.
     _loggedErrorCount = 0;
     _loggedErrors = [NSMutableArray new];
     _originalLogFunction = RCTGetLogFunction();
+    __weak __typeof__(self) weakSelf = self;
     RCTSetLogFunction(^(RCTLogLevel level,
                         __unused RCTLogSource source,
                         __unused NSString *fileName,
@@ -84,54 +63,52 @@
     [RoktPlaceholderRegistry cancelAllWaits];
     RCTSetLogFunction(_originalLogFunction);
     _rokt = nil;
-    _viewRegistry = nil;
-    _views = nil;
     [super tearDown];
 }
 
-// Regression guard for the change itself: without `@synthesize viewRegistry_DEPRECATED`
-// in RNMPRokt.mm the module has no way to reach a view, and every embedded placement
-// silently resolves to nothing.
-- (void)testModuleIsWiredToAViewRegistryThatResolvesMountedViews
+- (void)testSkipsNameWithNoMountedView
 {
-    UIView *mountedView = [[UIView alloc] init];
-    _views[@101] = mountedView;
-
-    XCTAssertNotNil(_rokt.viewRegistry_DEPRECATED);
-    XCTAssertEqualObjects([_rokt.viewRegistry_DEPRECATED viewForReactTag:@101], mountedView);
-    XCTAssertNil([_rokt.viewRegistry_DEPRECATED viewForReactTag:@999]);
-}
-
-- (void)testSkipsTagThatIsNotMounted
-{
-    NSDictionary *resolved = [_rokt resolvePlaceholders:@{@"Location1" : @999}];
+    NSDictionary *resolved = [_rokt resolvePlaceholders:@[ @"Location1" ]];
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 1, @"errors: %@", _loggedErrors);
+    XCTAssertTrue([_loggedErrors.firstObject hasPrefix:@"Cannot resolve placeholder"],
+                  @"errors: %@", _loggedErrors);
 }
 
-- (void)testSkipsTagResolvingToUnexpectedViewClass
+- (void)testSkipsNameRegisteredToUnexpectedViewClass
 {
-    _views[@101] = [[UIView alloc] init];
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
 
-    NSDictionary *resolved = [_rokt resolvePlaceholders:@{@"Location1" : @101}];
+    NSDictionary *resolved = [_rokt resolvePlaceholders:@[ @"Location1" ]];
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 1, @"errors: %@", _loggedErrors);
+    [RoktPlaceholderRegistry unregisterView:view];
 }
 
-- (void)testSkipsNonNumericValueWithNoRegisteredNameWithoutThrowing
+- (void)testSkipsNonStringEntriesWithoutThrowing
 {
-    // Defensive coverage for malformed direct native calls: viewForReactTag: would throw on
-    // NSNull, so non-numeric values must never reach it. They are resolved by placeholder name
-    // instead, and nothing is registered under these names.
-    NSDictionary *resolved =
-        [_rokt resolvePlaceholders:@{@"Location1" : [NSNull null], @"Location2" : @"101"}];
+    // Defensive coverage for malformed direct native calls, such as a legacy react tag:
+    // only placeholderName strings are looked up.
+    NSDictionary *resolved = [_rokt resolvePlaceholders:@[ [NSNull null], @101 ]];
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 2, @"errors: %@", _loggedErrors);
     XCTAssertTrue([_loggedErrors.firstObject hasPrefix:@"Cannot resolve placeholder"],
                   @"errors: %@", _loggedErrors);
+}
+
+- (void)testUnmountedPlaceholderNamesListsOnlyUnregisteredStrings
+{
+    UIView *view = [UIView new];
+    [RoktPlaceholderRegistry registerView:view name:@"Location1"];
+
+    NSArray *pending = [RNMPRokt unmountedPlaceholderNames:@[ @"Location1", @"Location2", @101 ]];
+
+    XCTAssertEqualObjects(pending, (@[ @"Location2" ]));
+    [RoktPlaceholderRegistry unregisterView:view];
 }
 
 // Name-based resolution goes through RoktPlaceholderRegistry. Its semantics are
@@ -216,7 +193,7 @@
 {
     // Overlay / bottom-sheet placements pass no placeholders at all, so this path must not
     // depend on the view hierarchy in any way.
-    NSDictionary *resolved = [_rokt resolvePlaceholders:@{}];
+    NSDictionary *resolved = [_rokt resolvePlaceholders:@[]];
 
     XCTAssertEqual(resolved.count, 0u);
     XCTAssertEqual(_loggedErrorCount, 0, @"errors: %@", _loggedErrors);

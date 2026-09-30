@@ -1,5 +1,6 @@
 package com.mparticle.react.rokt
 
+import com.facebook.react.bridge.JavaOnlyArray
 import com.facebook.react.bridge.ReactApplicationContext
 import com.mparticle.MParticle
 import com.mparticle.WrapperSdk
@@ -92,11 +93,11 @@ class MPRoktModuleImplTest {
     }
 
     @Test
-    fun `unmountedPlaceholderNames waits only for names, never for react tags`() {
+    fun `unmountedPlaceholderNames waits only for unmounted placeholderName strings`() {
         val mounted = Mockito.mock(android.view.View::class.java)
         RoktPlaceholderRegistry.register(mounted, "Mounted")
         try {
-            val placeholders = MockMap(mapOf("Location1" to 0.0, "Mounted" to 0.0, "Tagged" to 42.0))
+            val placeholders = JavaOnlyArray.of("Location1", "Mounted", 42.0)
 
             assertEquals(listOf("Location1"), impl.unmountedPlaceholderNames(placeholders))
             assertEquals(emptyList<String>(), impl.unmountedPlaceholderNames(null))
