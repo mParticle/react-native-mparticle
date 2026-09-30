@@ -126,8 +126,8 @@ jobs:
           - ios_deps: spm
             check_name: iOS Sample App (SPM)
     env:
-      # sample/ios/Podfile takes the mParticle SDKs from Swift Package Manager when this is 1.
-      MP_USE_SPM: ${{ matrix.ios_deps == 'spm' && '1' || '0' }}
+      # sample/ios/Podfile takes the mParticle SDKs from Swift Package Manager unless this is 1.
+      MP_USE_COCOAPODS: ${{ matrix.ios_deps == 'cocoapods' && '1' || '0' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
