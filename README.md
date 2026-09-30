@@ -785,8 +785,8 @@ useEffect(() => {
 return <MParticle.RoktLayoutView placeholderName="Location1" />;
 ```
 
-The earlier form, a map of `placeholderName` to `findNodeHandle(ref)`, is still
-supported: `{ Location1: findNodeHandle(this.placeholder1.current) }`.
+The earlier map of `placeholderName` to `findNodeHandle(ref)` is no longer
+supported: see [MIGRATING](./MIGRATING.md#migrating-embedded-placements-to-placeholder-names).
 
 | Method                                                | Notes                                                 |
 | ----------------------------------------------------- | ----------------------------------------------------- |

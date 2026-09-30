@@ -20,11 +20,14 @@ To go back, undo these steps: remove `$RNMParticleUseSPM` and the helper call, r
 
 ## Migrating embedded placements to placeholder names
 
-`MParticle.Rokt.selectPlacements` can find each embedded `RoktLayoutView` by its
+`MParticle.Rokt.selectPlacements` finds each embedded `RoktLayoutView` by its
 `placeholderName`, so apps no longer need a ref, `findNodeHandle`, or to wait for
-the view to mount before calling it. This is not a breaking change: the map of
-placeholder names to React tags still works. We recommend moving to names the
-next time you touch the integration.
+the view to mount before calling it.
+
+**Breaking:** the map of placeholder names to React tags has been removed, and
+`placeholders` must be an array of names. A map passed from plain JavaScript logs
+an error, and the placement is requested without embedded views. Earlier 3.x
+releases accept both forms, so you can switch to names before you upgrade.
 
 Before, tag-based:
 
@@ -64,7 +67,7 @@ return <MParticle.RoktLayoutView placeholderName="Location1" />;
 To migrate, remove the ref, the `findNodeHandle` import and any `onLayout`
 handler or timer used to delay the call, then pass an array of placeholder
 names. Each name must match the `placeholderName` of a `RoktLayoutView`, the same
-key the map uses today.
+key the map used.
 
 ### Behavior changes to check
 
@@ -72,14 +75,9 @@ key the map uses today.
   seconds.** The SDK waits for the view, then calls Rokt with the views it has.
   A misspelled or never-rendered name therefore arrives 2 seconds late, and is
   logged as `Cannot resolve placeholder`.
-- **`null` in the map form is resolved by name.** `findNodeHandle` returns `null`
-  before the view mounts; that placeholder was skipped before and is now looked
-  up by its key.
 - **A waiting call can end in `PlacementFailure`.** If `close()` runs, or a newer
   call with the same identifier replaces it, before its placeholders mount, the
   waiting call emits `PlacementFailure` instead of being dropped silently.
-
-The map form is planned for removal in a future major version.
 
 ## Migrating from versions < 3.0.0
 
