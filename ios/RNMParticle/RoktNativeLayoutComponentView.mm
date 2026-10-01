@@ -28,6 +28,9 @@ using namespace facebook::react;
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
+    // The superclass leaves plain ViewProps here, and debug builds of React Native assert on
+    // the first updateProps if a subclass keeps them, so start from this component's defaults.
+    _props = RoktNativeLayoutShadowNode::defaultSharedProps();
     _roktEmbeddedView = [RNMPRoktViews makeEmbeddedViewWithFrame:self.bounds];
     // Width only: the Rokt SDK owns the height (updateEmbeddedSize sets it before JS
     // resizes this view), so flexible height would re-apply that delta once React Native
