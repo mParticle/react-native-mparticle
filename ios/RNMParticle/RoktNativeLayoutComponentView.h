@@ -2,7 +2,6 @@
 #import <SafariServices/SafariServices.h>
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
-#import "RNMPSDKImports.h"
 
 #ifndef RoktNativeLayoutComponentView_h
 #define RoktNativeLayoutComponentView_h
@@ -10,7 +9,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RoktNativeLayoutComponentView : RCTViewComponentView
-@property (nonatomic, readonly) RoktEmbeddedView *roktEmbeddedView;
+// The RoktEmbeddedView the SDK renders into (typed UIView so Objective-C++ needs no Rokt headers).
+@property (nonatomic, readonly) UIView *roktEmbeddedView;
 @end
 
 NS_ASSUME_NONNULL_END
