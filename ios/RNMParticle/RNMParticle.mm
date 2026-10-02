@@ -1,14 +1,6 @@
 #import "RNMParticle.h"
 #import <React/RCTConvert.h>
-// SDK 9.0: ObjC headers moved to mParticle_Apple_SDK_ObjC module
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/mParticle.h>)
-    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
-#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
-    #import <mParticle_Apple_SDK/mParticle.h>
-#else
-    #import <mParticle_Apple_SDK_ObjC/mParticle.h>
-#endif
-#import <React/RCTConvert.h>
+#import "RNMPSDKImports.h"
 #import <React/RCTLog.h>
 #if DEBUG
 #import <objc/runtime.h>
