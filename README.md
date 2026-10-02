@@ -356,6 +356,10 @@ npm start
 
 and build your workspace from xCode.
 
+### Swift Package Manager
+
+Take the mParticle SDK and its kits from one dependency manager only. If the core comes from CocoaPods (through this package) and a kit such as `mParticle-Rokt` is added to the app with Swift Package Manager, the app contains two copies of the SDK. It builds and archives without warnings, then crashes at runtime. Debug builds detect this and show a red box: `[mParticle] The mParticle SDK is loaded more than once`. To fix it, remove the mParticle and Rokt Swift packages from the app and add the kits with CocoaPods, as shown above.
+
 ## Android (Manual Setup)
 
 1. Copy your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/setup/inputs/apps) and construct an `MParticleOptions` object.

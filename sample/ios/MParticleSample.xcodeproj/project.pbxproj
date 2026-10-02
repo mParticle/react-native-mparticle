@@ -17,6 +17,7 @@
 		B7C10E912E50AA1100000002 /* RCTConvertCommerceMappingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */; };
 		B7C10E932E50AA1100000004 /* RNMPRoktPlaceholderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */; };
 		B7C10E952E50AA1100000006 /* RoktNativeLayoutComponentViewSizingTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */; };
+		B7C10E972E50AA1100000008 /* RNMParticleDuplicateSDKTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E962E50AA1100000007 /* RNMParticleDuplicateSDKTests.m */; };
 		B7C10E992F6B000000000009 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C10E982F6B000000000008 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +50,7 @@
 		B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTConvertCommerceMappingTests.m; sourceTree = "<group>"; };
 		B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNMPRoktPlaceholderTests.m; sourceTree = "<group>"; };
 		B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RoktNativeLayoutComponentViewSizingTests.mm; sourceTree = "<group>"; };
+		B7C10E962E50AA1100000007 /* RNMParticleDuplicateSDKTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNMParticleDuplicateSDKTests.m; sourceTree = "<group>"; };
 		B7C10E982F6B000000000008 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = MParticleSample/SceneDelegate.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -80,6 +82,7 @@
 				B7C10E902E50AA1100000001 /* RCTConvertCommerceMappingTests.m */,
 				B7C10E922E50AA1100000003 /* RNMPRoktPlaceholderTests.m */,
 				B7C10E942E50AA1100000005 /* RoktNativeLayoutComponentViewSizingTests.mm */,
+				B7C10E962E50AA1100000007 /* RNMParticleDuplicateSDKTests.m */,
 				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
 			path = MParticleSampleTests;
@@ -399,6 +402,7 @@
 				B7C10E912E50AA1100000002 /* RCTConvertCommerceMappingTests.m in Sources */,
 				B7C10E932E50AA1100000004 /* RNMPRoktPlaceholderTests.m in Sources */,
 				B7C10E952E50AA1100000006 /* RoktNativeLayoutComponentViewSizingTests.mm in Sources */,
+				B7C10E972E50AA1100000008 /* RNMParticleDuplicateSDKTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
