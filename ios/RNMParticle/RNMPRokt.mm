@@ -12,7 +12,6 @@
 #import "RoktPlaceholderRegistry.h"
 
 #ifdef RCT_NEW_ARCH_ENABLED
-#import "RoktNativeLayoutComponentView.h"
 #import <RNMParticle/RNMParticle.h>
 #endif // RCT_NEW_ARCH_ENABLED
 
@@ -45,9 +44,6 @@ static void _rokt_log(NSString *format, ...) {
 @end
 
 @implementation RNMPRokt
-
-// Maps React tags to UIViews in both bridge and bridgeless modes, unlike bridge.uiManager.
-@synthesize viewRegistry_DEPRECATED = _viewRegistry_DEPRECATED;
 
 RCT_EXTERN void RCTRegisterModule(Class);
 
@@ -112,7 +108,7 @@ static NSDictionary *safeExtractRoktConfigDict(
 // New Architecture Implementation — selectPlacements
 - (void)selectPlacements:(NSString *)identifer
               attributes:(NSDictionary *)attributes
-            placeholders:(NSDictionary *)placeholders
+            placeholders:(NSArray *)placeholders
                roktConfig:(JS::NativeMPRokt::RoktConfigType &)roktConfig
             fontFilesMap:(NSDictionary *)fontFilesMap
 {
@@ -123,7 +119,7 @@ static NSDictionary *safeExtractRoktConfigDict(
     RoktConfig *config = [RNMPRoktConfigFactory configFromDictionary:roktConfigDict];
 #else
 // Old Architecture Implementation — selectPlacements
-RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSDictionary * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
+RCT_EXPORT_METHOD(selectPlacements:(NSString *) identifer attributes:(NSDictionary *)attributes placeholders:(NSArray * _Nullable)placeholders roktConfig:(NSDictionary * _Nullable)roktConfig fontFilesMap:(NSDictionary * _Nullable)fontFilesMap)
 {
     _rokt_log(@"[mParticle-Rokt] Old Architecture Implementation");
     NSMutableDictionary *finalAttributes = [self convertToMutableDictionaryOfStrings:attributes];
@@ -311,63 +307,40 @@ RCT_EXPORT_METHOD(purchaseFinalized : (NSString *)placementId catalogItemId : (
     return finalAttributes;
 }
 
-// Main thread only — RCTViewRegistry and RoktPlaceholderRegistry read the mounted view hierarchy.
-// A positive numeric value is a legacy findNodeHandle react tag. Zero is the name-lookup
-// sentinel used by the JS wrapper; unresolved tags also fall back to placeholderName.
-- (NSMutableDictionary *)resolvePlaceholders:(NSDictionary *)placeholders
+// Main thread only — RoktPlaceholderRegistry reads the mounted view hierarchy.
+- (NSMutableDictionary *)resolvePlaceholders:(NSArray *)placeholders
 {
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: %lu placeholder(s)", (unsigned long)placeholders.count);
     NSMutableDictionary *nativePlaceholders = [[NSMutableDictionary alloc]initWithCapacity:placeholders.count];
 
-    for(id key in placeholders){
-        id reactTag = [placeholders objectForKey:key];
-        UIView *embeddedView = nil;
-        if ([reactTag isKindOfClass:[NSNumber class]] && [reactTag integerValue] > 0) {
-            embeddedView = [self embeddedViewForReactTag:reactTag];
-        }
-        if (embeddedView == nil && [key isKindOfClass:[NSString class]]) {
-            UIView *view = [RoktPlaceholderRegistry viewForName:key];
-            // nil is not an embedded view, covering both "not mounted" and "wrong class".
-            if ([RNMPRoktViews isEmbeddedView:view]) {
-                embeddedView = view;
-            }
-        }
-        if (embeddedView == nil) {
-            RCTLogError(@"Cannot resolve placeholder %@ (value %@)", key, reactTag);
+    for (id name in placeholders) {
+        if (![name isKindOfClass:[NSString class]]) {
+            RCTLogError(@"Cannot resolve placeholder %@: expected a placeholderName string", name);
             continue;
         }
-        nativePlaceholders[key] = embeddedView;
+        UIView *view = [RoktPlaceholderRegistry viewForName:name];
+        // nil is not an embedded view, covering both "not mounted" and "wrong class".
+        if (![RNMPRoktViews isEmbeddedView:view]) {
+            RCTLogError(@"Cannot resolve placeholder %@", name);
+            continue;
+        }
+        nativePlaceholders[name] = view;
     }
 
     _rokt_log(@"[mParticle-Rokt] resolvePlaceholders: resolved %lu native placeholder(s)", (unsigned long)nativePlaceholders.count);
     return nativePlaceholders;
 }
 
-// Names passed for name-based resolution (a non-positive value) that have no mounted view yet.
-// Legacy react tags are never waited for, so they behave exactly as before.
-+ (NSArray<NSString *> *)unmountedPlaceholderNames:(NSDictionary *)placeholders
+// Placeholder names that have no mounted view yet.
++ (NSArray<NSString *> *)unmountedPlaceholderNames:(NSArray *)placeholders
 {
     NSMutableArray<NSString *> *pending = [NSMutableArray array];
-    for (id key in placeholders) {
-        id value = placeholders[key];
-        BOOL isReactTag = [value isKindOfClass:[NSNumber class]] && [value integerValue] > 0;
-        if (!isReactTag && [key isKindOfClass:[NSString class]] && [RoktPlaceholderRegistry viewForName:key] == nil) {
-            [pending addObject:key];
+    for (id name in placeholders) {
+        if ([name isKindOfClass:[NSString class]] && [RoktPlaceholderRegistry viewForName:name] == nil) {
+            [pending addObject:name];
         }
     }
     return pending;
-}
-
-- (nullable UIView *)embeddedViewForReactTag:(NSNumber *)reactTag
-{
-    UIView *view = [_viewRegistry_DEPRECATED viewForReactTag:reactTag];
-#ifdef RCT_NEW_ARCH_ENABLED
-    return [view isKindOfClass:[RoktNativeLayoutComponentView class]]
-        ? ((RoktNativeLayoutComponentView *)view).roktEmbeddedView
-        : nil;
-#else
-    return [RNMPRoktViews isEmbeddedView:view] ? view : nil;
-#endif // RCT_NEW_ARCH_ENABLED
 }
 
 #ifdef RCT_NEW_ARCH_ENABLED
