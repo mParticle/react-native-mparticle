@@ -5,7 +5,7 @@ import { withMParticleAndroid } from './withMParticleAndroid';
 const pkg = require('../../package.json');
 
 /**
- * A kit taken from Swift Package Manager (`iosDependencyManager: 'spm'`)
+ * A kit taken from Swift Package Manager that is not in `iosKits`' list of known kits
  */
 export interface IosSpmKit {
   /** Package repository URL, e.g. `https://github.com/mparticle-integrations/mp-apple-integration-rokt` */
@@ -63,28 +63,29 @@ export interface MParticlePluginProps {
   dataPlanVersion?: number;
 
   /**
-   * iOS kit pod names to include
-   * @example ['mParticle-Rokt', 'mParticle-Amplitude']
+   * iOS kits, by CocoaPods name. With Swift Package Manager (the default), each must be one of the
+   * kits in `ios/mparticle_spm_kits.json`; list any other kit in `iosSpmKits`.
+   * @example ['mParticle-Rokt', 'mParticle-Braze-14']
    */
   iosKits?: string[];
 
   /**
    * Where the iOS mParticle SDK and kits come from.
-   * - `'cocoapods'`: pods, as before.
    * - `'spm'`: Swift packages linked into the app target (README › Swift Package Manager).
-   *   `iosKits` names are mapped to their Swift packages; list any other kit in `iosSpmKits`.
-   * @default 'cocoapods'
+   * - `'cocoapods'`: pods. Deprecated: CocoaPods trunk becomes read-only on 2 December 2026.
+   * @default 'spm'
    */
   iosDependencyManager?: 'cocoapods' | 'spm';
 
   /**
-   * In `'spm'` mode, the exact mParticle core SDK version, also used for kits without a version.
+   * With Swift Package Manager, the exact mParticle core SDK version, also used for kits without a
+   * version.
    * @default the version this release of react-native-mparticle was tested with
    */
   iosSdkVersion?: string;
 
   /**
-   * In `'spm'` mode, extra kits as Swift packages.
+   * With Swift Package Manager, kits that `iosKits` does not know, as Swift packages.
    * @example [{ url: 'https://github.com/mparticle-integrations/mp-apple-integration-rokt', product: 'mParticle-Rokt' }]
    */
   iosSpmKits?: IosSpmKit[];
