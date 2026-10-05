@@ -91,8 +91,8 @@ module MParticleSPM
 
     raise Pod::Informative,
           "[mParticle] Swift Package Manager mode is iOS only, but #{tvos.map(&:name).join(', ')} " \
-          'targets tvOS. Set $RNMParticleDisableSPM = true at the top of the Podfile to take the ' \
-          'mParticle SDKs from CocoaPods for the whole Podfile.'
+          'targets tvOS. Set $RNMParticleDisableSPM = true at the top of the Podfile (with Expo, ' \
+          "iosDependencyManager: 'cocoapods') to take the mParticle SDKs from CocoaPods for the whole Podfile."
   end
 
   def self.guard!(installer)

@@ -345,7 +345,7 @@ $RNMParticleSPMKits = ['mParticle-Rokt', 'mParticle-Braze-14']
 $RNMParticleSPMCoreVersion = '9.6.1'
 ```
 
-- `$RNMParticleSPMKits` lists kits by CocoaPods name. [`ios/mparticle_spm_kits.json`](./ios/mparticle_spm_kits.json) maps every kit of the mParticle Apple SDK to its Swift package, including `mParticle-Kochava-9` and `mParticle-Kochava-No-Tracking-9`, which ship only as Swift packages, and `RoktSDKPlus`, which already includes `mParticle-Rokt`. For any other kit, give `{ url: '…', product: '…', version: '…' }`.
+- `$RNMParticleSPMKits` lists kits by CocoaPods name. [`ios/mparticle_spm_kits.json`](./ios/mparticle_spm_kits.json) maps every kit of the mParticle Apple SDK to its Swift package, including `mParticle-Kochava-9` and `mParticle-Kochava-No-Tracking-9`, which ship only as Swift packages, and `RoktSDKPlus`, which already includes `mParticle-Rokt` and is supported only from Swift Package Manager. For any other kit, give `{ url: '…', product: '…', version: '…' }`.
 - `$RNMParticleSPMCoreVersion` pins the core SDK. It defaults to the version this release was tested with. A kit without a version gets the core's, since mParticle kits are released with the core.
 
 **What `pod install` changes.** On each `pod install`, this package edits your app's `.xcodeproj`: it adds a Swift package reference for the core SDK and each kit, pinned to the exact version, and links each package's product into every iOS application target that uses this package. It prints every change (`[mParticle] MyApp <- mParticle-Rokt 9.6.1`), and running it again changes nothing. It stops `pod install` with an error if a pod would add a second copy of the SDKs. Commit the `.xcodeproj` change and `ios/<App>.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so every build resolves the same versions.
@@ -362,7 +362,8 @@ $RNMParticleSPMCoreVersion = '9.6.1'
 
 - `pod install` fails with `[mParticle] This package takes the mParticle SDKs from Swift Package Manager, but these pods would add a second copy`: remove the kit pods you declared, such as `pod 'mParticle-Rokt'`, and their entries in any `pre_install` hook, then list the kits in `$RNMParticleSPMKits`. The error also lists the pods those kits pull in. To stay on CocoaPods for now, set `$RNMParticleDisableSPM = true` instead.
 - `pod install` fails with `[mParticle] $RNMParticleSPMKits: unknown kit`: use a name from `ios/mparticle_spm_kits.json`, or give the kit's `url:` and `product:`.
-- `pod install` fails with `[mParticle] Swift Package Manager mode is iOS only`: a tvOS target uses this package. Set `$RNMParticleDisableSPM = true` at the top of the Podfile.
+- `pod install` fails with `[mParticle] Swift Package Manager mode is iOS only`: a tvOS target uses this package, as in a `react-native-tvos` app whose Podfile sets `platform :tvos`. Set `$RNMParticleDisableSPM = true` at the top of the Podfile, or `iosDependencyManager: 'cocoapods'` with Expo.
+- `pod install` fails inside `MParticleSPM::InstallerHooks` after a CocoaPods upgrade: this package hooks CocoaPods' private `resolve_dependencies`, `validate_targets` and `run_podfile_post_install_hooks` methods, tested with CocoaPods 1.15.2 and 1.16.2. Open an issue with your CocoaPods version.
 - The build fails with `[mParticle] Swift Package Manager mode is on, but the mParticle-Apple-SDK Swift package is not linked into the app target`: the package was removed from the app target after `pod install`. Run `pod install` again.
 - A Debug build shows the red box `[mParticle] The mParticle SDK is loaded more than once`: the SDK comes from both CocoaPods and Swift Package Manager. Remove the mParticle and Rokt pods and any Swift packages you added by hand, then run `pod install`.
 
@@ -374,7 +375,7 @@ To take the mParticle SDKs from CocoaPods instead, set this at the top of `ios/P
 $RNMParticleDisableSPM = true
 ```
 
-CocoaPods trunk becomes read-only on 2 December 2026, and a future release will remove this option. If the app target still links the mParticle Swift packages, `pod install` warns: remove them from the target, or the app contains two copies of the SDK. `ios/mparticle_spm_kits.json` marks the kits that have no pod.
+CocoaPods trunk becomes read-only on 2 December 2026, and a future release will remove this option. If the app target still links the mParticle Swift packages, `pod install` warns: remove them from the target, or the app contains two copies of the SDK. `ios/mparticle_spm_kits.json` marks the kits this package supports only from Swift Package Manager.
 
 Depending on your app and its other dependencies, integrate the pods in one of three ways.
 

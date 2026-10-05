@@ -158,14 +158,17 @@ end
     );
   });
 
-  it('rejects a Swift-package-only kit with cocoapods', () => {
-    expect(() =>
-      applyMParticlePodfileMods(EXPO_PODFILE, {
-        ...cocoaPodsProps,
-        iosKits: ['mParticle-Kochava-9'],
-      })
-    ).toThrow(/mParticle-Kochava-9 ships only as a Swift package/);
-  });
+  it.each(['mParticle-Kochava-9', 'RoktSDKPlus'])(
+    'rejects %s, a Swift-package-only kit, with cocoapods',
+    kit => {
+      expect(() =>
+        applyMParticlePodfileMods(EXPO_PODFILE, {
+          ...cocoaPodsProps,
+          iosKits: [kit],
+        })
+      ).toThrow(`${kit} is supported only from Swift Package Manager`);
+    }
+  );
 
   it('rejects values that would break out of the generated Ruby string', () => {
     expect(() =>

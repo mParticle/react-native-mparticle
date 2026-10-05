@@ -14,6 +14,9 @@ Pod::Spec.new do |s|
 
   s.homepage     = package['homepage']
   s.license      = package['license']
+  # tvOS is declared in Swift Package Manager mode too, although that mode is iOS only: React Native's
+  # autolinking drops pods a target's platform doesn't support, so a tvOS target would silently lose
+  # this pod. Declared, the pod reaches MParticleSPM.check_podfile!, which stops `pod install`.
   s.platforms = { :ios => ios_platform, :tvos => "15.6" }
 
   s.source       = { :git => "https://github.com/mParticle/react-native-mparticle.git", :tag => "#{s.version}" }
@@ -35,7 +38,6 @@ Pod::Spec.new do |s|
     # against their headers and never links them, so it is a static framework even under
     # `use_frameworks! :linkage => :dynamic`.
     s.static_framework = true
-    s.platforms = { :ios => ios_platform } # the Rokt kit Swift package is iOS-only
     xcconfig['HEADER_SEARCH_PATHS'] = '"$(DERIVED_FILE_DIR)/mParticleSPMInclude" "$(OBJROOT)/GeneratedModuleMaps-$(PLATFORM_NAME)"'
     # Where Xcode puts the Swift packages' .swiftmodule files, for build and archive alike.
     xcconfig['SWIFT_INCLUDE_PATHS'] = '$(inherited) "$(PODS_CONFIGURATION_BUILD_DIR)"'

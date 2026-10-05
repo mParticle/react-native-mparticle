@@ -173,6 +173,20 @@ jobs:
         working-directory: sample
         run: bundle install
 
+      # A tvOS app must get the opt-out error, not silently lose this pod (see the podspec's platforms).
+      - name: Check that a tvOS Podfile stops with the iOS-only error
+        if: matrix.ios_deps == 'spm'
+        working-directory: sample/ios
+        run: |
+          sed -i '' "s/^platform :ios, '15.6'/platform :tvos, '15.6'/" Podfile
+          if bundle exec pod install > tvos-pod-install.log 2>&1; then
+            cat tvos-pod-install.log
+            echo "pod install succeeded for a tvOS target; it should stop with the iOS-only error."
+            exit 1
+          fi
+          git checkout -- Podfile
+          grep -F '[mParticle] Swift Package Manager mode is iOS only' tvos-pod-install.log || { cat tvos-pod-install.log; exit 1; }
+
       - name: Build iOS sample app and run native unit tests
         working-directory: sample/ios
         run: |
@@ -186,6 +200,7 @@ jobs:
           test \
           -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
           -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewSizingTests \
+          -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewPropsTests \
           -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
           -only-testing:MParticleSampleTests/RNMPRoktEventMapperTests \
           -only-testing:MParticleSampleTests/RNMPRoktConfigFactoryTests \

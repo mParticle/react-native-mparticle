@@ -1,5 +1,4 @@
 #ifdef RCT_NEW_ARCH_ENABLED
-#import <SafariServices/SafariServices.h>
 #import "RoktNativeLayoutComponentView.h"
 #import "RoktPlaceholderRegistry.h"
 #import "RNMPRoktSwift.h"

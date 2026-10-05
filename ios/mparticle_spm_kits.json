@@ -130,5 +130,9 @@
       "includes": ["mParticle-Rokt"]
     }
   },
-  "swiftPackageOnly": ["mParticle-Kochava-9", "mParticle-Kochava-No-Tracking-9"]
+  "swiftPackageOnly": [
+    "mParticle-Kochava-9",
+    "mParticle-Kochava-No-Tracking-9",
+    "RoktSDKPlus"
+  ]
 }

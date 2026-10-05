@@ -541,14 +541,15 @@ export function applyMParticlePodfileMods(
     );
   }
 
+  const { swiftPackageOnly: spmOnlyKits } = readSpmKitTable();
   const swiftPackageOnly = (props.iosKits ?? []).filter(kit =>
-    readSpmKitTable().swiftPackageOnly.includes(kit)
+    spmOnlyKits.includes(kit)
   );
   if (swiftPackageOnly.length > 0) {
     throw new Error(
       `react-native-mparticle plugin: ${swiftPackageOnly.join(
         ', '
-      )} ships only as a Swift package, ` +
+      )} is supported only from Swift Package Manager, ` +
         'so it needs iosDependencyManager "spm".'
     );
   }
