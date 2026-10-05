@@ -175,6 +175,7 @@ jobs:
           test \
           -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
           -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewSizingTests \
+          -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
           | bundle exec xcpretty -k
 
   pr-notify:
