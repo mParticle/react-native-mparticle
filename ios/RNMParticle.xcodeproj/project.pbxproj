@@ -38,6 +38,7 @@
 		B39BCD932E30562400FC90B8 /* RoktLayoutManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RoktLayoutManager.m; sourceTree = "<group>"; };
 		C4A1D2E32F6A000100ABCDEF /* RoktPlaceholderRegistry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RoktPlaceholderRegistry.h; sourceTree = "<group>"; };
 		C4A1D2E42F6A000100ABCDEF /* RoktPlaceholderRegistry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RoktPlaceholderRegistry.m; sourceTree = "<group>"; };
+		C4A1D2E62F6A000100ABCDEF /* RNMPSDKImports.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNMPSDKImports.h; sourceTree = "<group>"; };
 		B39BCD942E30562400FC90B8 /* RoktNativeLayoutComponentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RoktNativeLayoutComponentView.h; sourceTree = "<group>"; };
 		B39BCD952E30562400FC90B8 /* RoktNativeLayoutComponentView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RoktNativeLayoutComponentView.mm; sourceTree = "<group>"; };
 		DBDF24D71E007EB1000F3D73 /* libRNMParticle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNMParticle.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +80,7 @@
 				B39BCD932E30562400FC90B8 /* RoktLayoutManager.m */,
 				C4A1D2E32F6A000100ABCDEF /* RoktPlaceholderRegistry.h */,
 				C4A1D2E42F6A000100ABCDEF /* RoktPlaceholderRegistry.m */,
+				C4A1D2E62F6A000100ABCDEF /* RNMPSDKImports.h */,
 				B39BCD942E30562400FC90B8 /* RoktNativeLayoutComponentView.h */,
 				B39BCD952E30562400FC90B8 /* RoktNativeLayoutComponentView.mm */,
 				B39BCD892E2A06D700FC90B8 /* RNMPRokt.h */,
