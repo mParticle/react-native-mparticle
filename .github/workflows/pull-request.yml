@@ -114,9 +114,20 @@ jobs:
         run: ./gradlew assembleDebug
 
   ios-sample-app:
-    # Keep this display name in sync with branch protection required checks ("iOS Sample App").
-    name: iOS Sample App
+    # The CocoaPods leg keeps the display name the "main" ruleset requires ("iOS Sample App").
+    name: ${{ matrix.check_name }}
     runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ios_deps: cocoapods
+            check_name: iOS Sample App
+          - ios_deps: spm
+            check_name: iOS Sample App (SPM)
+    env:
+      # sample/ios/Podfile takes the mParticle SDKs from Swift Package Manager when this is 1.
+      MP_USE_SPM: ${{ matrix.ios_deps == 'spm' && '1' || '0' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -177,6 +188,20 @@ jobs:
           -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewSizingTests \
           -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
           | bundle exec xcpretty -k
+
+      - name: Archive iOS sample app and check for a single copy of each SDK
+        working-directory: sample/ios
+        run: |
+          set -o pipefail && xcodebuild -workspace MParticleSample.xcworkspace \
+          -configuration Release \
+          -scheme MParticleSample \
+          -destination 'generic/platform=iOS' \
+          -derivedDataPath ios/build \
+          -archivePath ios/build/MParticleSample.xcarchive \
+          CODE_SIGNING_ALLOWED=NO \
+          archive \
+          | bundle exec xcpretty -k
+          ../../scripts/ios/check-single-copy.sh ios/build/MParticleSample.xcarchive/Products/Applications/MParticleSample.app
 
   pr-notify:
     if: >

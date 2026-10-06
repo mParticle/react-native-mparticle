@@ -2,14 +2,8 @@
 #import <React/RCTConvert.h>
 #import "../../../ios/RNMParticle/RNMParticle.h"
 
-// Match RNMParticle.mm / pod umbrella so tests compile against the same SDK the library uses.
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/mParticle.h>)
-#import <mParticle_Apple_SDK_ObjC/mParticle.h>
-#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
-#import <mParticle_Apple_SDK/mParticle.h>
-#else
-#import <mParticle_Apple_SDK_ObjC/mParticle.h>
-#endif
+// The same SDK headers the library compiles against, in CocoaPods and Swift Package Manager mode.
+#import "../../../ios/RNMParticle/RNMPSDKImports.h"
 
 // Implemented on `RCTConvert` in `RNMParticle.mm` (react-native-mparticle pod).
 // Parameter types mirror the implementations there.
