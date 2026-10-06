@@ -107,6 +107,9 @@ jobs:
         working-directory: sample
         run: |
           rm -f yarn.lock
+          # Yarn 1 keeps its unpacked copy of a local .tgz under .tmp in the restored cache, keyed
+          # only by the file's path, so without this the sample installs an old build of this package.
+          rm -rf "$(yarn cache dir)/.tmp"
           yarn install
 
       - name: Run Android sample app
@@ -167,6 +170,9 @@ jobs:
         working-directory: sample
         run: |
           rm -f yarn.lock
+          # Yarn 1 keeps its unpacked copy of a local .tgz under .tmp in the restored cache, keyed
+          # only by the file's path, so without this the sample installs an old build of this package.
+          rm -rf "$(yarn cache dir)/.tmp"
           yarn install
 
       - name: Install Ruby dependencies
