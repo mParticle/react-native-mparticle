@@ -419,6 +419,17 @@ Every mParticle and Rokt SDK must then come from Swift Package Manager, and none
 - The build fails with `[mParticle] $RNMParticleUseSPM is set but the mParticle-Apple-SDK Swift package is not linked into the app target`: `mparticle_spm_post_install` did not run, or the package was removed from the app target afterwards. Call it in `post_install` and run `pod install` again.
 - A Debug build shows the red box `[mParticle] The mParticle SDK is loaded more than once`: the SDK comes from both CocoaPods and Swift Package Manager. Remove the mParticle and Rokt pods and Swift packages you added by hand, then set up one mode as described above.
 
+### Experimental: React Native Swift Package Manager mode
+
+> **Not for production.** React Native's own Swift Package Manager mode (React Native 0.87 or later) is experimental, and so is this package's support for it. Use CocoaPods, with or without the opt-in mode above, for apps you ship.
+
+This package ships a `Package.swift`, so `npx react-native spm add` links it without a scaffolded manifest. The app target must also link the mParticle core SDK and each kit as Swift packages, for example in Xcode (File › Add Package Dependencies):
+
+- `https://github.com/mParticle/mparticle-apple-sdk`, product `mParticle-Apple-SDK`
+- `https://github.com/mparticle-integrations/mp-apple-integration-rokt`, product `mParticle-Rokt`
+
+Use exactly these URLs, with no `.git` suffix on the first, so Swift Package Manager treats them as the same packages the kits depend on. Then start mParticle in your Swift `AppDelegate` with `import mParticle_Apple_SDK`, as in the CocoaPods setup.
+
 ## Android (Manual Setup)
 
 1. Copy your mParticle key and secret from [your workspace's dashboard](https://app.mparticle.com/setup/inputs/apps) and construct an `MParticleOptions` object.
