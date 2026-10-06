@@ -5,6 +5,18 @@ import { withMParticleAndroid } from './withMParticleAndroid';
 const pkg = require('../../package.json');
 
 /**
+ * A kit taken from Swift Package Manager (`iosDependencyManager: 'spm'`)
+ */
+export interface IosSpmKit {
+  /** Package repository URL, e.g. `https://github.com/mparticle-integrations/mp-apple-integration-rokt` */
+  url: string;
+  /** Package product to link, e.g. `mParticle-Rokt` */
+  product: string;
+  /** Exact version; defaults to the core SDK version */
+  version?: string;
+}
+
+/**
  * mParticle plugin configuration options
  */
 export interface MParticlePluginProps {
@@ -55,6 +67,27 @@ export interface MParticlePluginProps {
    * @example ['mParticle-Rokt', 'mParticle-Amplitude']
    */
   iosKits?: string[];
+
+  /**
+   * Where the iOS mParticle SDK and kits come from.
+   * - `'cocoapods'`: pods, as before.
+   * - `'spm'`: Swift packages linked into the app target (README › Swift Package Manager).
+   *   `iosKits` names are mapped to their Swift packages; list any other kit in `iosSpmKits`.
+   * @default 'cocoapods'
+   */
+  iosDependencyManager?: 'cocoapods' | 'spm';
+
+  /**
+   * In `'spm'` mode, the exact mParticle core SDK version, also used for kits without a version.
+   * @default the version this release of react-native-mparticle was tested with
+   */
+  iosSdkVersion?: string;
+
+  /**
+   * In `'spm'` mode, extra kits as Swift packages.
+   * @example [{ url: 'https://github.com/mparticle-integrations/mp-apple-integration-rokt', product: 'mParticle-Rokt' }]
+   */
+  iosSpmKits?: IosSpmKit[];
 
   /**
    * Custom base URL for global CNAME setup.
