@@ -9,15 +9,15 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, '15.6'
 prepare_react_native_project!
 
-# MP_USE_SPM=1 takes the mParticle SDKs from Swift Package Manager instead of CocoaPods
-# (README › Swift Package Manager). Must be set before `target`, which evaluates the podspec.
-# It adds the Swift packages to MParticleSample.xcodeproj: discard that change before switching back
-# to CocoaPods, or the app links both copies (Debug builds then show a red box).
-$RNMParticleUseSPM = ENV['MP_USE_SPM'] == '1'
-require_relative '../node_modules/react-native-mparticle/ios/mparticle_spm' if $RNMParticleUseSPM
-ROKT_KIT = { url: 'https://github.com/mparticle-integrations/mp-apple-integration-rokt', product: 'mParticle-Rokt', version: '9.6.1' }.freeze
+# The mParticle SDKs come from Swift Package Manager by default (README › Swift Package Manager);
+# MP_USE_COCOAPODS=1 takes them from CocoaPods instead. Both settings must come before `target`,
+# which evaluates the podspec. Swift Package Manager mode adds the packages to
+# MParticleSample.xcodeproj: discard that change before switching to CocoaPods, or the app links both
+# copies (Debug builds then show a red box).
+$RNMParticleDisableSPM = ENV['MP_USE_COCOAPODS'] == '1'
+$RNMParticleSPMKits = ['mParticle-Rokt']
 
-unless $RNMParticleUseSPM
+if $RNMParticleDisableSPM
   pre_install do |installer|
     installer.pod_targets.each do |pod|
       if pod.name == 'mParticle-Apple-SDK' || pod.name == 'mParticle-Apple-SDK-ObjC' || pod.name == 'mParticle-Apple-SDK-Swift' || pod.name == 'mParticle-Rokt' || pod.name == 'Rokt-Widget' || pod.name == 'RoktContracts' || pod.name == 'RoktUXHelper' || pod.name == 'DcuiSchema'
@@ -48,7 +48,7 @@ target 'MParticleSample' do
   # 5.3 resolves RoktUXHelper 1.0.0, which requires an exact `DcuiSchema` version, so the
   # schema can no longer float out of sync with the RoktUXHelper sources (the desync that
   # the previous 2.7.0 pin guarded against).
-  pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0' unless $RNMParticleUseSPM
+  pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0' if $RNMParticleDisableSPM
 
   target 'MParticleSampleTests' do
     inherit! :complete
@@ -63,8 +63,7 @@ target 'MParticleSample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
-    if $RNMParticleUseSPM
-      mparticle_spm_post_install(installer, kits: [ROKT_KIT])
+    unless $RNMParticleDisableSPM
       # The unit tests compile against the SDK headers but never link the SDK: the host app does.
       # Point them at the headers the react-native-mparticle pod's script phase located.
       spm_headers = '"$(OBJROOT)/Pods.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/react-native-mparticle.build/DerivedSources/mParticleSPMInclude" "$(OBJROOT)/GeneratedModuleMaps-$(PLATFORM_NAME)"'

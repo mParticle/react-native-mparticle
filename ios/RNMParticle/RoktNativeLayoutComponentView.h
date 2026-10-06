@@ -1,5 +1,4 @@
 #ifdef RCT_NEW_ARCH_ENABLED
-#import <SafariServices/SafariServices.h>
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
 

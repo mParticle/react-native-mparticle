@@ -4,7 +4,7 @@ import {
   withDangerousMod,
 } from '@expo/config-plugins';
 import { mergeContents } from '@expo/config-plugins/build/utils/generateCode';
-import { IosSpmKit, MParticlePluginProps } from './withMParticle';
+import { MParticlePluginProps } from './withMParticle';
 import { getCustomBaseUrl } from './customBaseUrl';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -423,17 +423,29 @@ function getKitPodDeclaration(kit: string): string {
 }
 
 /**
- * Swift packages for the `iosKits` names that have one, for `iosDependencyManager: 'spm'`.
+ * The kits Swift Package Manager mode knows by CocoaPods name. The pod's Podfile helper reads the same
+ * file, so the two cannot disagree.
  */
-const KIT_SWIFT_PACKAGES: Record<string, { url: string; product: string }> = {
-  'mParticle-Rokt': {
-    url: 'https://github.com/mparticle-integrations/mp-apple-integration-rokt',
-    product: 'mParticle-Rokt',
-  },
-};
+interface SpmKitTable {
+  kits: Record<string, { url: string; product: string }>;
+  swiftPackageOnly: string[];
+}
 
-const SPM_MARKER =
-  '# mParticle Swift Package Manager mode (added by react-native-mparticle expo plugin)';
+function readSpmKitTable(): SpmKitTable {
+  // plugin/src or plugin/build → the package root.
+  const file = path.join(
+    __dirname,
+    '..',
+    '..',
+    'ios',
+    'mparticle_spm_kits.json'
+  );
+  return JSON.parse(fs.readFileSync(file, 'utf-8'));
+}
+
+const SPM_START =
+  '# mParticle Swift Package Manager settings (added by react-native-mparticle expo plugin)';
+const SPM_END = '# end of mParticle Swift Package Manager settings';
 
 // These values are written into the Podfile as Ruby string literals, so allow no quotes or escapes.
 const SPM_URL = /^https:\/\/[A-Za-z0-9._~/-]+$/;
@@ -448,93 +460,65 @@ function rubyString(value: string, pattern: RegExp, what: string): string {
   return `'${value}'`;
 }
 
-function getSpmKits(props: MParticlePluginProps): IosSpmKit[] {
-  const mapped = (props.iosKits ?? []).map(kit => {
-    const pkg = KIT_SWIFT_PACKAGES[kit];
-    if (!pkg) {
+function getSpmSettings(props: MParticlePluginProps): string[] {
+  const table = readSpmKitTable();
+  const names = (props.iosKits ?? []).map(kit => {
+    if (!table.kits[kit]) {
       throw new Error(
         `react-native-mparticle plugin: iosKits entry "${kit}" has no known Swift package. ` +
-          'With iosDependencyManager "spm", list it in iosSpmKits as { url, product, version } instead.'
+          'List it in iosSpmKits as { url, product, version }, or set iosDependencyManager to "cocoapods".'
       );
     }
-    return pkg;
+    return rubyString(kit, SPM_NAME, 'iosKits entry');
   });
-  return [...mapped, ...(props.iosSpmKits ?? [])];
-}
-
-function getSpmPostInstallCall(props: MParticlePluginProps): string {
-  const kits = getSpmKits(props)
-    .map(kit => {
-      const fields = [
-        `url: ${rubyString(kit.url, SPM_URL, 'Swift package URL')}`,
-        `product: ${rubyString(
-          kit.product,
-          SPM_NAME,
-          'Swift package product'
-        )}`,
-      ];
-      if (kit.version) {
-        fields.push(
-          `version: ${rubyString(
-            kit.version,
-            SPM_NAME,
-            'Swift package version'
-          )}`
-        );
-      }
-      return `{ ${fields.join(', ')} }`;
-    })
-    .join(', ');
-  const coreVersion = props.iosSdkVersion
-    ? `, core_version: ${rubyString(
+  const custom = (props.iosSpmKits ?? []).map(kit => {
+    const fields = [
+      `url: ${rubyString(kit.url, SPM_URL, 'Swift package URL')}`,
+      `product: ${rubyString(kit.product, SPM_NAME, 'Swift package product')}`,
+    ];
+    if (kit.version) {
+      fields.push(
+        `version: ${rubyString(kit.version, SPM_NAME, 'Swift package version')}`
+      );
+    }
+    return `{ ${fields.join(', ')} }`;
+  });
+  const lines = [`$RNMParticleSPMKits = [${[...names, ...custom].join(', ')}]`];
+  if (props.iosSdkVersion) {
+    lines.push(
+      `$RNMParticleSPMCoreVersion = ${rubyString(
         props.iosSdkVersion,
         SPM_NAME,
         'iosSdkVersion'
       )}`
-    : '';
-  return `mparticle_spm_post_install(installer${coreVersion}, kits: [${kits}])`;
+    );
+  }
+  return lines;
 }
 
 /**
- * `iosDependencyManager: 'spm'`: turn on the pod's Swift Package Manager mode and call the
- * helper that links the SDK packages into the app target. No mParticle pods or pre_install hook.
+ * Writes this plugin's Podfile settings above the first target block, which evaluates the podspec.
+ * A second prebuild replaces them, so changed versions or kits are picked up.
  */
-function applySpmPodfileMods(
-  podfileContent: string,
-  props: MParticlePluginProps
-): string {
-  const call = getSpmPostInstallCall(props);
-  let contents = podfileContent;
-
-  // The flag must be set before the first target block, which evaluates the podspec.
-  if (!contents.includes(SPM_MARKER)) {
-    const firstTarget = /^target /m;
-    if (!firstTarget.test(contents)) {
-      throw new Error(
-        'react-native-mparticle plugin: no target block found in ios/Podfile'
-      );
-    }
-    const header = [
-      SPM_MARKER,
-      '$RNMParticleUseSPM = true',
-      `require File.join(File.dirname(\`node --print "require.resolve('react-native-mparticle/package.json')"\`.strip), 'ios', 'mparticle_spm')`,
-      '',
-    ].join('\n');
-    contents = contents.replace(firstTarget, match => `${header}\n${match}`);
+function setSpmSettings(podfileContent: string, lines: string[]): string {
+  const block = [SPM_START, ...lines, SPM_END, ''].join('\n');
+  const existing = new RegExp(
+    `${escapeRegExp(SPM_START)}\\n[\\s\\S]*?${escapeRegExp(SPM_END)}\\n`
+  );
+  if (existing.test(podfileContent)) {
+    return podfileContent.replace(existing, () => block);
   }
-
-  // Replace an existing call, so a non-clean prebuild picks up changed versions or kits.
-  const existingCall = /^ *mparticle_spm_post_install\(.*\)$/m;
-  if (existingCall.test(contents)) {
-    return contents.replace(existingCall, () => `    ${call}`);
-  }
-  const postInstall = /post_install do \|installer\|\n/;
-  if (!postInstall.test(contents)) {
+  const firstTarget = /^target /m;
+  if (!firstTarget.test(podfileContent)) {
     throw new Error(
-      'react-native-mparticle plugin: no post_install block found in ios/Podfile'
+      'react-native-mparticle plugin: no target block found in ios/Podfile'
     );
   }
-  return contents.replace(postInstall, match => `${match}    ${call}\n`);
+  return podfileContent.replace(firstTarget, match => `${block}\n${match}`);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -544,17 +528,34 @@ export function applyMParticlePodfileMods(
   podfileContent: string,
   props: MParticlePluginProps
 ): string {
-  const manager = props.iosDependencyManager ?? 'cocoapods';
+  const manager = props.iosDependencyManager ?? 'spm';
   if (manager === 'spm') {
-    return applySpmPodfileMods(podfileContent, props);
+    // The pod's Podfile helper links the core SDK and these kits; no pods or pre_install hook.
+    return setSpmSettings(podfileContent, getSpmSettings(props));
   }
   if (manager !== 'cocoapods') {
     throw new Error(
-      `react-native-mparticle plugin: iosDependencyManager must be "cocoapods" or "spm", got ${JSON.stringify(
+      `react-native-mparticle plugin: iosDependencyManager must be "spm" or "cocoapods", got ${JSON.stringify(
         manager
       )}`
     );
   }
+
+  const { swiftPackageOnly: spmOnlyKits } = readSpmKitTable();
+  const swiftPackageOnly = (props.iosKits ?? []).filter(kit =>
+    spmOnlyKits.includes(kit)
+  );
+  if (swiftPackageOnly.length > 0) {
+    throw new Error(
+      `react-native-mparticle plugin: ${swiftPackageOnly.join(
+        ', '
+      )} is supported only from Swift Package Manager, ` +
+        'so it needs iosDependencyManager "spm".'
+    );
+  }
+  podfileContent = setSpmSettings(podfileContent, [
+    '$RNMParticleDisableSPM = true',
+  ]);
 
   // Add pre_install hook for dynamic framework linking if not already present
   if (!podfileContent.includes('mParticle-Apple-SDK')) {

@@ -107,6 +107,9 @@ jobs:
         working-directory: sample
         run: |
           rm -f yarn.lock
+          # Yarn 1 keeps its unpacked copy of a local .tgz under .tmp in the restored cache, keyed
+          # only by the file's path, so without this the sample installs an old build of this package.
+          rm -rf "$(yarn cache dir)/.tmp"
           yarn install
 
       - name: Run Android sample app
@@ -126,8 +129,8 @@ jobs:
           - ios_deps: spm
             check_name: iOS Sample App (SPM)
     env:
-      # sample/ios/Podfile takes the mParticle SDKs from Swift Package Manager when this is 1.
-      MP_USE_SPM: ${{ matrix.ios_deps == 'spm' && '1' || '0' }}
+      # sample/ios/Podfile takes the mParticle SDKs from Swift Package Manager unless this is 1.
+      MP_USE_COCOAPODS: ${{ matrix.ios_deps == 'cocoapods' && '1' || '0' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -167,11 +170,28 @@ jobs:
         working-directory: sample
         run: |
           rm -f yarn.lock
+          # Yarn 1 keeps its unpacked copy of a local .tgz under .tmp in the restored cache, keyed
+          # only by the file's path, so without this the sample installs an old build of this package.
+          rm -rf "$(yarn cache dir)/.tmp"
           yarn install
 
       - name: Install Ruby dependencies
         working-directory: sample
         run: bundle install
+
+      # A tvOS app must get the opt-out error, not silently lose this pod (see the podspec's platforms).
+      - name: Check that a tvOS Podfile stops with the iOS-only error
+        if: matrix.ios_deps == 'spm'
+        working-directory: sample/ios
+        run: |
+          sed -i '' "s/^platform :ios, '15.6'/platform :tvos, '15.6'/" Podfile
+          if bundle exec pod install > tvos-pod-install.log 2>&1; then
+            cat tvos-pod-install.log
+            echo "pod install succeeded for a tvOS target; it should stop with the iOS-only error."
+            exit 1
+          fi
+          git checkout -- Podfile
+          grep -F '[mParticle] Swift Package Manager mode is iOS only' tvos-pod-install.log || { cat tvos-pod-install.log; exit 1; }
 
       - name: Build iOS sample app and run native unit tests
         working-directory: sample/ios
@@ -186,6 +206,7 @@ jobs:
           test \
           -only-testing:MParticleSampleTests/RCTConvertCommerceMappingTests \
           -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewSizingTests \
+          -only-testing:MParticleSampleTests/RoktNativeLayoutComponentViewPropsTests \
           -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
           -only-testing:MParticleSampleTests/RNMPRoktEventMapperTests \
           -only-testing:MParticleSampleTests/RNMPRoktConfigFactoryTests \
