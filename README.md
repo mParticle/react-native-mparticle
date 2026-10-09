@@ -62,7 +62,7 @@ npx expo install react-native-mparticle
 ["expo-build-properties", { "ios": { "deploymentTarget": "15.6" } }]
 ```
 
-**If you set no `iosKits`, declare the umbrella pod.** On a Swift AppDelegate (Expo SDK 53+) the plugin writes `import mParticle_Apple_SDK`, but nothing installs that pod on its own: this library depends on `mParticle-Apple-SDK-ObjC`, and the umbrella arrives transitively only with a kit (`mParticle-Rokt` depends on `mParticle-Apple-SDK`). Without a kit, add `pod 'mParticle-Apple-SDK', '>= 9.2.2', '< 10.0'` to the generated `ios/Podfile`, and re-apply it after any `expo prebuild --clean`, which rewrites that file. Objective-C templates get `#import "mParticle.h"` instead, which resolves without the umbrella.
+**With `iosDependencyManager: 'cocoapods'` and no `iosKits`, declare the umbrella pod.** Swift Package Manager, the default, always links the core SDK, so this applies only to CocoaPods. On a Swift AppDelegate (Expo SDK 53+) the plugin writes `import mParticle_Apple_SDK`, but nothing installs that pod on its own: this library depends on `mParticle-Apple-SDK-ObjC`, and the umbrella arrives transitively only with a kit (`mParticle-Rokt` depends on `mParticle-Apple-SDK`). Without a kit, add `pod 'mParticle-Apple-SDK', '>= 9.2.2', '< 10.0'` to the generated `ios/Podfile`, and re-apply it after any `expo prebuild --clean`, which rewrites that file. Objective-C templates get `#import "mParticle.h"` instead, which resolves without the umbrella.
 
 3. Run prebuild:
 
@@ -80,21 +80,24 @@ npx expo run:android
 
 ### Plugin Configuration Options
 
-| Option                    | Type     | Required | Description                                                                                                     |
-| ------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------- |
-| `iosApiKey`               | string   | Yes      | iOS API key from mParticle dashboard                                                                            |
-| `iosApiSecret`            | string   | Yes      | iOS API secret from mParticle dashboard                                                                         |
-| `androidApiKey`           | string   | Yes      | Android API key from mParticle dashboard                                                                        |
-| `androidApiSecret`        | string   | Yes      | Android API secret from mParticle dashboard                                                                     |
-| `logLevel`                | string   | No       | Log level: `'none'`, `'error'`, `'warning'`, `'debug'`, `'verbose'`                                             |
-| `environment`             | string   | No       | Environment: `'development'`, `'production'`, `'autoDetect'`                                                    |
-| `dataPlanId`              | string   | No       | Data plan ID for validation                                                                                     |
-| `dataPlanVersion`         | number   | No       | Data plan version (ignored unless `dataPlanId` is also set)                                                     |
-| `iosKits`                 | string[] | No       | iOS kit pod names (e.g., `['mParticle-Rokt']`)                                                                  |
-| `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android; must be an absolute `https://` URL or prebuild fails |
-| `pinningDisabled`         | boolean  | No       | Disable SSL pinning (`MPNetworkOptions` on iOS; `setPinningDisabledInDevelopment` on Android)                   |
-| `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)                                                       |
-| `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)                                                       |
+| Option                    | Type     | Required | Description                                                                                                      |
+| ------------------------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `iosApiKey`               | string   | Yes      | iOS API key from mParticle dashboard                                                                             |
+| `iosApiSecret`            | string   | Yes      | iOS API secret from mParticle dashboard                                                                          |
+| `androidApiKey`           | string   | Yes      | Android API key from mParticle dashboard                                                                         |
+| `androidApiSecret`        | string   | Yes      | Android API secret from mParticle dashboard                                                                      |
+| `logLevel`                | string   | No       | Log level: `'none'`, `'error'`, `'warning'`, `'debug'`, `'verbose'`                                              |
+| `environment`             | string   | No       | Environment: `'development'`, `'production'`, `'autoDetect'`                                                     |
+| `dataPlanId`              | string   | No       | Data plan ID for validation                                                                                      |
+| `dataPlanVersion`         | number   | No       | Data plan version (ignored unless `dataPlanId` is also set)                                                      |
+| `iosKits`                 | string[] | No       | iOS kits by CocoaPods name (e.g., `['mParticle-Rokt']`); see [kit names](#swift-package-manager)                 |
+| `iosDependencyManager`    | string   | No       | `'spm'` (default) takes the iOS SDK and kits from Swift Package Manager; `'cocoapods'` is the deprecated opt-out |
+| `iosSdkVersion`           | string   | No       | With `'spm'`, the exact mParticle core SDK version, also used for kits without a version                         |
+| `iosSpmKits`              | object[] | No       | With `'spm'`, kits not in the kit list, as `{ url, product, version? }` Swift packages                           |
+| `customBaseUrl`           | string   | No       | Custom base URL for global CNAME setup on iOS and Android; must be an absolute `https://` URL or prebuild fails  |
+| `pinningDisabled`         | boolean  | No       | Disable SSL pinning (`MPNetworkOptions` on iOS; `setPinningDisabledInDevelopment` on Android)                    |
+| `androidKits`             | string[] | No       | Android kit artifact names (e.g., `['android-rokt-kit']`)                                                        |
+| `useEmptyIdentifyRequest` | boolean  | No       | Use empty user identify request at init (default: `true`)                                                        |
 
 ### Example with Kits
 
@@ -111,7 +114,7 @@ npx expo run:android
           "androidApiSecret": "YOUR_ANDROID_API_SECRET",
           "environment": "development",
           "logLevel": "verbose",
-          "iosKits": ["mParticle-Rokt", "mParticle-Amplitude"],
+          "iosKits": ["mParticle-Rokt", "mParticle-Braze-14"],
           "androidKits": ["android-rokt-kit", "android-amplitude-kit"]
         }
       ]
@@ -128,14 +131,28 @@ For global CNAME setup, add the optional shared `customBaseUrl` setting:
 }
 ```
 
+### Swift Package Manager (Expo)
+
+The plugin takes the iOS mParticle SDK and kits from Swift Package Manager by default ([details](#swift-package-manager)). `iosKits` names are the CocoaPods names of the kits; list any kit that is not in the kit list in `iosSpmKits`, or prebuild fails with an error naming it.
+
+```json
+{
+  "iosKits": ["mParticle-Rokt"]
+}
+```
+
+Expo regenerates `ios/` on `expo prebuild --clean`, so there is no committed `Package.resolved`. Set `iosSdkVersion` to pin the core SDK (and kits without a version) exactly. The core SDK package is always linked, so `import mParticle_Apple_SDK` resolves without declaring the umbrella pod.
+
+To stay on CocoaPods, which is deprecated, set `"iosDependencyManager": "cocoapods"`. When you switch `iosDependencyManager` in either direction, run `npx expo prebuild --clean`, so the previous mode's Podfile lines and Swift packages are not left behind.
+
 ### What the Plugin Does
 
 **iOS:**
 
 - Adds mParticle SDK initialization to `AppDelegate` (supports both Swift and Objective-C)
 - Sets `MPNetworkOptions` (`customBaseURL` and/or `pinningDisabled`) before startup when those plugin options are configured
-- Configures `pre_install` hook in Podfile for dynamic framework linking, covering the kit's transitive pods (skipped if the Podfile already mentions `mParticle-Apple-SDK`)
-- Adds specified kit pod dependencies — `mParticle-Rokt` is pinned to `>= 9.3.1, < 10.0`, other kits are added unpinned
+- Writes `$RNMParticleSPMKits` (and `$RNMParticleSPMCoreVersion` when `iosSdkVersion` is set) at the top of the Podfile. On `pod install`, this package links the core SDK and those kits into the app target as Swift packages pinned to exact versions
+- With `iosDependencyManager: 'cocoapods'`, instead: sets `$RNMParticleDisableSPM = true`, configures a `pre_install` hook in the Podfile for dynamic framework linking, covering the kit's transitive pods (skipped if the Podfile already mentions `mParticle-Apple-SDK`), and adds the kit pods — `mParticle-Rokt` is pinned to `>= 9.3.1, < 10.0`, other kits are added unpinned
 
 **Android:**
 
@@ -162,9 +179,7 @@ The plugin generates code for the language Expo reports — `swift`, `objc` or `
 
 [1]: https://app.mparticle.com/setup/inputs/apps
 
-2. **Install the SDK** using CocoaPods:
-
-The npm install step above will automatically include our react framework and the core iOS framework in your project. However depending on your app and its other dependecies you must integrate it in 1 of 3 ways
+2. **Install the SDK.** React Native and this package install with CocoaPods, and the mParticle core SDK and its kits come from Swift Package Manager, linked into your app target ([details](#swift-package-manager)).
 
 First, set the iOS deployment target to 15.6. `react-native-mparticle.podspec` declares `ios 15.6` / `tvos 15.6`, above React Native's own `min_ios_version_supported` (15.1), so set it explicitly in `ios/Podfile` — along with any app target or extension pinned lower:
 
@@ -172,52 +187,13 @@ First, set the iOS deployment target to 15.6. `react-native-mparticle.podspec` d
 platform :ios, '15.6'
 ```
 
-A. Static Libraries are the React Native default, but the Apple SDK and the Rokt pods contain Swift code, so they need an exception in the form of a pre-install command in the Podfile. Apple SDK 9 split `mParticle-Apple-SDK` into `mParticle-Apple-SDK-ObjC` and `mParticle-Apple-SDK-Swift`, so the list covers both, plus the Rokt kit and its transitive pods:
+List your kits by CocoaPods name at the top of `ios/Podfile`, before any `target` block:
 
 ```ruby
-pre_install do |installer|
-  installer.pod_targets.each do |pod|
-    if ['mParticle-Apple-SDK', 'mParticle-Apple-SDK-ObjC',
-        'mParticle-Apple-SDK-Swift', 'mParticle-Rokt', 'Rokt-Widget',
-        'RoktContracts', 'RoktUXHelper', 'DcuiSchema'].include?(pod.name)
-      def pod.build_type;
-        Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
-      end
-    end
-  end
-end
+$RNMParticleSPMKits = ['mParticle-Rokt']
 ```
 
-The Expo config plugin generates the same list, including the transitive Rokt pods, from `iosKits`; `sample/ios/Podfile` carries it for a bare app.
-
-Then run the following command
-
-```bash
-bundle exec pod install
-```
-
-B&C. Frameworks are the default for Swift development and while it isn't preferred by React Native it is supported. Additionally you can define whether the frameworks are built staticly or dynamically.
-
-This reads `USE_FRAMEWORKS` from the environment, so your Podfile needs the block that acts on it (see `sample/ios/Podfile`):
-
-```ruby
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  use_frameworks! :linkage => linkage.to_sym
-end
-```
-
-Then run either of the following commands
-
-```bash
-USE_FRAMEWORKS=static bundle exec pod install
-```
-
-or
-
-```bash
-USE_FRAMEWORKS=dynamic bundle exec pod install
-```
+Then run `bundle exec pod install`. It prints each Swift package it links, such as `[mParticle] MyApp <- mParticle-Rokt 9.6.1`; commit the `.xcodeproj` change and `Package.resolved`. Every CocoaPods linkage works, and no `pre_install` hook is needed. To take the SDKs from CocoaPods instead, see [CocoaPods (deprecated)](#cocoapods-deprecated).
 
 3. Import and start the mParticle Apple SDK into Swift or Objective-C.
 
@@ -243,7 +219,7 @@ For more help, see [the iOS set up docs](https://docs.mparticle.com/developers/s
 > reactNativeFactory = RCTReactNativeFactory(delegate: delegate)
 > ```
 
-> **If you install no iOS kit, declare the umbrella pod.** `mParticle-Apple-SDK` is now a thin Swift umbrella over `mParticle-Apple-SDK-ObjC`, and this wrapper depends on the ObjC pod directly — so the umbrella is installed only when something else declares it, as `mParticle-Rokt` 9.x does. Without a kit, add `pod 'mParticle-Apple-SDK', '>= 9.2.2', '< 10.0'` (matching this library's own floor) for `import mParticle_Apple_SDK` to resolve, or import `mParticle_Apple_SDK_ObjC` instead.
+> **With CocoaPods and no iOS kit, declare the umbrella pod.** Swift Package Manager, the default, always links the core SDK, so this applies only to [CocoaPods](#cocoapods-deprecated). `mParticle-Apple-SDK` is now a thin Swift umbrella over `mParticle-Apple-SDK-ObjC`, and this wrapper depends on the ObjC pod directly — so the umbrella is installed only when something else declares it, as `mParticle-Rokt` 9.x does. Without a kit, add `pod 'mParticle-Apple-SDK', '>= 9.2.2', '< 10.0'` (matching this library's own floor) for `import mParticle_Apple_SDK` to resolve, or import `mParticle_Apple_SDK_ObjC` instead.
 
 #### Swift Example
 
@@ -330,12 +306,12 @@ Next, you'll need to start the SDK:
 For standard Rokt placements, add the mParticle Rokt kit:
 
 ```ruby
-pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'
+$RNMParticleSPMKits = ['mParticle-Rokt']
 ```
 
-Kit `9.3.1` is the first release requiring `Rokt-Widget` `~> 5.3` (`9.3.0` still allows `~> 5.2`), so Rokt iOS resolves transitively from this floor — do not declare `Rokt-Widget` yourself.
+With [CocoaPods](#cocoapods-deprecated), declare the pod instead: `pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'`. Kit `9.3.1` is the first release requiring `Rokt-Widget` `~> 5.3` (`9.3.0` still allows `~> 5.2`), so Rokt iOS resolves transitively from this floor — do not declare `Rokt-Widget` yourself.
 
-In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. The Expo plugin pins `mParticle-Rokt` to `>= 9.3.1, < 10.0`. It does not add payment-extension pods or URL callback forwarding in this release.
+In Expo apps, use `iosKits: ["mParticle-Rokt"]` for standard Rokt placements. With `iosDependencyManager: 'cocoapods'`, the Expo plugin pins `mParticle-Rokt` to `>= 9.3.1, < 10.0`. It does not add payment-extension pods or URL callback forwarding in this release.
 
 See [MIGRATING.md](./MIGRATING.md) for release-specific migration guidance.
 
@@ -355,6 +331,111 @@ npm start
 ```
 
 and build your workspace from xCode.
+
+### Swift Package Manager
+
+This package takes the mParticle SDKs from Swift Package Manager by default. React Native and this package still install with CocoaPods, but the mParticle core SDK and its kits are Swift packages linked into your app target. CocoaPods trunk becomes read-only on 2 December 2026 ([announcement](https://blog.cocoapods.org/CocoaPods-Specs-Repo/)), so taking the SDKs from CocoaPods is [deprecated](#cocoapods-deprecated). iOS only: a Podfile with a tvOS target that uses this package must opt out, for the whole Podfile.
+
+Every mParticle and Rokt SDK must come from Swift Package Manager, and none from CocoaPods. If the core comes from one and a kit from the other, the app contains two copies of the SDK: it builds and archives without warnings, then crashes at runtime.
+
+**Podfile settings.** Both are optional. Set them at the top of `ios/Podfile`, before any `target` block, which is where this package's podspec is evaluated:
+
+```ruby
+$RNMParticleSPMKits = ['mParticle-Rokt', 'mParticle-Braze-14']
+$RNMParticleSPMCoreVersion = '9.6.1'
+```
+
+- `$RNMParticleSPMKits` lists kits by CocoaPods name. [`ios/mparticle_spm_kits.json`](./ios/mparticle_spm_kits.json) maps every kit of the mParticle Apple SDK to its Swift package, including `mParticle-Kochava-9` and `mParticle-Kochava-No-Tracking-9`, which ship only as Swift packages, and `RoktSDKPlus`, which already includes `mParticle-Rokt` and is supported only from Swift Package Manager. For any other kit, give `{ url: '…', product: '…', version: '…' }`.
+- `$RNMParticleSPMCoreVersion` pins the core SDK. It defaults to the version this release was tested with. A kit without a version gets the core's, since mParticle kits are released with the core.
+
+**What `pod install` changes.** On each `pod install`, this package edits your app's `.xcodeproj`: it adds a Swift package reference for the core SDK and each kit, pinned to the exact version, and links each package's product into every iOS application target that uses this package. It prints every change (`[mParticle] MyApp <- mParticle-Rokt 9.6.1`), and running it again changes nothing. It stops `pod install` with an error if a pod would add a second copy of the SDKs. Commit the `.xcodeproj` change and `ios/<App>.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so every build resolves the same versions.
+
+**Linkage.** This package's pod is always built as a static framework, so it works with each CocoaPods linkage:
+
+| Podfile linkage                         | Supported |
+| --------------------------------------- | --------- |
+| Static libraries (React Native default) | ✓         |
+| `use_frameworks! :linkage => :static`   | ✓         |
+| `use_frameworks! :linkage => :dynamic`  | ✓         |
+
+**Troubleshooting.**
+
+- `pod install` fails with `[mParticle] This package takes the mParticle SDKs from Swift Package Manager, but these pods would add a second copy`: remove the kit pods you declared, such as `pod 'mParticle-Rokt'`, and their entries in any `pre_install` hook, then list the kits in `$RNMParticleSPMKits`. The error also lists the pods those kits pull in. To stay on CocoaPods for now, set `$RNMParticleDisableSPM = true` instead.
+- `pod install` fails with `[mParticle] $RNMParticleSPMKits: unknown kit`: use a name from `ios/mparticle_spm_kits.json`, or give the kit's `url:` and `product:`.
+- `pod install` fails with `[mParticle] Swift Package Manager mode is iOS only`: a tvOS target uses this package, as in a `react-native-tvos` app whose Podfile sets `platform :tvos`. Set `$RNMParticleDisableSPM = true` at the top of the Podfile, or `iosDependencyManager: 'cocoapods'` with Expo.
+- `pod install` fails inside `MParticleSPM::InstallerHooks` after a CocoaPods upgrade: this package hooks CocoaPods' private `resolve_dependencies`, `validate_targets` and `run_podfile_post_install_hooks` methods, tested with CocoaPods 1.15.2 and 1.16.2. Open an issue with your CocoaPods version.
+- The build fails with `[mParticle] Swift Package Manager mode is on, but the mParticle-Apple-SDK Swift package is not linked into the app target`: the package was removed from the app target after `pod install`. Run `pod install` again.
+- A Debug build shows the red box `[mParticle] The mParticle SDK is loaded more than once`: the SDK comes from both CocoaPods and Swift Package Manager. Remove the mParticle and Rokt pods and any Swift packages you added by hand, then run `pod install`.
+
+### CocoaPods (deprecated)
+
+To take the mParticle SDKs from CocoaPods instead, set this at the top of `ios/Podfile`, before any `target` block, and declare the kit pods, such as `pod 'mParticle-Rokt', '>= 9.3.1', '< 10.0'`:
+
+```ruby
+$RNMParticleDisableSPM = true
+```
+
+CocoaPods trunk becomes read-only on 2 December 2026, and a future release will remove this option. If the app target still links the mParticle Swift packages, `pod install` warns: remove them from the target, or the app contains two copies of the SDK. `ios/mparticle_spm_kits.json` marks the kits this package supports only from Swift Package Manager.
+
+Depending on your app and its other dependencies, integrate the pods in one of three ways.
+
+A. Static Libraries are the React Native default, but the Apple SDK and the Rokt pods contain Swift code, so they need an exception in the form of a pre-install command in the Podfile. Apple SDK 9 split `mParticle-Apple-SDK` into `mParticle-Apple-SDK-ObjC` and `mParticle-Apple-SDK-Swift`, so the list covers both, plus the Rokt kit and its transitive pods:
+
+```ruby
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if ['mParticle-Apple-SDK', 'mParticle-Apple-SDK-ObjC',
+        'mParticle-Apple-SDK-Swift', 'mParticle-Rokt', 'Rokt-Widget',
+        'RoktContracts', 'RoktUXHelper', 'DcuiSchema'].include?(pod.name)
+      def pod.build_type;
+        Pod::BuildType.new(:linkage => :dynamic, :packaging => :framework)
+      end
+    end
+  end
+end
+```
+
+With `iosDependencyManager: 'cocoapods'`, the Expo config plugin generates the same list, including the transitive Rokt pods, from `iosKits`; `sample/ios/Podfile` carries it for a bare app (`MP_USE_COCOAPODS=1`).
+
+Then run the following command
+
+```bash
+bundle exec pod install
+```
+
+B&C. Frameworks are the default for Swift development and while it isn't preferred by React Native it is supported. Additionally you can define whether the frameworks are built staticly or dynamically.
+
+This reads `USE_FRAMEWORKS` from the environment, so your Podfile needs the block that acts on it (see `sample/ios/Podfile`):
+
+```ruby
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  use_frameworks! :linkage => linkage.to_sym
+end
+```
+
+Then run either of the following commands
+
+```bash
+USE_FRAMEWORKS=static bundle exec pod install
+```
+
+or
+
+```bash
+USE_FRAMEWORKS=dynamic bundle exec pod install
+```
+
+### Experimental: React Native Swift Package Manager mode
+
+> **Not for production.** React Native's own Swift Package Manager mode (React Native 0.87 or later) is experimental, and so is this package's support for it. Use this package's default mode above, which installs React Native with CocoaPods, for apps you ship.
+
+This package ships a `Package.swift`, so `npx react-native spm add` links it without a scaffolded manifest. The app target must also link the mParticle core SDK and each kit as Swift packages, for example in Xcode (File › Add Package Dependencies):
+
+- `https://github.com/mParticle/mparticle-apple-sdk`, product `mParticle-Apple-SDK`
+- `https://github.com/mparticle-integrations/mp-apple-integration-rokt`, product `mParticle-Rokt`
+
+Use exactly these URLs, with no `.git` suffix on the first, so Swift Package Manager treats them as the same packages the kits depend on. Then start mParticle in your Swift `AppDelegate` with `import mParticle_Apple_SDK`, as in the CocoaPods setup.
 
 ## Android (Manual Setup)
 
@@ -711,8 +792,8 @@ useEffect(() => {
 return <MParticle.RoktLayoutView placeholderName="Location1" />;
 ```
 
-The earlier form, a map of `placeholderName` to `findNodeHandle(ref)`, is still
-supported: `{ Location1: findNodeHandle(this.placeholder1.current) }`.
+The earlier map of `placeholderName` to `findNodeHandle(ref)` is no longer
+supported: see [MIGRATING](./MIGRATING.md#migrating-embedded-placements-to-placeholder-names).
 
 | Method                                                | Notes                                                 |
 | ----------------------------------------------------- | ----------------------------------------------------- |

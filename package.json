@@ -27,7 +27,8 @@
     "lib",
     "react-native-mparticle.podspec",
     "app.plugin.js",
-    "plugin"
+    "plugin",
+    "Package.swift"
   ],
   "publishConfig": {
     "access": "public",
