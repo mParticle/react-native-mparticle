@@ -179,6 +179,11 @@ jobs:
         working-directory: sample
         run: bundle install
 
+      - name: Test how pod install links the Swift packages
+        if: matrix.ios_deps == 'spm'
+        working-directory: sample
+        run: bundle exec ruby ../scripts/ios/mparticle_spm_test.rb
+
       # A tvOS app must get the opt-out error, not silently lose this pod (see the podspec's platforms).
       - name: Check that a tvOS Podfile stops with the iOS-only error
         if: matrix.ios_deps == 'spm'
@@ -210,6 +215,7 @@ jobs:
           -only-testing:MParticleSampleTests/RNMParticleDuplicateSDKTests \
           -only-testing:MParticleSampleTests/RNMPRoktEventMapperTests \
           -only-testing:MParticleSampleTests/RNMPRoktConfigFactoryTests \
+          -only-testing:MParticleSampleTests/RNMPRoktPlaceholderTests \
           -only-testing:MParticleSampleTests/RNMPRoktSwiftTests \
           | bundle exec xcpretty -k
 
