@@ -151,7 +151,7 @@ jobs:
         run: echo "TOOLCHAINS=com.apple.dt.toolchain.XcodeDefault" >> $GITHUB_ENV
 
       - name: Setup iOS Simulator
-        uses: futureware-tech/simulator-action@v5
+        uses: futureware-tech/simulator-action@v6
         id: simulator
         with:
           model: iPhone 16
