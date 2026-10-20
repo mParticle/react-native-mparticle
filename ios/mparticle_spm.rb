@@ -16,7 +16,8 @@
 #      crashes at runtime.
 #   2. After the Podfile's post_install hook, it adds the core SDK and each kit as Swift packages,
 #      pinned to an exact version, to every iOS application target that uses this pod. The app target
-#      owns the only copy of each SDK.
+#      owns the only copy of each SDK. It unlinks the kits from ios/mparticle_spm_kits.json that the
+#      Podfile does not list.
 # With the opt-out, it only warns when an app target still links the mParticle Swift packages.
 require 'json'
 require 'xcodeproj'
@@ -30,6 +31,9 @@ module MParticleSPM
   DEFAULT_CORE_VERSION = '9.6.1'.freeze
   # Kits by their CocoaPods name. The Expo config plugin reads the same file.
   KITS = JSON.parse(File.read(File.join(__dir__, 'mparticle_spm_kits.json')))['kits'].freeze
+  # Packages this file unlinks when the Podfile does not list them. A package from any other URL, such
+  # as a kit given by url:, may have been added by hand, so it is never removed.
+  MANAGED_URLS = [CORE_URL, *KITS.values.map { |kit| kit['url'] }].freeze
   CONFLICTING_PODS =
     /\A(mParticle-.*|Rokt-Widget|RoktContracts|RoktUXHelper|DcuiSchema|RoktSDKPlus|RoktPaymentExtension)\z/.freeze
 
@@ -54,7 +58,15 @@ module MParticleSPM
             "[mParticle] $RNMParticleSPMKits lists #{name} and #{included.join(', ')}, but #{name} " \
             "already includes #{included.join(', ')}. List only #{name}."
     end
-    entries.map { |entry| resolve_kit(entry) }
+    resolved = entries.map { |entry| resolve_kit(entry) }.uniq
+    resolved.group_by { |kit| kit[:product] }.each do |product, same|
+      next if same.size == 1
+
+      raise Pod::Informative,
+            "[mParticle] $RNMParticleSPMKits lists more than one kit with the product #{product}. " \
+            'List only one of them.'
+    end
+    resolved
   end
 
   def self.resolve_kit(entry)
@@ -132,7 +144,21 @@ module MParticleSPM
     changed = ref.requirement != requirement
     ref.requirement = requirement
 
-    return changed if target.package_product_dependencies.any? { |d| d.product_name == product }
+    # A kit switched to another major version keeps its product name, so point the product at the
+    # new package. A product linked from a package this file does not manage, such as a fork, stays.
+    dep = target.package_product_dependencies.find { |d| d.product_name == product }
+    if dep
+      linked_url = dep.package.respond_to?(:repositoryURL) ? dep.package.repositoryURL : 'a local package'
+      unless dep.package == ref || MANAGED_URLS.include?(linked_url)
+        raise Pod::Informative,
+              "[mParticle] #{target.name} already links #{product} from #{linked_url}, but " \
+              "$RNMParticleSPMKits takes it from #{url}. Remove it from the target in Xcode, or list that " \
+              'package in $RNMParticleSPMKits by url:.'
+      end
+      changed ||= dep.package != ref
+      dep.package = ref
+      return changed
+    end
 
     dep = project.new(Xcodeproj::Project::Object::XCSwiftPackageProductDependency)
     dep.package = ref
@@ -144,6 +170,31 @@ module MParticleSPM
     true
   end
 
+  def self.unlink_unlisted(target, products)
+    unlisted = target.package_product_dependencies.select do |dep|
+      dep.package.respond_to?(:repositoryURL) && MANAGED_URLS.include?(dep.package.repositoryURL) &&
+        !products.include?(dep.product_name)
+    end
+    unlisted.each do |dep|
+      target.build_phases.each do |phase|
+        phase.files.select { |file| file.product_ref == dep }.each(&:remove_from_project)
+      end
+      dep.remove_from_project
+      Pod::UI.puts "[mParticle] #{target.name} -x #{dep.product_name} (not in $RNMParticleSPMKits)".yellow
+    end
+  end
+
+  # Keeps a package another target still links.
+  def self.remove_unused_references(project)
+    used = project.objects.grep(Xcodeproj::Project::Object::XCSwiftPackageProductDependency).map(&:package)
+    project.root_object.package_references.select do |ref|
+      ref.respond_to?(:repositoryURL) && MANAGED_URLS.include?(ref.repositoryURL) && !used.include?(ref)
+    end.each do |ref|
+      Pod::UI.puts "[mParticle] Removed the unused Swift package #{ref.repositoryURL}".yellow
+      ref.remove_from_project
+    end
+  end
+
   def self.link_packages(installer)
     packages = [{ url: CORE_URL, product: CORE_PRODUCT, version: core_version }] + kits
     touched = {}
@@ -152,9 +203,13 @@ module MParticleSPM
         added = add_package(project, target, **pkg.slice(:url, :product, :version))
         Pod::UI.puts "[mParticle] #{target.name} <- #{pkg[:product]} #{pkg[:version]}".green if added
       end
+      unlink_unlisted(target, packages.map { |pkg| pkg[:product] })
       touched[project.path.to_s] = project
     end
-    touched.each_value(&:save)
+    touched.each_value do |project|
+      remove_unused_references(project)
+      project.save
+    end
   end
 
   # With the opt-out, the CocoaPods SDK and any leftover Swift package would both be linked. Kits
