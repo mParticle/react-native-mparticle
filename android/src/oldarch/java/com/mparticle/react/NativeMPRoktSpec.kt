@@ -3,6 +3,7 @@ package com.mparticle.react
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 
 abstract class NativeMPRoktSpec(
@@ -17,7 +18,7 @@ abstract class NativeMPRoktSpec(
     abstract fun selectPlacements(
         identifier: String,
         attributes: ReadableMap?,
-        placeholders: ReadableMap?,
+        placeholders: ReadableArray?,
         roktConfig: ReadableMap?,
         fontFilesMap: ReadableMap?,
     )

@@ -19,7 +19,7 @@ export interface Spec extends TurboModule {
   selectPlacements(
     identifier: string,
     attributes?: { [key: string]: RoktAttributeValue },
-    placeholders?: { [key: string]: number },
+    placeholders?: Array<string>,
     roktConfig?: RoktConfigType,
     fontFilesMap?: { [key: string]: string }
   ): void;

@@ -32,34 +32,28 @@ function getMPRokt(): NativeMPRoktInterface {
 export type RoktAttributeValue = string | number | boolean;
 
 /**
- * Embedded placeholders for `selectPlacements`.
- *
- * Preferred: the `placeholderName`s of `RoktLayoutView`s, e.g. `['Location1']`.
- * Legacy: a map of placeholder name to `findNodeHandle(ref)` react tag. Still supported.
+ * Embedded placeholders for `selectPlacements`: the `placeholderName`s of `RoktLayoutView`s,
+ * e.g. `['Location1']`.
  */
-export type RoktPlaceholders = string[] | Record<string, number | null>;
+export type RoktPlaceholders = string[];
 
 /**
- * Converts the public placeholder forms to the native spec's map shape. React tags are
- * positive, so zero is an explicit request to resolve the view by its `placeholderName`.
- * A numeric sentinel is required because React Native codegen drops null-valued map entries.
+ * The map of placeholder name to `findNodeHandle` react tag is no longer supported. A plain-JS
+ * caller that still passes one gets an error log, and the placement is requested without
+ * embedded views, instead of a platform-specific crash or conversion failure in native code.
  */
 export function toNativePlaceholders(
   placeholders?: RoktPlaceholders
-): Record<string, number> | undefined {
-  if (placeholders == null) {
-    return undefined;
+): string[] | undefined {
+  if (placeholders == null || Array.isArray(placeholders)) {
+    return placeholders;
   }
-
-  const entries: ReadonlyArray<readonly [string, number | null]> =
-    Array.isArray(placeholders)
-      ? placeholders.map(name => [name, null] as const)
-      : Object.entries(placeholders);
-
-  return entries.reduce<Record<string, number>>((map, [name, reactTag]) => {
-    map[name] = reactTag ?? 0;
-    return map;
-  }, {});
+  console.error(
+    '[mParticle] selectPlacements: placeholders must be an array of RoktLayoutView placeholderNames, ' +
+      "e.g. ['Location1']. The map of name to findNodeHandle tag is no longer supported, so the " +
+      'placement is requested without embedded views. See MIGRATING.md.'
+  );
+  return undefined;
 }
 
 /**
@@ -83,7 +77,7 @@ export abstract class Rokt {
    *
    * @param {string} identifier - The page identifier for the placement.
    * @param {Record<string, RoktAttributeValue>} attributes - Attributes to be associated with the placement.
-   * @param {RoktPlaceholders} [placeholders] - Optional embedded placeholders: `placeholderName`s of `RoktLayoutView`s (preferred), or a legacy map of name to react tag. A named view does not need to be mounted yet: the SDK waits up to 2 seconds for it, so this can be called from the same `useEffect` that renders it.
+   * @param {RoktPlaceholders} [placeholders] - Optional embedded placeholders: the `placeholderName`s of `RoktLayoutView`s, e.g. `['Location1']`. A named view does not need to be mounted yet: the SDK waits up to 2 seconds for it, so this can be called from the same `useEffect` that renders it.
    * @param {IRoktConfig} [roktConfig] - Optional configuration settings for Rokt.
    * @param {Record<string, string>} [fontFilesMap] - Optional mapping of font files.
    * @returns {Promise<void>} A promise that resolves when the placement request is sent.

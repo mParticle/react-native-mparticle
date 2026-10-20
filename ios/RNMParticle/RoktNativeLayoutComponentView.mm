@@ -1,7 +1,7 @@
 #ifdef RCT_NEW_ARCH_ENABLED
-#import <SafariServices/SafariServices.h>
 #import "RoktNativeLayoutComponentView.h"
 #import "RoktPlaceholderRegistry.h"
+#import "RNMPRoktSwift.h"
 
 #import <React/renderer/components/RNMParticle/ComponentDescriptors.h>
 #import <react/renderer/components/RNMParticle/Props.h>
@@ -11,7 +11,7 @@
 using namespace facebook::react;
 
 @interface RoktNativeLayoutComponentView () <RCTRoktNativeLayoutViewProtocol>
-@property (nonatomic, nullable) RoktEmbeddedView *roktEmbeddedView;
+@property (nonatomic, nullable) UIView *roktEmbeddedView;
 @property (nonatomic, nullable) NSString *placeholderName;
 @end
 
@@ -27,7 +27,10 @@ using namespace facebook::react;
 - (instancetype)initWithFrame:(CGRect)frame
 {
   if (self = [super initWithFrame:frame]) {
-    _roktEmbeddedView = [[RoktEmbeddedView alloc] initWithFrame:self.bounds];
+    // The superclass leaves plain ViewProps here, and debug builds of React Native assert on
+    // the first updateProps if a subclass keeps them, so start from this component's defaults.
+    _props = RoktNativeLayoutShadowNode::defaultSharedProps();
+    _roktEmbeddedView = [RNMPRoktViews makeEmbeddedViewWithFrame:self.bounds];
     // Width only: the Rokt SDK owns the height (updateEmbeddedSize sets it before JS
     // resizes this view), so flexible height would re-apply that delta once React Native
     // caught up, doubling the embedded view and centring the layout below blank space.

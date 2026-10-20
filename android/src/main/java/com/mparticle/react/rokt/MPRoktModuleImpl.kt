@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import com.facebook.react.bridge.UiThreadUtil
@@ -17,6 +18,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.mparticle.MParticle
 import com.mparticle.WrapperSdk
 import com.mparticle.internal.Logger
+import com.mparticle.kits.RoktEmbeddedView
 import com.mparticle.kits.rokt
 import com.rokt.roktsdk.CacheConfig
 import com.rokt.roktsdk.RoktConfig
@@ -24,6 +26,7 @@ import com.rokt.roktsdk.RoktEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 import java.math.BigDecimal
 
 class MPRoktModuleImpl(
@@ -74,15 +77,14 @@ class MPRoktModuleImpl(
     }
 
     /**
-     * Runs [select] on the UI thread once every placeholder named for name-based resolution has
-     * mounted, or after [PLACEHOLDER_MOUNT_TIMEOUT_MS]. A placeholder may not be mounted yet when
-     * selectPlacements arrives, e.g. when it is called from the same useEffect that rendered it:
-     * Fabric creates views on the next frame. Legacy react tags are never waited for.
-     * Must be called on the UI thread.
+     * Runs [select] on the UI thread once every named placeholder has mounted, or after
+     * [PLACEHOLDER_MOUNT_TIMEOUT_MS]. A placeholder may not be mounted yet when selectPlacements
+     * arrives, e.g. when it is called from the same useEffect that rendered it: Fabric creates
+     * views on the next frame. Must be called on the UI thread.
      */
     fun whenPlaceholdersMounted(
         identifier: String,
-        placeholders: ReadableMap?,
+        placeholders: ReadableArray?,
         select: () -> Unit,
     ) {
         val pending = unmountedPlaceholderNames(placeholders)
@@ -111,19 +113,37 @@ class MPRoktModuleImpl(
         sendEvent(reactContext, "RoktEvents", params)
     }
 
-    // Names passed for name-based resolution (a non-positive value) that have no mounted view yet.
-    internal fun unmountedPlaceholderNames(placeholders: ReadableMap?): List<String> {
-        if (placeholders == null) return emptyList()
-        val pending = mutableListOf<String>()
-        val iterator = placeholders.keySetIterator()
-        while (iterator.hasNextKey()) {
-            val key = iterator.nextKey()
-            val isReactTag = placeholders.getType(key) == ReadableType.Number && placeholders.getDouble(key) > 0
-            if (!isReactTag && RoktPlaceholderRegistry.lookup(key) == null) {
-                pending += key
+    /**
+     * Resolves placeholder names to their mounted RoktEmbeddedView instances.
+     * Must be called on the UI thread — it resolves live views.
+     */
+    fun resolvePlaceholders(placeholders: ReadableArray?): Map<String, WeakReference<RoktEmbeddedView>> {
+        val names = placeholderNames(placeholders)
+        if (names.size != (placeholders?.size() ?: 0)) {
+            Logger.warning("Ignoring placeholders that are not placeholderName strings")
+        }
+        val views = HashMap<String, WeakReference<RoktEmbeddedView>>()
+        for (name in names) {
+            val view = RoktPlaceholderRegistry.lookup(name) as? RoktEmbeddedView
+            if (view != null) {
+                views[name] = WeakReference(view)
+            } else {
+                Logger.warning("Cannot resolve placeholder for key: $name")
             }
         }
-        return pending
+        return views
+    }
+
+    // Placeholder names that have no mounted view yet.
+    internal fun unmountedPlaceholderNames(placeholders: ReadableArray?): List<String> =
+        placeholderNames(placeholders).filter { RoktPlaceholderRegistry.lookup(it) == null }
+
+    // Only strings are placeholder names; getString would throw on any other entry.
+    private fun placeholderNames(placeholders: ReadableArray?): List<String> {
+        if (placeholders == null) return emptyList()
+        return (0 until placeholders.size()).mapNotNull { index ->
+            if (placeholders.getType(index) == ReadableType.String) placeholders.getString(index) else null
+        }
     }
 
     fun setSessionId(

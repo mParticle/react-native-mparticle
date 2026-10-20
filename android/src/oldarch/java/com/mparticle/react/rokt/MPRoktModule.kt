@@ -3,15 +3,13 @@ package com.mparticle.react.rokt
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.uimanager.NativeViewHierarchyManager
 import com.facebook.react.uimanager.UIManagerModule
 import com.mparticle.MParticle
 import com.mparticle.internal.Logger
-import com.mparticle.kits.RoktEmbeddedView
 import com.mparticle.kits.rokt
 import com.mparticle.react.NativeMPRoktSpec
-import java.lang.ref.WeakReference
 
 class MPRoktModule(
     private val reactContext: ReactApplicationContext,
@@ -24,7 +22,7 @@ class MPRoktModule(
     override fun selectPlacements(
         identifier: String,
         attributes: ReadableMap?,
-        placeholders: ReadableMap?,
+        placeholders: ReadableArray?,
         roktConfig: ReadableMap?,
         fontFilesMap: ReadableMap?,
     ) {
@@ -39,12 +37,12 @@ class MPRoktModule(
         }
 
         val config = roktConfig?.let { impl.buildRoktConfig(it) }
-        uiManager?.addUIBlock { nativeViewHierarchyManager ->
+        uiManager?.addUIBlock {
             impl.whenPlaceholdersMounted(identifier, placeholders) {
                 MParticle.getInstance()?.rokt?.selectPlacements(
                     identifier = identifier,
                     attributes = impl.readableMapToMapOfStrings(attributes),
-                    embeddedViews = safeUnwrapPlaceholders(placeholders, nativeViewHierarchyManager),
+                    embeddedViews = impl.resolvePlaceholders(placeholders),
                     fontTypefaces = null, // TODO
                     config = config,
                 )
@@ -86,28 +84,5 @@ class MPRoktModule(
     @ReactMethod
     override fun getSessionId(promise: Promise) {
         impl.getSessionId(promise)
-    }
-
-    // Positive numeric values are legacy react tags. Zero is the name-lookup sentinel used by
-    // the JS wrapper; unresolved tags also fall back to placeholderName.
-    private fun safeUnwrapPlaceholders(
-        placeholders: ReadableMap?,
-        nativeViewHierarchyManager: NativeViewHierarchyManager,
-    ): Map<String, WeakReference<RoktEmbeddedView>> {
-        val placeholderMap: MutableMap<String, WeakReference<RoktEmbeddedView>> = HashMap()
-
-        // A for loop, not forEach: HashMap.forEach(BiConsumer) needs API 24 and minSdk is 21.
-        for ((key, value) in placeholders?.toHashMap().orEmpty()) {
-            val view =
-                (value as? Double)?.takeIf { it > 0 }?.let {
-                    runCatching { nativeViewHierarchyManager.resolveView(it.toInt()) as? RoktEmbeddedView }.getOrNull()
-                } ?: RoktPlaceholderRegistry.lookup(key) as? RoktEmbeddedView
-            if (view != null) {
-                placeholderMap[key] = WeakReference(view)
-            } else {
-                Logger.warning("Cannot resolve placeholder for key: $key")
-            }
-        }
-        return placeholderMap
     }
 }

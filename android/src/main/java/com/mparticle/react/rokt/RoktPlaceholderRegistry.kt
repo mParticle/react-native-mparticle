@@ -7,7 +7,7 @@ import java.lang.ref.WeakReference
 
 /**
  * Maps a `RoktLayoutView`'s `placeholderName` to its mounted native view, so
- * `selectPlacements` can resolve placeholders by name instead of a `findNodeHandle` react tag.
+ * `selectPlacements` can resolve placeholders by name.
  *
  * UI thread only: views register from the view manager and are resolved inside
  * `runOnUiThread` / `addUIBlock`, so no locking.

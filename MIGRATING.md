@@ -2,13 +2,35 @@
 
 This document provides migration guidance for changes in `react-native-mparticle`.
 
+## iOS: the mParticle SDKs now come from Swift Package Manager
+
+**Breaking, iOS only.** React Native and this package still install with CocoaPods, but the mParticle core SDK and its kits now come from Swift Package Manager by default, linked into the app target. CocoaPods trunk becomes read-only on 2 December 2026. An app with no kits needs no change. An app that declares kit pods fails `pod install` until it moves them, or opts out. See [README › Swift Package Manager](./README.md#swift-package-manager).
+
+To move a bare React Native app:
+
+1. In `ios/Podfile`, remove every mParticle and Rokt pod you declared, such as `pod 'mParticle-Rokt'`, `pod 'mParticle-Apple-SDK'` or `pod 'Rokt-Widget'`.
+2. Remove the mParticle, Rokt, `RoktContracts`, `RoktUXHelper` and `DcuiSchema` names from any `pre_install` hook that makes them dynamic frameworks. If the hook lists nothing else, delete it.
+3. If you added mParticle or Rokt Swift packages to the app target by hand, remove them in Xcode (target › General › Frameworks, Libraries, and Embedded Content, and the project's Package Dependencies). `pod install` adds them back, pinned.
+4. Above the first `target` block, list your kits by CocoaPods name: `$RNMParticleSPMKits = ['mParticle-Rokt']`.
+5. Run `pod install`. It prints each package it adds, and fails with a list of pods to remove if any would add a second copy of the SDK.
+6. Build, run a Debug build once to confirm no red box, and commit the `.xcodeproj` change and `Package.resolved`.
+
+A Swift `AppDelegate` needs no change: `import mParticle_Apple_SDK` resolves from the Swift package.
+
+Expo apps need no change beyond `npx expo prebuild --clean`: the plugin maps `iosKits` to their Swift packages. A kit the plugin does not know goes in `iosSpmKits`.
+
+To stay on CocoaPods for now, add `$RNMParticleDisableSPM = true` at the top of `ios/Podfile`, before any `target` block, and keep your pods (Expo: `"iosDependencyManager": "cocoapods"`). This is deprecated, and a Podfile with a tvOS target that uses this package must do it.
+
 ## Migrating embedded placements to placeholder names
 
-`MParticle.Rokt.selectPlacements` can find each embedded `RoktLayoutView` by its
+`MParticle.Rokt.selectPlacements` finds each embedded `RoktLayoutView` by its
 `placeholderName`, so apps no longer need a ref, `findNodeHandle`, or to wait for
-the view to mount before calling it. This is not a breaking change: the map of
-placeholder names to React tags still works. We recommend moving to names the
-next time you touch the integration.
+the view to mount before calling it.
+
+**Breaking:** the map of placeholder names to React tags has been removed, and
+`placeholders` must be an array of names. A map passed from plain JavaScript logs
+an error, and the placement is requested without embedded views. Earlier 3.x
+releases accept both forms, so you can switch to names before you upgrade.
 
 Before, tag-based:
 
@@ -48,7 +70,7 @@ return <MParticle.RoktLayoutView placeholderName="Location1" />;
 To migrate, remove the ref, the `findNodeHandle` import and any `onLayout`
 handler or timer used to delay the call, then pass an array of placeholder
 names. Each name must match the `placeholderName` of a `RoktLayoutView`, the same
-key the map uses today.
+key the map used.
 
 ### Behavior changes to check
 
@@ -56,14 +78,9 @@ key the map uses today.
   seconds.** The SDK waits for the view, then calls Rokt with the views it has.
   A misspelled or never-rendered name therefore arrives 2 seconds late, and is
   logged as `Cannot resolve placeholder`.
-- **`null` in the map form is resolved by name.** `findNodeHandle` returns `null`
-  before the view mounts; that placeholder was skipped before and is now looked
-  up by its key.
 - **A waiting call can end in `PlacementFailure`.** If `close()` runs, or a newer
   call with the same identifier replaces it, before its placeholders mount, the
   waiting call emits `PlacementFailure` instead of being dropped silently.
-
-The map form is planned for removal in a future major version.
 
 ## Migrating from versions < 3.0.0
 

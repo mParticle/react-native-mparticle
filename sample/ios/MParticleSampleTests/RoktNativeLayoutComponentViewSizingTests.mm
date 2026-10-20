@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <react/renderer/components/RNMParticle/Props.h>
 #import "../../../ios/RNMParticle/RoktNativeLayoutComponentView.h"
 
 // Deliberately not wrapped in #ifdef RCT_NEW_ARCH_ENABLED: the header is, so a build
@@ -69,6 +70,24 @@
     [_componentView layoutIfNeeded];
 
     XCTAssertEqualWithAccuracy(_componentView.roktEmbeddedView.frame.size.width, 390, 0.5);
+}
+
+@end
+
+/**
+ * Debug builds of React Native crash on the first updateProps if the view kept the superclass's
+ * plain ViewProps; release builds only log it, so check the props type rather than the crash.
+ */
+@interface RoktNativeLayoutComponentViewPropsTests : XCTestCase
+@end
+
+@implementation RoktNativeLayoutComponentViewPropsTests
+
+- (void)testStartsWithRoktNativeLayoutDefaultProps
+{
+    RoktNativeLayoutComponentView *componentView = [[RoktNativeLayoutComponentView alloc] initWithFrame:CGRectZero];
+
+    XCTAssertTrue(std::dynamic_pointer_cast<const facebook::react::RoktNativeLayoutProps>([componentView props]) != nullptr);
 }
 
 @end
