@@ -2,13 +2,17 @@ name: Run trunk upgrade
 
 on:
   workflow_call:
+    secrets:
+      SDK_RELEASE_GITHUB_CLIENT_ID:
+        required: true
+      SDK_RELEASE_GITHUB_APP_PRIVATE_KEY:
+        required: true
   schedule:
     - cron: 0 0 1 * *
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   generate-and-call-upgrade:
@@ -20,15 +24,20 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          client-id: ${{ secrets.SDK_RELEASE_GITHUB_CLIENT_ID }} # trunk-ignore(actionlint/expression)
-          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }} # trunk-ignore(actionlint/expression)
+          client-id: ${{ secrets.SDK_RELEASE_GITHUB_CLIENT_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: |
             react-native-mparticle
+          permission-contents: write
+          permission-pull-requests: write
 
   trunk-upgrade:
     needs: generate-and-call-upgrade
     name: Run trunk upgrade
-    uses: ROKT/rokt-workflows/.github/workflows/trunk-upgrade.yml@main # trunk-ignore(actionlint/workflow-call)
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ROKT/rokt-workflows/.github/workflows/trunk-upgrade.yml@da0c5fd5d38e9cf113a24ec9aaea079cc7d0bc40 # main
     with:
       token: ${{ needs.generate-and-call-upgrade.outputs.generated-token }}
