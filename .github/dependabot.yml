@@ -1,16 +1,18 @@
 version: 2
 updates:
   - package-ecosystem: gradle
-    directory: "/android"
+    directory: '/android'
     schedule:
       interval: daily
     labels:
       - dependabot
     open-pull-requests-limit: 10
     ignore:
-      - dependency-name: "com.google.firebase:firebase-messaging"
+      - dependency-name: 'com.google.firebase:firebase-messaging'
     commit-message:
-      prefix: "chore"
+      prefix: 'chore'
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -19,4 +21,6 @@ updates:
     labels:
       - dependabot
     commit-message:
-      prefix: "chore"
+      prefix: 'chore'
+    cooldown:
+      default-days: 7
