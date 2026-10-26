@@ -193,7 +193,7 @@ List your kits by CocoaPods name at the top of `ios/Podfile`, before any `target
 $RNMParticleSPMKits = ['mParticle-Rokt']
 ```
 
-Then run `bundle exec pod install`. It prints each Swift package it links, such as `[mParticle] MyApp <- mParticle-Rokt 9.6.1`; commit the `.xcodeproj` change and `Package.resolved`. Every CocoaPods linkage works, and no `pre_install` hook is needed. To take the SDKs from CocoaPods instead, see [CocoaPods (deprecated)](#cocoapods-deprecated).
+Then run `bundle exec pod install`. It prints each Swift package it links, such as `[mParticle] MyApp <- mParticle-Rokt 9.7.4`; commit the `.xcodeproj` change and `Package.resolved`. Every CocoaPods linkage works, and no `pre_install` hook is needed. To take the SDKs from CocoaPods instead, see [CocoaPods (deprecated)](#cocoapods-deprecated).
 
 3. Import and start the mParticle Apple SDK into Swift or Objective-C.
 
@@ -342,13 +342,13 @@ Every mParticle and Rokt SDK must come from Swift Package Manager, and none from
 
 ```ruby
 $RNMParticleSPMKits = ['mParticle-Rokt', 'mParticle-Braze-14']
-$RNMParticleSPMCoreVersion = '9.6.1'
+$RNMParticleSPMCoreVersion = '9.7.4'
 ```
 
 - `$RNMParticleSPMKits` lists kits by CocoaPods name. [`ios/mparticle_spm_kits.json`](./ios/mparticle_spm_kits.json) maps every kit of the mParticle Apple SDK to its Swift package, including `mParticle-Kochava-9` and `mParticle-Kochava-No-Tracking-9`, which ship only as Swift packages, and `RoktSDKPlus`, which already includes `mParticle-Rokt` and is supported only from Swift Package Manager. For any other kit, give `{ url: '…', product: '…', version: '…' }`.
 - `$RNMParticleSPMCoreVersion` pins the core SDK. It defaults to the version this release was tested with. A kit without a version gets the core's, since mParticle kits are released with the core.
 
-**What `pod install` changes.** On each `pod install`, this package edits your app's `.xcodeproj`: it adds a Swift package reference for the core SDK and each kit, pinned to the exact version, and links each package's product into every iOS application target that uses this package. It unlinks every kit from `ios/mparticle_spm_kits.json` that `$RNMParticleSPMKits` does not list, including one you added by hand or switched to another major version, and removes its package reference once no target links it. It never removes or replaces a package from any other URL, such as a kit you gave by `url:`: remove that in Xcode. It prints every change (`[mParticle] MyApp <- mParticle-Rokt 9.6.1`), and running it again changes nothing. It stops `pod install` with an error if a pod would add a second copy of the SDKs. Commit the `.xcodeproj` change and `ios/<App>.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so every build resolves the same versions.
+**What `pod install` changes.** On each `pod install`, this package edits your app's `.xcodeproj`: it adds a Swift package reference for the core SDK and each kit, pinned to the exact version, and links each package's product into every iOS application target that uses this package. It unlinks every kit from `ios/mparticle_spm_kits.json` that `$RNMParticleSPMKits` does not list, including one you added by hand or switched to another major version, and removes its package reference once no target links it. It never removes or replaces a package from any other URL, such as a kit you gave by `url:`: remove that in Xcode. It prints every change (`[mParticle] MyApp <- mParticle-Rokt 9.7.4`), and running it again changes nothing. It stops `pod install` with an error if a pod would add a second copy of the SDKs. Commit the `.xcodeproj` change and `ios/<App>.xcworkspace/xcshareddata/swiftpm/Package.resolved`, so every build resolves the same versions.
 
 **Linkage.** This package's pod is always built as a static framework, so it works with each CocoaPods linkage:
 
