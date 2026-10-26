@@ -7,7 +7,7 @@
 #
 #   $RNMParticleSPMKits = ['mParticle-Rokt']   # kits by pod name, from ios/mparticle_spm_kits.json,
 #                                              # or { url:, product:, version: } for any other kit
-#   $RNMParticleSPMCoreVersion = '9.6.1'       # exact core SDK version; kits without one get it too
+#   $RNMParticleSPMCoreVersion = '9.7.4'       # exact core SDK version; kits without one get it too
 #   $RNMParticleDisableSPM = true              # take the SDKs from CocoaPods instead
 #
 # On each `pod install` in this mode:
@@ -28,7 +28,7 @@ module MParticleSPM
   CORE_URL = 'https://github.com/mParticle/mparticle-apple-sdk'.freeze
   CORE_PRODUCT = 'mParticle-Apple-SDK'.freeze
   # Default core version when the Podfile sets none. Bump with each tested native release.
-  DEFAULT_CORE_VERSION = '9.6.1'.freeze
+  DEFAULT_CORE_VERSION = '9.7.4'.freeze
   # Kits by their CocoaPods name. The Expo config plugin reads the same file.
   KITS = JSON.parse(File.read(File.join(__dir__, 'mparticle_spm_kits.json')))['kits'].freeze
   # Packages this file unlinks when the Podfile does not list them. A package from any other URL, such
