@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-26
+
+### Breaking Changes
+
+- Swift Package Manager by default on iOS; placeholder names only in selectPlacements ([#436](https://github.com/mParticle/react-native-mparticle/pull/436))
+
+### Fixed
+
+- Default the Swift Package Manager core SDK to 9.7.4 ([#458](https://github.com/mParticle/react-native-mparticle/pull/458))
+- Unlink kits dropped from $RNMParticleSPMKits ([#455](https://github.com/mParticle/react-native-mparticle/pull/455))
+- Remove adbOptions block that breaks builds on AGP 9 ([#430](https://github.com/mParticle/react-native-mparticle/pull/430))
+
+### Changed
+
+- Bump trunk-io/trunk-action from 1.3.1 to 2.0.0 ([#457](https://github.com/mParticle/react-native-mparticle/pull/457))
+- Enforce workflow security checks ([#456](https://github.com/mParticle/react-native-mparticle/pull/456))
+- Bump launch-editor from 2.14.1 to 2.14.2 in /sample ([#454](https://github.com/mParticle/react-native-mparticle/pull/454))
+- Bump shell-quote from 1.10.0 to 1.12.0 in /sample ([#444](https://github.com/mParticle/react-native-mparticle/pull/444))
+- Bump futureware-tech/simulator-action from 5 to 6 ([#442](https://github.com/mParticle/react-native-mparticle/pull/442))
+- Bump com.mparticle:android-core from 6.1.5 to 6.1.9 in /android ([#450](https://github.com/mParticle/react-native-mparticle/pull/450))
+- Bump actions/create-github-app-token from 3.2.0 to 3.3.0 ([#449](https://github.com/mParticle/react-native-mparticle/pull/449))
+- Bump zizmorcore/zizmor-action from 0.6.4 to 0.7.1 ([#448](https://github.com/mParticle/react-native-mparticle/pull/448))
+- Bump actions/setup-node from 7.0.0 to 7.1.0 ([#443](https://github.com/mParticle/react-native-mparticle/pull/443))
+- Bump handlebars from 4.7.9 to 4.7.10 ([#447](https://github.com/mParticle/react-native-mparticle/pull/447))
+- Remove the failing issue auto-close workflow ([#437](https://github.com/mParticle/react-native-mparticle/pull/437))
+- Add agent instructions with public repository confidentiality rules ([#435](https://github.com/mParticle/react-native-mparticle/pull/435))
+- Bump com.mparticle:android-rokt-kit from 6.1.4 to 6.1.5 in /android ([#433](https://github.com/mParticle/react-native-mparticle/pull/433))
+- Bump com.mparticle:android-rokt-kit from 6.1.3 to 6.1.4 in /android ([#431](https://github.com/mParticle/react-native-mparticle/pull/431))
+- Support releases from maintenance branches ([#420](https://github.com/mParticle/react-native-mparticle/pull/420))
+
 ## [3.4.0] - 2026-09-28
 
 ### Added
@@ -582,7 +612,8 @@ Initial rewrite as a React Native module.
 
 - Initial release with core mParticle SDK integration
 
-[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/3.4.0...HEAD
+[unreleased]: https://github.com/mParticle/react-native-mparticle/compare/4.0.0...HEAD
+[4.0.0]: https://github.com/mParticle/react-native-mparticle/compare/3.4.0...4.0.0
 [3.4.0]: https://github.com/mParticle/react-native-mparticle/compare/3.3.6...3.4.0
 [3.3.6]: https://github.com/mParticle/react-native-mparticle/compare/3.3.5...3.3.6
 [3.3.5]: https://github.com/mParticle/react-native-mparticle/compare/3.3.3...3.3.5
