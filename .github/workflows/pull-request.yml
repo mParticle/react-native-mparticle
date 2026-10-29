@@ -209,12 +209,21 @@ jobs:
           git checkout -- Podfile
           grep -F '[mParticle] Swift Package Manager mode is iOS only' tvos-pod-install.log || { cat tvos-pod-install.log; exit 1; }
 
+      - name: Resolve CocoaPods dependencies
+        id: cocoapods-resolve
+        # CocoaPods trunk is going read-only, so in the CocoaPods leg pod install can fail on a version that
+        # only Swift Package Manager has. Only that resolution is allowed to fail; the steps below still gate
+        # the code. The Swift Package Manager leg needs pod install for React Native's own pods, so it stays hard.
+        continue-on-error: ${{ matrix.ios_deps == 'cocoapods' }}
+        working-directory: sample/ios
+        run: bundle exec pod install
+
       - name: Build iOS sample app and run native unit tests
+        if: steps.cocoapods-resolve.outcome == 'success'
         working-directory: sample/ios
         env:
           SIMULATOR_UDID: ${{ steps.simulator.outputs.udid }}
         run: |
-          bundle exec pod install
           set -o pipefail && xcodebuild -workspace MParticleSample.xcworkspace \
           -configuration Debug \
           -scheme MParticleSample \
@@ -233,6 +242,7 @@ jobs:
           | bundle exec xcpretty -k
 
       - name: Archive iOS sample app and check for a single copy of each SDK
+        if: steps.cocoapods-resolve.outcome == 'success'
         working-directory: sample/ios
         run: |
           set -o pipefail && xcodebuild -workspace MParticleSample.xcworkspace \
@@ -245,6 +255,15 @@ jobs:
           archive \
           | bundle exec xcpretty -k
           ../../scripts/ios/check-single-copy.sh ios/build/MParticleSample.xcarchive/Products/Applications/MParticleSample.app
+
+      - name: Warn when CocoaPods could not resolve
+        if: steps.cocoapods-resolve.outcome == 'failure'
+        run: |
+          echo "::warning::CocoaPods could not resolve the sample app's dependencies, so the CocoaPods build and native tests were skipped. Check the log above for the cause."
+          {
+            echo "### CocoaPods dependencies did not resolve"
+            echo "The CocoaPods build and native tests of the sample app were skipped. Check the job log for the cause."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   pr-notify:
     if: >
