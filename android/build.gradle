@@ -114,7 +114,7 @@ dependencies {
     //
     // (See https://github.com/mparticle/mparticle-android-sdk for the latest version)
     //
-    api 'com.mparticle:android-core:[6.1.9, 7.0)'
+    api 'com.mparticle:android-core:[6.1.10, 7.0)'
     compileOnly 'com.mparticle:android-rokt-kit:[6.1.9, 7.0)'
 
     //
@@ -131,7 +131,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation files('libs/java-json.jar')
 
-    testImplementation 'com.mparticle:android-core:6.1.9'
+    testImplementation 'com.mparticle:android-core:6.1.10'
     testCompileOnly 'com.mparticle:android-rokt-kit:6.1.9'
     testImplementation("com.facebook.react:react-android:+")
 }
