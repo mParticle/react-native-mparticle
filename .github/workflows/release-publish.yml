@@ -43,8 +43,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Java 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Run Android Unit Tests
-        run: cd android && ./gradlew test
+        run: cd android && ./gradlew --init-script ../.github/gradle/android-checks.gradle test
 
   publish:
     name: Publish to npm and Create GitHub Release
