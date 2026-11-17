@@ -50,7 +50,7 @@ jobs:
           java-version: '17'
 
       - name: Run Android Unit Tests
-        run: cd android && ./gradlew test
+        run: cd android && ./gradlew --init-script ../.github/gradle/android-checks.gradle test
 
   publish:
     name: Publish to npm and Create GitHub Release

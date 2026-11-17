@@ -71,7 +71,7 @@ jobs:
           java-version: '17'
       - name: 'Run Android Unit Tests'
         working-directory: android
-        run: ./gradlew test
+        run: ./gradlew --init-script ../.github/gradle/android-checks.gradle test
 
   android-lint:
     name: 'Android Lint'
@@ -88,7 +88,7 @@ jobs:
           java-version: '17'
       - name: 'Run Android lint'
         working-directory: android
-        run: ./gradlew lint
+        run: ./gradlew --init-script ../.github/gradle/android-checks.gradle lint
 
   android-kotlin-lint:
     name: 'Android kotlin lint'
@@ -105,7 +105,7 @@ jobs:
           java-version: '17'
       - name: 'Run Android kotlin lint'
         working-directory: android
-        run: ./gradlew ktlintCheck
+        run: ./gradlew --init-script ../.github/gradle/android-checks.gradle ktlintCheck
 
   android-sample-app:
     name: Android Sample App
