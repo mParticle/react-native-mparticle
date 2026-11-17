@@ -38,6 +38,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: ROKT/rokt-workflows/.github/workflows/trunk-upgrade.yml@da0c5fd5d38e9cf113a24ec9aaea079cc7d0bc40 # main
+    uses: ROKT/rokt-workflows/.github/workflows/trunk-upgrade.yml@da0c5fd5d38e9cf113a24ec9aaea079cc7d0bc40
     with:
       token: ${{ needs.generate-and-call-upgrade.outputs.generated-token }}

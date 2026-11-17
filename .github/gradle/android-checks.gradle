@@ -1,0 +1,7 @@
+allprojects {
+    // Keep standalone Android checks on the sample app's React Native version.
+    def rn = new groovy.json.JsonSlurper().parse(new File(rootDir, '../sample/package.json')).dependencies['react-native']
+    configurations.configureEach {
+        resolutionStrategy.force "com.facebook.react:react-android:$rn"
+    }
+}
