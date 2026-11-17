@@ -138,6 +138,10 @@ dependencies {
 
 configurations.all {
     resolutionStrategy {
+        if (project == rootProject) {
+            // Standalone checks use the sample app's React Native version.
+            force 'com.facebook.react:react-android:0.84.0'
+        }
         // mockito 5.23.0 pulls byte-buddy 1.17.7, which ships a META-INF/versions/24
         // multi-release overlay that this AGP's Jetifier can't parse ("Unsupported
         // class file major version 68"). 1.15.x is the last line without that overlay
