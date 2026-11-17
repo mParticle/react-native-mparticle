@@ -282,6 +282,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@da0c5fd5d38e9cf113a24ec9aaea079cc7d0bc40 # main
+    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@da0c5fd5d38e9cf113a24ec9aaea079cc7d0bc40
     secrets:
       gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}
