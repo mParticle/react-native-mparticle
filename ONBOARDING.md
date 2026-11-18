@@ -240,7 +240,7 @@ npm test
 
 # Run Android tests
 cd android
-./gradlew test
+./gradlew --init-script ../.github/gradle/android-checks.gradle test
 
 # Run iOS tests
 cd ios/RNMParticle.xcodeproj
