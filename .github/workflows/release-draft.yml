@@ -20,6 +20,7 @@ jobs:
   create-release-pr:
     name: Create Release PR
     runs-on: ubuntu-latest
+    environment: release
     steps:
       # A major bump off main would publish the next major from maintenance code.
       - name: Block major bump outside main
